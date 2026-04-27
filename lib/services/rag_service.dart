@@ -4,9 +4,35 @@ import 'dart:math' as math;
 import 'embedding_service.dart';
 import 'vector_store.dart';
 
+class RagSearchDiagnostics {
+  const RagSearchDiagnostics({
+    required this.semanticHits,
+    required this.keywordHits,
+    required this.fusedHits,
+  });
+
+  final List<ScoredChunk> semanticHits;
+  final List<ScoredChunk> keywordHits;
+  final List<ScoredChunk> fusedHits;
+
+  String summary() {
+    String format(List<ScoredChunk> hits) {
+      return hits
+          .map((hit) =>
+              '${hit.chunk.docName}#${hit.chunk.chunkIndex}:${hit.score.toStringAsFixed(3)}')
+          .join(', ');
+    }
+
+    return 'semantic=[${format(semanticHits)}] '
+        'keyword=[${format(keywordHits)}] '
+        'final=[${format(fusedHits)}]';
+  }
+}
+
 class RagService {
   final EmbeddingService embedder;
   final VectorStore store;
+  RagSearchDiagnostics? lastDiagnostics;
 
   RagService({required this.embedder, required this.store});
 
@@ -85,20 +111,25 @@ class RagService {
   }) async {
     if (store.length == 0) return [];
     final qv = await embedder.embed(query);
-    final candidateK = math.max(k, math.min(store.length, k * 4));
-    final queryKeywords = keywords(query);
-    final candidates = store
+    final candidateK = math.max(k, math.min(store.length, k * 8));
+    final semanticHits = store
         .topK(qv, k: candidateK, docName: docName)
         .where((s) => s.score >= minScore)
         .toList();
+    final keywordHits = bm25Rank(query, _searchPool(docName), k: candidateK);
+    final fused = rrfFuse(
+      semanticHits: semanticHits,
+      keywordHits: keywordHits,
+      k: k,
+    );
 
-    candidates.sort((a, b) {
-      final boostedA = a.score + _keywordBoost(queryKeywords, a.chunk.text);
-      final boostedB = b.score + _keywordBoost(queryKeywords, b.chunk.text);
-      return boostedB.compareTo(boostedA);
-    });
+    lastDiagnostics = RagSearchDiagnostics(
+      semanticHits: semanticHits.take(k).toList(),
+      keywordHits: keywordHits.take(k).toList(),
+      fusedHits: fused,
+    );
 
-    return candidates.take(k).toList();
+    return fused;
   }
 
   /// 粗略確認檢索結果至少有一個實詞對得上問題，避免低質量
@@ -119,15 +150,108 @@ class RagService {
     });
   }
 
-  static double _keywordBoost(Set<String> queryKeywords, String text) {
-    if (queryKeywords.isEmpty) return 0;
-    final queryAliases = expandedKeywords(queryKeywords);
-    final chunkAliases = expandedKeywords(keywords(text));
-    final overlap = chunkAliases.intersection(queryAliases).length;
-    return math.min(overlap, 4) * 0.04;
+  List<DocChunk> _searchPool(String? docName) {
+    if (docName == null) return store.chunks;
+    return store.chunks.where((chunk) => chunk.docName == docName).toList();
+  }
+
+  static List<ScoredChunk> bm25Rank(
+    String query,
+    List<DocChunk> chunks, {
+    int k = 8,
+  }) {
+    if (chunks.isEmpty) return [];
+
+    final queryTerms = expandedKeywords(keywords(query)).toList();
+    if (queryTerms.isEmpty) return [];
+
+    final tokenized = [
+      for (final chunk in chunks) keywordTerms(chunk.text),
+    ];
+    final avgLength = tokenized.isEmpty
+        ? 0.0
+        : tokenized.fold<int>(0, (sum, terms) => sum + terms.length) /
+            tokenized.length;
+
+    final documentFrequency = <String, int>{};
+    for (final terms in tokenized) {
+      for (final term in terms.toSet()) {
+        documentFrequency[term] = (documentFrequency[term] ?? 0) + 1;
+      }
+    }
+
+    const k1 = 1.2;
+    const b = 0.75;
+    final scored = <ScoredChunk>[];
+    for (var i = 0; i < chunks.length; i++) {
+      final terms = tokenized[i];
+      if (terms.isEmpty) continue;
+      final frequencies = <String, int>{};
+      for (final term in expandedKeywords(terms.toSet())) {
+        frequencies[term] = (frequencies[term] ?? 0) + 1;
+      }
+
+      var score = 0.0;
+      for (final term in queryTerms) {
+        final tf = frequencies[term] ?? 0;
+        if (tf == 0) continue;
+        final df = documentFrequency[term] ?? 0;
+        final idf = math.log(
+          1 + (chunks.length - df + 0.5) / (df + 0.5),
+        );
+        final lengthNorm = 1 - b + b * (terms.length / math.max(avgLength, 1));
+        score += idf * ((tf * (k1 + 1)) / (tf + k1 * lengthNorm));
+      }
+
+      if (score > 0) {
+        scored.add(ScoredChunk(chunks[i], score));
+      }
+    }
+
+    scored.sort((a, b) => b.score.compareTo(a.score));
+    return scored.take(k).toList();
+  }
+
+  static List<ScoredChunk> rrfFuse({
+    required List<ScoredChunk> semanticHits,
+    required List<ScoredChunk> keywordHits,
+    required int k,
+    int rankConstant = 60,
+    double semanticWeight = 1.0,
+    double keywordWeight = 1.3,
+  }) {
+    final byId = <String, DocChunk>{};
+    final scores = <String, double>{};
+
+    void addRanked(List<ScoredChunk> hits, double weight) {
+      for (var i = 0; i < hits.length; i++) {
+        final hit = hits[i];
+        final id = hit.chunk.id;
+        byId[id] = hit.chunk;
+        scores[id] = (scores[id] ?? 0) + weight / (rankConstant + i + 1);
+      }
+    }
+
+    addRanked(semanticHits, semanticWeight);
+    addRanked(keywordHits, keywordWeight);
+
+    final fused = [
+      for (final entry in scores.entries)
+        ScoredChunk(byId[entry.key]!, entry.value),
+    ]..sort((a, b) {
+        final scoreCompare = b.score.compareTo(a.score);
+        if (scoreCompare != 0) return scoreCompare;
+        return a.chunk.chunkIndex.compareTo(b.chunk.chunkIndex);
+      });
+
+    return fused.take(k).toList();
   }
 
   static Set<String> keywords(String text) {
+    return keywordTerms(text).toSet();
+  }
+
+  static List<String> keywordTerms(String text) {
     final stopwords = {
       'a',
       'an',
@@ -181,7 +305,7 @@ class RagService {
       '問',
     };
 
-    final out = <String>{};
+    final out = <String>[];
     final matches = RegExp(r'[A-Za-z0-9]+|[一-龥]+').allMatches(
       text.toLowerCase(),
     );

@@ -64,6 +64,7 @@ class VectorStore {
   int get length => _chunks.length;
   String? get embeddingModel => _embeddingModel;
   List<String> get docNames => _chunks.map((c) => c.docName).toSet().toList();
+  List<DocChunk> get chunks => List.unmodifiable(_chunks);
 
   void add(DocChunk c) => _chunks.add(c);
   void addAll(Iterable<DocChunk> cs) => _chunks.addAll(cs);

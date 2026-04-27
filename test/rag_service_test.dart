@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:local_ai_chat/services/embedding_service.dart';
 import 'package:local_ai_chat/services/rag_service.dart';
 import 'package:local_ai_chat/services/vector_store.dart';
 
@@ -44,6 +45,39 @@ void main() {
       RagService.hasKeywordGrounding('What is the due date?', hits),
       isTrue,
     );
+  });
+
+  test('bm25 ranks exact keyword matches', () {
+    final chunks = [
+      _chunk('General introduction only.', index: 0),
+      _chunk('The refund policy allows a 14 day return window.', index: 1),
+      _chunk('Build instructions and setup.', index: 2),
+    ];
+
+    final hits = RagService.bm25Rank('refund policy', chunks, k: 2);
+
+    expect(hits, isNotEmpty);
+    expect(hits.first.chunk.chunkIndex, 1);
+    expect(hits.first.score, greaterThan(0));
+  });
+
+  test('rrf fusion can recover keyword hit missed by semantic top result',
+      () async {
+    final store = VectorStore()
+      ..add(_chunk('Semantic-looking but irrelevant setup text.', index: 0))
+      ..add(_chunk('The customer refund policy is described here.', index: 1));
+
+    final service = RagService(
+      embedder: _FakeEmbeddingService(),
+      store: store,
+    );
+
+    final hits = await service.retrieve('refund policy', k: 1);
+
+    expect(hits, hasLength(1));
+    expect(hits.first.chunk.chunkIndex, 1);
+    expect(service.lastDiagnostics, isNotNull);
+    expect(service.lastDiagnostics!.keywordHits.first.chunk.chunkIndex, 1);
   });
 
   test('grounding rejects absent facts', () {
@@ -110,4 +144,23 @@ void main() {
       });
     }
   });
+}
+
+DocChunk _chunk(String text, {required int index}) {
+  return DocChunk(
+    id: 'doc_$index',
+    docName: 'doc.pdf',
+    chunkIndex: index,
+    text: text,
+    embedding: index == 0 ? const [1, 0, 0] : const [0, 1, 0],
+  );
+}
+
+class _FakeEmbeddingService extends EmbeddingService {
+  _FakeEmbeddingService() : super(baseUrl: 'http://unused.invalid');
+
+  @override
+  Future<List<double>> embed(String text) async {
+    return const [1, 0, 0];
+  }
 }

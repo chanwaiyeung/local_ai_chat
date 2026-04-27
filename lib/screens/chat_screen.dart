@@ -718,9 +718,11 @@ class _ChatScreenState extends State<ChatScreen> {
             .map((hit) =>
                 '${hit.chunk.docName}#${hit.chunk.chunkIndex}:${hit.score.toStringAsFixed(3)}')
             .join(', ');
+        final diagnostics = _rag.lastDiagnostics?.summary();
         final retrieveDoneLog =
             'RAG retrieve: done hits=${hits.length} durationMs=$retrieveMs '
-            'scores=[$scores]';
+            'scores=[$scores]'
+            '${diagnostics == null ? '' : ' $diagnostics'}';
         debugPrint(retrieveDoneLog);
         unawaited(DebugLogService.append(retrieveDoneLog));
         if (hits.isNotEmpty && !RagService.hasKeywordGrounding(text, hits)) {
