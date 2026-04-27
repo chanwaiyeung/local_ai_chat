@@ -38,6 +38,12 @@ class RagEvaluationRecord {
   final String embeddingModel;
   final DateTime createdAt;
 
+  static String newId() => DateTime.now().microsecondsSinceEpoch.toString();
+
+  bool get isPass => verdict == RagVerdict.pass;
+  bool get isFail => verdict == RagVerdict.fail;
+  bool get isUnsure => verdict == RagVerdict.unsure;
+
   RagEvaluationRecord copyWith({
     String? id,
     String? question,
@@ -66,6 +72,29 @@ class RagEvaluationRecord {
     );
   }
 
+  RagEvaluationRecord copyWithJson(Map<String, dynamic> json) {
+    final rawCreatedAt = json['createdAt'];
+
+    return copyWith(
+      id: json['id'] as String?,
+      question: json['question'] as String?,
+      answer: json['answer'] as String?,
+      citationText: json['citationText'] as String?,
+      citationTarget: json['citationTarget'] as String?,
+      expectedStatus: json.containsKey('expectedStatus')
+          ? _parseExpectedStatus(json['expectedStatus'])
+          : null,
+      verdict:
+          json.containsKey('verdict') ? _parseVerdict(json['verdict']) : null,
+      notes: json['notes'] as String?,
+      chatModel: json['chatModel'] as String?,
+      embeddingModel: json['embeddingModel'] as String?,
+      createdAt: rawCreatedAt == null
+          ? null
+          : DateTime.tryParse(rawCreatedAt.toString()) ?? createdAt,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -89,14 +118,8 @@ class RagEvaluationRecord {
       answer: json['answer'] as String? ?? '',
       citationText: json['citationText'] as String? ?? '',
       citationTarget: json['citationTarget'] as String? ?? '',
-      expectedStatus: RagExpectedStatus.values.firstWhere(
-        (value) => value.name == json['expectedStatus'],
-        orElse: () => RagExpectedStatus.exists,
-      ),
-      verdict: RagVerdict.values.firstWhere(
-        (value) => value.name == json['verdict'],
-        orElse: () => RagVerdict.unsure,
-      ),
+      expectedStatus: _parseExpectedStatus(json['expectedStatus']),
+      verdict: _parseVerdict(json['verdict']),
       notes: json['notes'] as String? ?? '',
       chatModel: json['chatModel'] as String? ?? '',
       embeddingModel: json['embeddingModel'] as String? ?? '',
@@ -104,6 +127,38 @@ class RagEvaluationRecord {
           DateTime.now(),
     );
   }
+}
+
+RagExpectedStatus _parseExpectedStatus(Object? raw) {
+  switch (_normalizeEnumValue(raw)) {
+    case 'exists':
+      return RagExpectedStatus.exists;
+    case 'missing':
+      return RagExpectedStatus.missing;
+    case 'followup':
+      return RagExpectedStatus.followUp;
+    case 'synonym':
+      return RagExpectedStatus.synonym;
+    default:
+      return RagExpectedStatus.exists;
+  }
+}
+
+RagVerdict _parseVerdict(Object? raw) {
+  switch (_normalizeEnumValue(raw)) {
+    case 'pass':
+      return RagVerdict.pass;
+    case 'fail':
+      return RagVerdict.fail;
+    case 'unsure':
+      return RagVerdict.unsure;
+    default:
+      return RagVerdict.unsure;
+  }
+}
+
+String _normalizeEnumValue(Object? raw) {
+  return raw.toString().trim().toLowerCase().replaceAll(RegExp(r'[\s_-]+'), '');
 }
 
 RagEvaluationRecord createRagEvaluationRecord({
@@ -147,7 +202,27 @@ class RagEvaluationSummary {
   final int pass;
   final int fail;
   final int unsure;
-  final double? passRate;
+  final double passRate;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'count': total,
+      'pass': pass,
+      'fail': fail,
+      'unsure': unsure,
+      'passRate': passRate,
+    };
+  }
+
+  factory RagEvaluationSummary.fromJson(Map<String, dynamic> json) {
+    return RagEvaluationSummary(
+      total: json['count'] as int? ?? json['total'] as int? ?? 0,
+      pass: json['pass'] as int? ?? 0,
+      fail: json['fail'] as int? ?? 0,
+      unsure: json['unsure'] as int? ?? 0,
+      passRate: (json['passRate'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
 }
 
 RagEvaluationSummary summarizeRagEvaluationRecords(
@@ -162,6 +237,6 @@ RagEvaluationSummary summarizeRagEvaluationRecords(
     pass: pass,
     fail: fail,
     unsure: unsure,
-    passRate: records.isEmpty ? null : pass / records.length,
+    passRate: records.isEmpty ? 0.0 : pass / records.length,
   );
 }

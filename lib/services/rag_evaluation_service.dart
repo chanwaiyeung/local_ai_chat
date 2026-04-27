@@ -90,11 +90,7 @@ class RagEvaluationService {
       'schemaVersion': 1,
       'exportedAt': DateTime.now().toIso8601String(),
       'summary': {
-        'count': summary.total,
-        'pass': summary.pass,
-        'fail': summary.fail,
-        'unsure': summary.unsure,
-        'passRate': summary.passRate,
+        ...summary.toJson(),
         'chatModels': chatModels,
         'embeddingModels': embeddingModels,
       },

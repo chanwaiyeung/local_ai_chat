@@ -80,7 +80,7 @@ class _RagEvaluationScreenState extends State<RagEvaluationScreen> {
     debugPrint('Saving expected=$_expected verdict=$_verdict');
 
     final record = createRagEvaluationRecord(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      id: RagEvaluationRecord.newId(),
       question: question,
       answer: _answerController.text.trim(),
       citationText: _citationTextController.text.trim(),
@@ -363,14 +363,13 @@ class _StatsCard extends StatelessWidget {
   final int pass;
   final int fail;
   final int unsure;
-  final double? passRate;
+  final double passRate;
   final String chatModel;
   final String embeddingModel;
 
   @override
   Widget build(BuildContext context) {
-    final rateText =
-        passRate == null ? '-' : '${(passRate! * 100).toStringAsFixed(1)}%';
+    final rateText = '${(passRate * 100).toStringAsFixed(1)}%';
 
     return Card(
       child: Padding(

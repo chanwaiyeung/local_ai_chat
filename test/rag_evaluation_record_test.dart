@@ -43,6 +43,16 @@ void main() {
     expect(record.verdict, RagVerdict.unsure);
   });
 
+  test('deserializes enum values case-insensitively', () {
+    final record = RagEvaluationRecord.fromJson({
+      'expectedStatus': 'FOLLOW_UP',
+      'verdict': 'PASS',
+    });
+
+    expect(record.expectedStatus, RagExpectedStatus.followUp);
+    expect(record.verdict, RagVerdict.pass);
+  });
+
   test('round trip preserves values', () {
     final record = RagEvaluationRecord(
       id: '2',
@@ -122,6 +132,28 @@ void main() {
     expect(summary.fail, 1);
     expect(summary.unsure, 0);
     expect(summary.passRate, 0.5);
+    expect(summary.toJson()['passRate'], 0.5);
+  });
+
+  test('empty summary uses zero pass rate', () {
+    final summary = summarizeRagEvaluationRecords([]);
+
+    expect(summary.total, 0);
+    expect(summary.passRate, 0.0);
+  });
+
+  test('summary deserializes from json', () {
+    final summary = RagEvaluationSummary.fromJson({
+      'count': 3,
+      'pass': 1,
+      'fail': 1,
+      'unsure': 1,
+      'passRate': 1 / 3,
+    });
+
+    expect(summary.total, 3);
+    expect(summary.pass, 1);
+    expect(summary.passRate, closeTo(1 / 3, 0.0001));
   });
 
   test('copyWith updates selected fields', () {
@@ -147,6 +179,27 @@ void main() {
     expect(updated.question, 'Q');
     expect(updated.verdict, RagVerdict.pass);
     expect(updated.notes, 'ok');
+  });
+
+  test('copyWithJson patches selected fields safely', () {
+    final record = _makeRecord(verdict: RagVerdict.unsure);
+
+    final updated = record.copyWithJson({
+      'verdict': 'fail',
+      'expectedStatus': 'synonym',
+      'notes': 'patched',
+    });
+
+    expect(updated.id, record.id);
+    expect(updated.verdict, RagVerdict.fail);
+    expect(updated.expectedStatus, RagExpectedStatus.synonym);
+    expect(updated.notes, 'patched');
+  });
+
+  test('verdict convenience getters reflect verdict', () {
+    expect(_makeRecord(verdict: RagVerdict.pass).isPass, isTrue);
+    expect(_makeRecord(verdict: RagVerdict.fail).isFail, isTrue);
+    expect(_makeRecord(verdict: RagVerdict.unsure).isUnsure, isTrue);
   });
 }
 
