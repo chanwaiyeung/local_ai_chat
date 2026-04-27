@@ -1,0 +1,42 @@
+name: local_ai_chat
+description: "AI 語音圖書館（本地 Ollama AI + Windows 語音 + PDF 文件問答）"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.2.0 <4.0.0"
+  flutter: ">=3.16.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # 本地 AI (Ollama) HTTP 通訊
+  http: ^1.2.2
+
+  # 檔案選擇 / 儲存（PDF / TXT / MD）
+  file_picker: ^8.1.2
+
+  # PDF 文字抽取（pdf_text 已停維護，改用 Syncfusion 社群授權）
+  syncfusion_flutter_pdf: ^27.1.48
+
+  # 語音輸入（內部已處理麥克風權限，毋須額外 permission_handler）
+  speech_to_text: ^7.0.0
+
+  # 取存儲路徑（向量庫持久化、匯出 fallback）
+  path_provider: ^2.1.5
+
+  # Markdown 回覆與安全開啟外部連結
+  flutter_markdown: ^0.7.7+1
+  flutter_highlight: ^0.7.0
+  markdown: ^7.3.1
+  url_launcher: ^6.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

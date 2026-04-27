@@ -1,0 +1,44 @@
+// lib/services/speech_service.dart
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+
+/// Windows 上會用 Windows Speech Recognition（需先在系統設定開啟）
+class SpeechService {
+  final stt.SpeechToText _stt = stt.SpeechToText();
+  bool _initialized = false;
+
+  bool get isListening => _stt.isListening;
+
+  Future<bool> init({void Function(String status)? onStatus}) async {
+    if (_initialized) return true;
+    _initialized = await _stt.initialize(
+      onStatus: (s) => onStatus?.call(s),
+      onError: (e) => onStatus?.call('error: ${e.errorMsg}'),
+    );
+    return _initialized;
+  }
+
+  /// 開始聽寫，每次有結果經 [onResult] 回傳
+  /// localeId 例如 'zh-HK', 'zh-CN', 'en-US'
+  Future<void> start({
+    required void Function(String text, bool isFinal) onResult,
+    String localeId = 'zh-HK',
+  }) async {
+    if (!_initialized) {
+      final ok = await init();
+      if (!ok) throw Exception('語音辨識初始化失敗');
+    }
+    await _stt.listen(
+      onResult: (r) => onResult(r.recognizedWords, r.finalResult),
+      localeId: localeId,
+      listenOptions: stt.SpeechListenOptions(
+        partialResults: true,
+        cancelOnError: true,
+      ),
+    );
+  }
+
+  Future<void> stop() => _stt.stop();
+  Future<void> cancel() => _stt.cancel();
+
+  Future<List<stt.LocaleName>> locales() => _stt.locales();
+}
