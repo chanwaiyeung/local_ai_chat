@@ -87,16 +87,21 @@ class RagService {
     IngestProgress? onProgress,
     CancelCheck? cancelCheck,
   }) async {
-    // 同名文件先剷走
-    store.removeDoc(docName);
-
     final pieces = chunk(text, maxChars: maxChars, overlap: overlap);
     var done = 0;
+    var cancelled = false;
+    final nextChunks = <DocChunk>[];
     for (var i = 0; i < pieces.length; i++) {
-      if (cancelCheck?.call() == true) break;
+      if (cancelCheck?.call() == true) {
+        cancelled = true;
+        break;
+      }
       final emb = await embedder.embed(pieces[i]);
-      if (cancelCheck?.call() == true) break;
-      store.add(DocChunk(
+      if (cancelCheck?.call() == true) {
+        cancelled = true;
+        break;
+      }
+      nextChunks.add(DocChunk(
         id: '${docName}_$i',
         docName: docName,
         chunkIndex: i,
@@ -106,6 +111,12 @@ class RagService {
       done++;
       onProgress?.call(done, pieces.length);
     }
+
+    if (cancelled) return 0;
+
+    // 同名文件只在新索引完整建立後先剷走，避免取消時清掉舊索引。
+    store.removeDoc(docName);
+    store.addAll(nextChunks);
     await store.save();
     return done;
   }

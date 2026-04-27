@@ -479,8 +479,6 @@ class _ChatScreenState extends State<ChatScreen> {
         cancelCheck: () => _cancelIngest,
       );
       if (_cancelIngest) {
-        _store.removeDoc(name);
-        await _store.save();
         _snack('已取消匯入「$name」');
         return;
       }

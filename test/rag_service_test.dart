@@ -97,6 +97,28 @@ void main() {
     expect(store.length, 0);
   });
 
+  test('ingest preserves existing document when replacement is cancelled',
+      () async {
+    final store = _InMemoryVectorStore()
+      ..add(_chunk('Existing content.', index: 0));
+    final service = RagService(
+      embedder: _FakeEmbeddingService(),
+      store: store,
+    );
+
+    final count = await service.ingest(
+      docName: 'doc.pdf',
+      text: 'New first paragraph. New second paragraph.',
+      cancelCheck: () =>
+          service.embedder is _FakeEmbeddingService &&
+          (service.embedder as _FakeEmbeddingService).embedCalls >= 1,
+    );
+
+    expect(count, 0);
+    expect(store.length, 1);
+    expect(store.chunks.first.text, 'Existing content.');
+  });
+
   test('grounding rejects absent facts', () {
     final hits = [
       scored('The owner is Albert Chan.', index: 2),
@@ -176,8 +198,11 @@ DocChunk _chunk(String text, {required int index}) {
 class _FakeEmbeddingService extends EmbeddingService {
   _FakeEmbeddingService() : super(baseUrl: 'http://unused.invalid');
 
+  int embedCalls = 0;
+
   @override
   Future<List<double>> embed(String text) async {
+    embedCalls++;
     return const [1, 0, 0];
   }
 }
