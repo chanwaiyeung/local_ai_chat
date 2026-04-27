@@ -4,6 +4,9 @@ import 'dart:math' as math;
 import 'embedding_service.dart';
 import 'vector_store.dart';
 
+typedef IngestProgress = void Function(int done, int total);
+typedef CancelCheck = bool Function();
+
 class RagSearchDiagnostics {
   const RagSearchDiagnostics({
     required this.semanticHits,
@@ -81,14 +84,17 @@ class RagService {
     required String text,
     int maxChars = 800,
     int overlap = 120,
-    void Function(int done, int total)? onProgress,
+    IngestProgress? onProgress,
+    CancelCheck? cancelCheck,
   }) async {
     // 同名文件先剷走
     store.removeDoc(docName);
 
     final pieces = chunk(text, maxChars: maxChars, overlap: overlap);
     for (var i = 0; i < pieces.length; i++) {
+      if (cancelCheck?.call() == true) break;
       final emb = await embedder.embed(pieces[i]);
+      if (cancelCheck?.call() == true) break;
       store.add(DocChunk(
         id: '${docName}_$i',
         docName: docName,

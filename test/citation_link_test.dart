@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:local_ai_chat/screens/chat_screen.dart';
+import 'package:local_ai_chat/utils/citation_parser.dart';
 
 void main() {
   test('parses current chunk citation format', () {
@@ -26,6 +26,15 @@ void main() {
     );
 
     expect(target?.docName, 'report.pdf');
+    expect(target?.chunkIndex, 2);
+  });
+
+  test('normalizes escaped ampersands with whitespace', () {
+    final target = parseCitationLinkTarget(
+      'chunk://doc?doc=Doc%20A&amp; i=2',
+    );
+
+    expect(target?.docName, 'Doc A');
     expect(target?.chunkIndex, 2);
   });
 

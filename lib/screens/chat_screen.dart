@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:io' show File;
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -19,44 +20,22 @@ import '../services/pdf_service.dart';
 import '../services/rag_service.dart';
 import '../services/speech_service.dart';
 import '../services/vector_store.dart';
+import '../utils/citation_parser.dart';
 import '../widgets/code_block.dart';
 import 'doc_viewer_screen.dart';
 import 'rag_evaluation_screen.dart';
 import 'settings_screen.dart';
 
-class CitationLinkTarget {
-  const CitationLinkTarget({
-    required this.docName,
-    required this.chunkIndex,
-  });
+const _maxIngestFileBytes = 20 * 1024 * 1024;
+const _extractTimeout = Duration(seconds: 60);
 
-  final String docName;
-  final int? chunkIndex;
-}
-
-CitationLinkTarget? parseCitationLinkTarget(String? href) {
-  if (href == null || href.trim().isEmpty) return null;
-
-  final normalizedHref = href.trim().replaceAll('&amp;', '&');
-  final uri = Uri.tryParse(normalizedHref);
-  if (uri == null || uri.scheme != 'chunk') return null;
-
-  final docName = uri.queryParameters['id'] ?? uri.queryParameters['doc'];
-  if (docName == null || docName.trim().isEmpty) return null;
-
-  final rawIndex = uri.queryParameters['chunk'] ?? uri.queryParameters['i'];
-  return CitationLinkTarget(
-    docName: _decodeCitationDocName(docName),
-    chunkIndex: int.tryParse(rawIndex ?? ''),
-  );
-}
-
-String _decodeCitationDocName(String docName) {
-  try {
-    return Uri.decodeQueryComponent(docName);
-  } catch (_) {
-    return docName;
+Future<String> extractTextForIngest(Map<String, String> args) async {
+  final path = args['path']!;
+  final name = args['name']!;
+  if (name.toLowerCase().endsWith('.pdf')) {
+    return PdfService.extractAll(path);
   }
+  return File(path).readAsString();
 }
 
 class ChatScreen extends StatefulWidget {
@@ -90,6 +69,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String _embedModel = AppSettings.defaultEmbeddingModel;
   bool _busy = false;
   bool _listening = false;
+  bool _cancelIngest = false;
   bool _ragEnabled = true;
   int _topK = 4;
   String? _activeDoc;
@@ -433,15 +413,22 @@ class _ChatScreenState extends State<ChatScreen> {
 
     final path = res.files.single.path!;
     final name = res.files.single.name;
+    final file = File(path);
+    final bytes = await file.length();
+    if (bytes > _maxIngestFileBytes) {
+      _snack('檔案太大（>20MB），請先壓縮或分割檔案再匯入。');
+      return;
+    }
+
+    _cancelIngest = false;
     setState(() => _busy = true);
 
     try {
-      String text;
-      if (name.toLowerCase().endsWith('.pdf')) {
-        text = await PdfService.extractAll(path);
-      } else {
-        text = await File(path).readAsString();
-      }
+      final text = await compute(
+        extractTextForIngest,
+        {'path': path, 'name': name},
+      ).timeout(_extractTimeout);
+      if (_cancelIngest) return;
 
       if (text.trim().length < 20) {
         if (!mounted) return;
@@ -470,9 +457,16 @@ class _ChatScreenState extends State<ChatScreen> {
         docName: name,
         text: text,
         onProgress: (done, total) {
+          if (_cancelIngest) return;
           if (done == total) _snack('索引完成：$total 個片段（$_embedModel）');
         },
+        cancelCheck: () => _cancelIngest,
       );
+      if (_cancelIngest) {
+        _store.removeDoc(name);
+        await _store.save();
+        return;
+      }
       _store.setEmbeddingModel(_embedModel);
       await _store.save();
       final ingestMs = DateTime.now().difference(ingestStarted).inMilliseconds;
@@ -494,9 +488,17 @@ class _ChatScreenState extends State<ChatScreen> {
       });
       _scheduleSave();
       await _saveNow();
+    } on TimeoutException catch (e) {
+      await DebugLogService.append(
+        'RAG ingest: extract timeout doc=$name embeddingModel=$_embedModel '
+        'error=$e',
+        level: 'WARN',
+      );
+      _snack('處理超時，請再試一次或使用較小檔案。');
     } catch (e) {
       await DebugLogService.append(
         'RAG ingest: failed doc=$name embeddingModel=$_embedModel error=$e',
+        level: 'ERROR',
       );
       _snack('讀取失敗：$e');
     } finally {
@@ -1214,6 +1216,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
+    _cancelIngest = true;
     unawaited(_saveDebouncer.flush());
     _saveDebouncer.dispose();
     _input.dispose();
