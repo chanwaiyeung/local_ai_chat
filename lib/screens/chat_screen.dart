@@ -70,6 +70,8 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _busy = false;
   bool _listening = false;
   bool _cancelIngest = false;
+  bool _ingesting = false;
+  String? _ingestProgressText;
   bool _ragEnabled = true;
   int _topK = 4;
   String? _activeDoc;
@@ -249,7 +251,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _syncFromCurrentSession();
     });
     Navigator.of(context).maybePop();
-    _scrollToEnd();
+    _scrollToEnd(force: true);
   }
 
   Future<void> _newSession() async {
@@ -264,7 +266,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _syncFromCurrentSession();
     });
     Navigator.of(context).maybePop();
-    _scrollToEnd();
+    _scrollToEnd(force: true);
   }
 
   Future<void> _renameSession(ChatSession session) async {
@@ -421,7 +423,11 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     _cancelIngest = false;
-    setState(() => _busy = true);
+    setState(() {
+      _busy = true;
+      _ingesting = true;
+      _ingestProgressText = '正在讀取「$name」…';
+    });
 
     try {
       final text = await compute(
@@ -453,11 +459,21 @@ class _ChatScreenState extends State<ChatScreen> {
       debugPrint(ingestStartLog);
       unawaited(DebugLogService.append(ingestStartLog));
       _snack('正在用 $_embedModel 切塊並建立向量索引…');
+      if (mounted) {
+        setState(() {
+          _ingestProgressText = '正在用 $_embedModel 切塊並建立向量索引…';
+        });
+      }
       final count = await _rag.ingest(
         docName: name,
         text: text,
         onProgress: (done, total) {
           if (_cancelIngest) return;
+          if (mounted) {
+            setState(() {
+              _ingestProgressText = '建立向量索引：$done / $total（$_embedModel）';
+            });
+          }
           if (done == total) _snack('索引完成：$total 個片段（$_embedModel）');
         },
         cancelCheck: () => _cancelIngest,
@@ -465,6 +481,7 @@ class _ChatScreenState extends State<ChatScreen> {
       if (_cancelIngest) {
         _store.removeDoc(name);
         await _store.save();
+        _snack('已取消匯入「$name」');
         return;
       }
       _store.setEmbeddingModel(_embedModel);
@@ -502,9 +519,23 @@ class _ChatScreenState extends State<ChatScreen> {
       );
       _snack('讀取失敗：$e');
     } finally {
-      if (mounted) setState(() => _busy = false);
-      _scrollToEnd();
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _ingesting = false;
+          _ingestProgressText = null;
+        });
+      }
+      _scrollToEnd(force: true);
     }
+  }
+
+  void _cancelCurrentIngest() {
+    if (!_ingesting) return;
+    setState(() {
+      _cancelIngest = true;
+      _ingestProgressText = '正在取消匯入…';
+    });
   }
 
   Future<void> _removeDoc(String name) async {
@@ -758,7 +789,7 @@ class _ChatScreenState extends State<ChatScreen> {
           m.content.startsWith('【相關段落】'),
     ));
 
-    _scrollToEnd();
+    _scrollToEnd(force: true);
 
     final buffer = StringBuffer();
     try {
@@ -800,12 +831,18 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _scrollToEnd() {
+  void _scrollToEnd({
+    Duration duration = const Duration(milliseconds: 200),
+    bool force = false,
+  }) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scroll.hasClients) return;
+      final maxScroll = _scroll.position.maxScrollExtent;
+      final isNearBottom = _scroll.offset >= maxScroll - 200;
+      if (!force && !isNearBottom) return;
       _scroll.animateTo(
-        _scroll.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 200),
+        maxScroll,
+        duration: duration,
         curve: Curves.easeOut,
       );
     });
@@ -1168,7 +1205,38 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
           ),
-          if (_busy) const LinearProgressIndicator(minHeight: 2),
+          if (_ingesting)
+            Material(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: Row(
+                  children: [
+                    const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _ingestProgressText ?? '正在建立向量索引…',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    TextButton.icon(
+                      onPressed: _cancelIngest ? null : _cancelCurrentIngest,
+                      icon: const Icon(Icons.close),
+                      label: const Text('取消'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else if (_busy)
+            const LinearProgressIndicator(minHeight: 2),
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(8),

@@ -80,6 +80,23 @@ void main() {
     expect(service.lastDiagnostics!.keywordHits.first.chunk.chunkIndex, 1);
   });
 
+  test('ingest stops before writing chunks when cancelled', () async {
+    final store = _InMemoryVectorStore();
+    final service = RagService(
+      embedder: _FakeEmbeddingService(),
+      store: store,
+    );
+
+    final count = await service.ingest(
+      docName: 'doc.pdf',
+      text: 'First paragraph. Second paragraph.',
+      cancelCheck: () => true,
+    );
+
+    expect(count, 0);
+    expect(store.length, 0);
+  });
+
   test('grounding rejects absent facts', () {
     final hits = [
       scored('The owner is Albert Chan.', index: 2),
@@ -163,4 +180,9 @@ class _FakeEmbeddingService extends EmbeddingService {
   Future<List<double>> embed(String text) async {
     return const [1, 0, 0];
   }
+}
+
+class _InMemoryVectorStore extends VectorStore {
+  @override
+  Future<void> save() async {}
 }

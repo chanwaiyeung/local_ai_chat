@@ -91,6 +91,7 @@ class RagService {
     store.removeDoc(docName);
 
     final pieces = chunk(text, maxChars: maxChars, overlap: overlap);
+    var done = 0;
     for (var i = 0; i < pieces.length; i++) {
       if (cancelCheck?.call() == true) break;
       final emb = await embedder.embed(pieces[i]);
@@ -102,10 +103,11 @@ class RagService {
         text: pieces[i],
         embedding: emb,
       ));
-      onProgress?.call(i + 1, pieces.length);
+      done++;
+      onProgress?.call(done, pieces.length);
     }
     await store.save();
-    return pieces.length;
+    return done;
   }
 
   /// 為一條查詢取相關段落
