@@ -1,5 +1,40 @@
 # Release Notes
 
+## v2.0 Phase 1 — Persisted BM25 Index
+
+Status: accepted.
+
+### Added
+
+- `VectorStore` schema v3 with `SparseIndexSnapshot`.
+- Persisted BM25 index storing term frequency, document frequency, and chunk
+  lengths.
+- `RagService.buildSparseIndex()` and `RagService.bm25RankWithIndex()`.
+- Automatic v2/legacy migration path through sparse-index rebuild on load.
+- Runtime fallback to dynamic BM25 when no persisted sparse index is available.
+- Regression coverage for schema v3 decode, migration flags, indexed BM25
+  ranking, persisted sparse retrieval, and rollback behavior.
+
+### Validation
+
+- `flutter analyze`: pass, 0 issues.
+- `flutter test -r expanded`: pass, 85 tests.
+- `flutter build windows --release`: pass.
+
+### Quantitative Baseline Comparison
+
+- v1.10.4 dynamic BM25: 12 PASS / 1 PARTIAL / 0 FAIL, 96.2%.
+- v2.0 persisted BM25: 12 PASS / 1 PARTIAL / 0 FAIL, 96.2%.
+- Difference: identical observed results; no regression and no ranking
+  improvement.
+- Snapshot:
+  `docs/eval_snapshots/eval_v2_persisted_bm25_2026-04-28.json`.
+
+### Conclusion
+
+Persisted BM25 is functionally equivalent to the v1.10.4 dynamic baseline for
+the locked 13-case evaluation set and is safe to accept.
+
 ## v1.10.4 — Baseline and Regression Hardening
 
 Status: accepted.

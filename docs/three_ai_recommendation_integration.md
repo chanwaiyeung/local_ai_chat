@@ -160,6 +160,10 @@ phase:
   rollback on save failure.
 - tests cover schema v3 decode, migration flags, compact sparse index shape,
   indexed BM25 ranking, retrieval with persisted sparse index, and rollback.
+- baseline comparison snapshot:
+  `docs/eval_snapshots/eval_v2_persisted_bm25_2026-04-28.json`.
+- comparison result: v1.10.4 dynamic BM25 and v2.0 persisted BM25 both score
+  12 PASS / 1 PARTIAL / 0 FAIL, 96.2%, with no observed regression.
 
 ## Manual Baseline Status
 
@@ -181,8 +185,9 @@ older ingest/vector-store stubs.
 Code task, if manual UI is unavailable:
 
 ```text
-Implement VectorStore schema v3 + persisted BM25 index behind tests and a
-migration path.
+Start the next v2.0 phase only after preserving the v2.0 Phase 1 snapshot.
+Good candidates: RRF weight tuning behind before/after evaluation, sparseIndex
+size measurement, or optional sparseIndex compression.
 ```
 
 ## Verification Commands
