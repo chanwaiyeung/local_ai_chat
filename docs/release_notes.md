@@ -93,20 +93,17 @@ Status: release candidate.
 
 ### Quantitative Baseline
 
-Pending manual evaluation.
-
-The RAG Evaluation Panel exists, but the baseline snapshot has not been produced yet. Before final tagging, run the checklist in `docs/rag_evaluation_checklist.md` and export a JSON snapshot, then add a summary like:
+Superseded by the v1.10.4 quantitative baseline. The v1.10.4 snapshot is the
+current release baseline for future retrieval comparisons:
 
 ```text
 Embedding: bge-m3
 Retrieval mode: hybrid
 Documents: README.txt, DOSBox 0.74 Manual.txt
 Cases: 13
-Pass: <X>
-Fail: <Y>
-Unsure: <Z>
-Pass rate: <P>%
-Snapshot: docs/eval_snapshots/eval_YYYY-MM-DD_baseline_bgem3_hybrid.json
+Result: 12 PASS / 1 PARTIAL / 0 FAIL
+Pass rate: 96.2%
+Snapshot: docs/eval_snapshots/eval_baseline_v1.10_bgem3_hybrid_2026-04-28.json
 ```
 
 ## v1.9.0 RC

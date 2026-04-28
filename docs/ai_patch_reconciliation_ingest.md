@@ -115,13 +115,20 @@ Run from `C:\dev\local_ai_chat`:
 & "C:\src\flutter\flutter\bin\flutter.bat" build windows --release
 ```
 
-## Remaining Manual Gap
+## Baseline Lock
 
-The quantitative RAG baseline still requires manual Windows UI execution.
-Use:
+The v1.10.4 quantitative baseline snapshot now exists:
 
-- `docs/eval_baseline_input.md`
-- release app at `build\windows\x64\runner\Release\local_ai_chat.exe`
+- `docs/eval_snapshots/eval_baseline_v1.10_bgem3_hybrid_2026-04-28.json`
 
-Do not write pass-rate claims into release notes until the exported evaluation
-snapshot actually exists.
+Summary:
+
+- Embedding: `bge-m3`
+- Retrieval: `hybrid`
+- Cases: 13
+- Result: 12 PASS / 1 PARTIAL / 0 FAIL
+- Pass rate: 96.2%
+
+Future RAG retrieval changes should include a new before/after evaluation
+snapshot rather than replacing the current implementation with older
+temporary-directory stubs.

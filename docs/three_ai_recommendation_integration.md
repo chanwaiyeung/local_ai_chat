@@ -8,14 +8,24 @@ Claude, and Copilot-style reviews into one current engineering decision record.
 Latest verified state:
 
 - `flutter analyze`: pass
-- `flutter test -r expanded`: 73 passed
+- `flutter test -r expanded`: 79 passed
 - `flutter build windows --release`: pass
 
 Current stage:
 
 ```text
-v1.10.3 = retrieval hardening + activeDoc safety
+v1.10.4 = baseline and regression hardening release lock
 ```
+
+Quantitative baseline:
+
+- Snapshot: `docs/eval_snapshots/eval_baseline_v1.10_bgem3_hybrid_2026-04-28.json`
+- Source: user-provided baseline results
+- Embedding: `bge-m3`
+- Retrieval: `hybrid`
+- Cases: 13
+- Result: 12 PASS / 1 PARTIAL / 0 FAIL
+- Pass rate: 96.2%
 
 ## Integrated Decisions
 
@@ -136,35 +146,28 @@ These are good ideas, but should not be mixed into v1.10.x hardening:
 - multi-file batch ingest queue
 - quantitative dense vs sparse vs hybrid comparison
 
-## Manual Gap
+## Manual Baseline Status
 
-The only major unresolved item is process, not code:
-
-```text
-RAG quantitative baseline has not been manually run.
-```
-
-Use:
-
-- `docs/eval_baseline_input.md`
-- release app: `build\windows\x64\runner\Release\local_ai_chat.exe`
-
-Do not update release notes with pass-rate claims until an exported snapshot
-exists under `docs/eval_snapshots/`.
+The v1.10.4 quantitative baseline snapshot now exists under
+`docs/eval_snapshots/` and is summarized in `docs/release_notes.md`.
+Because the snapshot was provided from manual evaluation results, future AI
+agents should treat it as the v1.10.4 release baseline and avoid changing RAG
+retrieval behavior without producing a new before/after evaluation snapshot.
 
 ## Recommended Next Task For A New AI
 
 Safe task:
 
 ```text
-Run manual baseline evaluation, export JSON, then update release notes with
-actual pass/fail/unsure counts.
+Start v2.0 design work from the locked v1.10.4 baseline. Do not re-apply
+older ingest/vector-store stubs.
 ```
 
 Code task, if manual UI is unavailable:
 
 ```text
-Add tests only. Do not change RAG retrieval behavior without a baseline.
+Implement VectorStore schema v3 + persisted BM25 index behind tests and a
+migration path.
 ```
 
 ## Verification Commands
