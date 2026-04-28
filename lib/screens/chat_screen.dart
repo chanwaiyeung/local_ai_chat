@@ -572,6 +572,12 @@ class _ChatScreenState extends State<ChatScreen> {
     String docName, {
     int? initialChunkIndex,
   }) async {
+    if (initialChunkIndex != null) {
+      unawaited(DebugLogService.append(
+        'Citation tapped: doc=$docName chunkIndex=$initialChunkIndex',
+      ));
+    }
+
     final selected = await Navigator.of(context).push<List<String>>(
       MaterialPageRoute(
         builder: (_) => DocViewerScreen(
