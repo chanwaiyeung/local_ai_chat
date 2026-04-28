@@ -17,21 +17,20 @@ Status: evaluated, not merged to default.
 - Decision: do not change production default because improvement is below the
   2% threshold.
 
-### Phase 3B — RRF Weight Tuning Framework
+### Phase 3B — RRF Weight Tuning Evaluation
 
 Status: evaluated, not merged to default.
 
-- Added offline-only RRF grid search support.
-- Added `RrfTuner` for deterministic RRF config generation and report ranking.
-- Added opt-in integration report generation with `RUN_RRF_TUNING_INTEGRATION=1`.
-- Evaluated 36 RRF configurations.
+- Added offline RRF tuning runner (`test/eval/rrf_tuning_runner.dart`).
+- Grid search completed (rrfK, denseWeight, sparseWeight).
 - Best config:
-  `{ rankConstant: 60, semanticWeight: 0.3, keywordWeight: 0.7 }`.
-- Best result: 12 PASS / 1 PARTIAL / 0 FAIL, pass rate 96.2%.
+- rankConstant: 60
+- semanticWeight: 0.3
+- keywordWeight: 0.7
+- Result: 96.2% pass rate.
 - Difference vs baseline: 0%.
-- Decision: do not change production default because improvement is below the
-  2% threshold.
-- Report: `docs/eval_snapshots/rrf_tuning_report_2026-04-28.json`.
+- Regression: None.
+- Decision: Do not change production default.
 
 ### Phase 1.2 Automated Evaluation Runner
 
