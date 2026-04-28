@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:local_ai_chat/models/app_settings.dart';
 import 'package:local_ai_chat/services/embedding_service.dart';
 import 'package:local_ai_chat/services/rag_service.dart';
 import 'package:local_ai_chat/services/vector_store.dart';
@@ -97,6 +98,124 @@ void main() {
     expect(service.lastDiagnostics!.keywordHits.first.chunk.chunkIndex, 1);
   });
 
+  test('retrieval mode can force dense or sparse results', () async {
+    final store = VectorStore()
+      ..add(_chunk('Semantic-looking but irrelevant setup text.', index: 0))
+      ..add(_chunk('The customer refund policy is described here.', index: 1));
+
+    final service = RagService(
+      embedder: _FakeEmbeddingService(),
+      store: store,
+    );
+
+    final dense = await service.retrieve(
+      'refund policy',
+      k: 1,
+      mode: RetrievalMode.dense,
+    );
+    final sparse = await service.retrieve(
+      'refund policy',
+      k: 1,
+      mode: RetrievalMode.sparse,
+    );
+    final hybrid = await service.retrieve(
+      'refund policy',
+      k: 1,
+      mode: RetrievalMode.hybrid,
+    );
+
+    expect(dense.first.chunk.chunkIndex, 0);
+    expect(sparse.first.chunk.chunkIndex, 1);
+    expect(hybrid.first.chunk.chunkIndex, 1);
+  });
+
+  test('sparse retrieval does not call embedding service', () async {
+    final store = VectorStore()
+      ..add(_chunk('The refund policy allows a 14 day return.', index: 0));
+
+    final embedder = _FakeEmbeddingService();
+    final service = RagService(
+      embedder: embedder,
+      store: store,
+    );
+
+    final hits = await service.retrieve(
+      'refund policy',
+      k: 1,
+      mode: RetrievalMode.sparse,
+    );
+
+    expect(hits, hasLength(1));
+    expect(embedder.embedCalls, 0);
+  });
+
+  test('hybrid retrieval records semantic keyword and fused diagnostics',
+      () async {
+    final store = VectorStore()
+      ..add(_chunk('Semantic-looking but irrelevant setup text.', index: 0))
+      ..add(_chunk('The customer refund policy is described here.', index: 1));
+
+    final service = RagService(
+      embedder: _FakeEmbeddingService(),
+      store: store,
+    );
+
+    final hits = await service.retrieve(
+      'refund policy',
+      k: 1,
+      mode: RetrievalMode.hybrid,
+    );
+
+    expect(hits, hasLength(1));
+    expect(service.lastDiagnostics, isNotNull);
+    expect(service.lastDiagnostics!.semanticHits, isNotEmpty);
+    expect(service.lastDiagnostics!.keywordHits, isNotEmpty);
+    expect(service.lastDiagnostics!.fusedHits, isNotEmpty);
+  });
+
+  test('retrieve clears diagnostics when store is empty', () async {
+    final service = RagService(
+      embedder: _FakeEmbeddingService(),
+      store: VectorStore(),
+    );
+
+    service.lastDiagnostics = RagSearchDiagnostics(
+      semanticHits: [scored('old semantic')],
+      keywordHits: [scored('old keyword')],
+      fusedHits: [scored('old fused')],
+    );
+
+    final hits = await service.retrieve('anything');
+
+    expect(hits, isEmpty);
+    expect(service.lastDiagnostics, isNotNull);
+    expect(service.lastDiagnostics!.semanticHits, isEmpty);
+    expect(service.lastDiagnostics!.keywordHits, isEmpty);
+    expect(service.lastDiagnostics!.fusedHits, isEmpty);
+  });
+
+  test('retrieve does not call embedding when active doc has no chunks',
+      () async {
+    final store = VectorStore()..add(_chunk('Existing doc content.', index: 0));
+
+    final embedder = _FakeEmbeddingService();
+    final service = RagService(
+      embedder: embedder,
+      store: store,
+    );
+
+    final hits = await service.retrieve(
+      'content',
+      docName: 'missing.txt',
+      mode: RetrievalMode.hybrid,
+    );
+
+    expect(hits, isEmpty);
+    expect(embedder.embedCalls, 0);
+    expect(service.lastDiagnostics, isNotNull);
+    expect(service.lastDiagnostics!.fusedHits, isEmpty);
+  });
+
   test('ingest stops before writing chunks when cancelled', () async {
     final store = _InMemoryVectorStore();
     final service = RagService(
@@ -132,6 +251,51 @@ void main() {
     );
 
     expect(count, 0);
+    expect(store.length, 1);
+    expect(store.chunks.first.text, 'Existing content.');
+  });
+
+  test('ingestDetailed reports cancellation progress without replacing doc',
+      () async {
+    final store = _InMemoryVectorStore()
+      ..add(_chunk('Existing content.', index: 0));
+    final service = RagService(
+      embedder: _FakeEmbeddingService(),
+      store: store,
+    );
+
+    final result = await service.ingestDetailed(
+      docName: 'doc.pdf',
+      text: 'New first paragraph. New second paragraph.',
+      cancelCheck: () =>
+          service.embedder is _FakeEmbeddingService &&
+          (service.embedder as _FakeEmbeddingService).embedCalls >= 1,
+    );
+
+    expect(result.success, isFalse);
+    expect(result.cancelled, isTrue);
+    expect(result.chunksWritten, 0);
+    expect(store.length, 1);
+    expect(store.chunks.first.text, 'Existing content.');
+  });
+
+  test('ingestDetailed rolls back in-memory replacement when save fails',
+      () async {
+    final store = _FailingSaveVectorStore()
+      ..add(_chunk('Existing content.', index: 0));
+    final service = RagService(
+      embedder: _FakeEmbeddingService(),
+      store: store,
+    );
+
+    final result = await service.ingestDetailed(
+      docName: 'doc.pdf',
+      text: 'New first paragraph. New second paragraph.',
+    );
+
+    expect(result.success, isFalse);
+    expect(result.failed, isTrue);
+    expect(result.error, isA<StateError>());
     expect(store.length, 1);
     expect(store.chunks.first.text, 'Existing content.');
   });
@@ -222,9 +386,29 @@ class _FakeEmbeddingService extends EmbeddingService {
     embedCalls++;
     return const [1, 0, 0];
   }
+
+  @override
+  Future<List<List<double>>> embedAll(
+    List<String> texts, {
+    void Function(int done, int total)? onProgress,
+  }) async {
+    final out = <List<double>>[];
+    for (var i = 0; i < texts.length; i++) {
+      out.add(await embed(texts[i]));
+      onProgress?.call(i + 1, texts.length);
+    }
+    return out;
+  }
 }
 
 class _InMemoryVectorStore extends VectorStore {
   @override
   Future<void> save() async {}
+}
+
+class _FailingSaveVectorStore extends VectorStore {
+  @override
+  Future<void> save() async {
+    throw StateError('disk full');
+  }
 }

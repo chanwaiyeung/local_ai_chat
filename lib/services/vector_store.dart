@@ -85,6 +85,20 @@ class VectorStore {
   void removeDoc(String docName) =>
       _chunks.removeWhere((c) => c.docName == docName);
 
+  Future<void> replaceDoc(String docName, Iterable<DocChunk> chunks) async {
+    final previousChunks = List<DocChunk>.of(_chunks);
+    try {
+      removeDoc(docName);
+      addAll(chunks);
+      await save();
+    } catch (_) {
+      _chunks
+        ..clear()
+        ..addAll(previousChunks);
+      rethrow;
+    }
+  }
+
   /// 取某份文件嘅所有片段（按 chunkIndex 排序）— 文件預覽會用到
   List<DocChunk> chunksOf(String docName) {
     final list = _chunks.where((c) => c.docName == docName).toList()
@@ -152,9 +166,10 @@ class VectorStore {
         ..addAll(snapshot.chunks);
       if (snapshot.migratedFromLegacy) {
         await DebugLogService.append(
-          'VectorStore: loaded legacy vector_store.json format; '
-          'next save will write schemaVersion=2 chunks=${_chunks.length}',
+          'VectorStore: loaded legacy/malformed vector_store.json format; '
+          'normalizing schemaVersion=2 chunks=${_chunks.length}',
         );
+        await save();
       }
     } catch (_) {
       // 檔案損壞就當冇
@@ -203,9 +218,18 @@ class VectorStore {
   }
 
   static List<DocChunk> _decodeChunks(List list) {
-    return list
-        .whereType<Map<String, dynamic>>()
-        .map(DocChunk.fromJson)
-        .toList();
+    final chunks = <DocChunk>[];
+
+    for (final item in list) {
+      if (item is! Map) continue;
+
+      try {
+        chunks.add(DocChunk.fromJson(Map<String, dynamic>.from(item)));
+      } catch (_) {
+        // Skip malformed chunk instead of failing whole vector store load.
+      }
+    }
+
+    return chunks;
   }
 }

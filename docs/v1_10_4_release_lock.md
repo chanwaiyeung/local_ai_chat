@@ -1,0 +1,92 @@
+# v1.10.4 Release Lock Checklist
+
+Use this handoff for a new AI or engineer.
+
+## Current State
+
+```text
+Stage: v1.10.4 regression hardening
+Code validation: complete
+Quantitative baseline: complete from user-provided baseline snapshot
+Release tag: not yet created
+```
+
+## Verified Code Hardening
+
+- Active document safety regression tests added.
+- Diagnostics reset regression tests added.
+- DocViewer initial chunk highlight widget regression test added.
+- Library active document selection now runs activeDoc normalization.
+- `chat_screen.dart` refactor plan added for future behavior-preserving split.
+
+## Latest Automated Validation
+
+```text
+flutter analyze: pass, 0 issues
+flutter test -r expanded: 79 tests passed
+flutter build windows --release: success
+Release exe: build/windows/x64/runner/Release/local_ai_chat.exe
+```
+
+## Baseline Snapshot
+
+Baseline snapshot exists at:
+
+```text
+docs/eval_snapshots/eval_baseline_v1.10_bgem3_hybrid_2026-04-28.json
+```
+
+Baseline summary:
+
+```text
+Embedding: bge-m3
+Retrieval: hybrid
+Documents: README.txt + DOSBox 0.74 Manual.txt
+Cases: 13
+Result: 12 PASS / 1 PARTIAL / 0 FAIL
+Score: 12.5 / 13
+Pass rate: 96.2%
+```
+
+## Commit And Tag Gate
+
+After the baseline snapshot exists and release notes are updated:
+
+```powershell
+git add .
+git commit -m "Release v1.10.4 baseline and regression hardening"
+git tag v1.10.4
+```
+
+If a remote exists:
+
+```powershell
+git push origin HEAD
+git push origin v1.10.4
+```
+
+Report:
+
+```text
+Commit hash: git log -1 --oneline
+Tag exists: git tag --list v1.10.4
+Tests: 79 passed
+Release exe: build/windows/x64/runner/Release/local_ai_chat.exe
+Final git status: git status --short
+```
+
+## v2.0 Gate
+
+Only after v1.10.4 commit + tag:
+
+```powershell
+git checkout -b codex/v2.0-persisted-bm25
+```
+
+First v2.0 task:
+
+```text
+VectorStore schema v3 + persisted BM25 index
+```
+
+Do not start v2.0 before the v1.10.4 release lock is complete.

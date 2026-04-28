@@ -59,6 +59,56 @@ void main() {
     expect(snapshot.chunks, hasLength(1));
     expect(snapshot.chunks.first.chunkIndex, 3);
   });
+
+  test('decodeSnapshot skips malformed chunks without dropping valid chunks',
+      () {
+    final snapshot = VectorStore.decodeSnapshot({
+      'schemaVersion': 2,
+      'embeddingModel': 'bge-m3',
+      'chunks': [
+        {
+          'id': 'ok_0',
+          'docName': 'ok.txt',
+          'chunkIndex': 0,
+          'text': 'valid chunk',
+          'embedding': [1, 0, 0],
+        },
+        {
+          'id': 'bad_1',
+          'docName': 'bad.txt',
+          'text': 'broken chunk',
+          'embedding': [1, 0, 0],
+        },
+      ],
+    });
+
+    expect(snapshot.embeddingModel, 'bge-m3');
+    expect(snapshot.chunks, hasLength(1));
+    expect(snapshot.chunks.first.docName, 'ok.txt');
+  });
+
+  test('decodeSnapshot accepts chunks.value malformed PowerShell shape', () {
+    final snapshot = VectorStore.decodeSnapshot({
+      'schemaVersion': 2,
+      'embeddingModel': 'bge-m3',
+      'chunks': {
+        'value': [
+          {
+            'id': 'doc_0',
+            'docName': 'doc.txt',
+            'chunkIndex': 0,
+            'text': 'hello',
+            'embedding': [1, 0, 0],
+          },
+        ],
+        'Count': 1,
+      },
+    });
+
+    expect(snapshot.migratedFromLegacy, isTrue);
+    expect(snapshot.embeddingModel, 'bge-m3');
+    expect(snapshot.chunks, hasLength(1));
+  });
 }
 
 Map<String, dynamic> _chunkJson({required int chunkIndex}) {

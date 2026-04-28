@@ -6,6 +6,7 @@ void main() {
     final settings = AppSettings.fromJson({});
 
     expect(settings.embeddingModel, 'nomic-embed-text');
+    expect(settings.retrievalMode, RetrievalMode.hybrid);
   });
 
   test('trims embedding model', () {
@@ -19,9 +20,11 @@ void main() {
   test('serializes embedding model', () {
     const settings = AppSettings(
       embeddingModel: 'bge-m3',
+      retrievalMode: RetrievalMode.sparse,
     );
 
     expect(settings.toJson()['embeddingModel'], 'bge-m3');
+    expect(settings.toJson()['retrievalMode'], 'sparse');
   });
 
   test('copyWith updates embedding model', () {
@@ -31,8 +34,24 @@ void main() {
 
     final updated = settings.copyWith(
       embeddingModel: 'bge-m3',
+      retrievalMode: RetrievalMode.dense,
     );
 
     expect(updated.embeddingModel, 'bge-m3');
+    expect(updated.retrievalMode, RetrievalMode.dense);
+  });
+
+  test('deserializes retrieval mode with hybrid fallback', () {
+    final dense = AppSettings.fromJson({
+      'embeddingModel': 'bge-m3',
+      'retrievalMode': 'dense',
+    });
+    final invalid = AppSettings.fromJson({
+      'embeddingModel': 'bge-m3',
+      'retrievalMode': 'unknown',
+    });
+
+    expect(dense.retrievalMode, RetrievalMode.dense);
+    expect(invalid.retrievalMode, RetrievalMode.hybrid);
   });
 }

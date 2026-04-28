@@ -1,11 +1,30 @@
 // lib/services/rag_service.dart
 import 'dart:math' as math;
 
+import '../models/app_settings.dart';
 import 'embedding_service.dart';
 import 'vector_store.dart';
 
 typedef IngestProgress = void Function(int done, int total);
 typedef CancelCheck = bool Function();
+
+class IngestResult {
+  const IngestResult({
+    required this.success,
+    required this.chunksWritten,
+    this.cancelled = false,
+    this.error,
+    this.stackTrace,
+  });
+
+  final bool success;
+  final int chunksWritten;
+  final bool cancelled;
+  final Object? error;
+  final StackTrace? stackTrace;
+
+  bool get failed => !success && !cancelled;
+}
 
 class RagSearchDiagnostics {
   const RagSearchDiagnostics({
@@ -86,39 +105,98 @@ class RagService {
     int overlap = 120,
     IngestProgress? onProgress,
     CancelCheck? cancelCheck,
+    int batchSize = 1,
   }) async {
-    final pieces = chunk(text, maxChars: maxChars, overlap: overlap);
-    var done = 0;
-    var cancelled = false;
-    final nextChunks = <DocChunk>[];
-    for (var i = 0; i < pieces.length; i++) {
-      if (cancelCheck?.call() == true) {
-        cancelled = true;
-        break;
-      }
-      final emb = await embedder.embed(pieces[i]);
-      if (cancelCheck?.call() == true) {
-        cancelled = true;
-        break;
-      }
-      nextChunks.add(DocChunk(
-        id: '${docName}_$i',
-        docName: docName,
-        chunkIndex: i,
-        text: pieces[i],
-        embedding: emb,
-      ));
-      done++;
-      onProgress?.call(done, pieces.length);
+    final result = await ingestDetailed(
+      docName: docName,
+      text: text,
+      maxChars: maxChars,
+      overlap: overlap,
+      onProgress: onProgress,
+      cancelCheck: cancelCheck,
+      batchSize: batchSize,
+    );
+
+    if (result.failed) {
+      Error.throwWithStackTrace(result.error!, result.stackTrace!);
     }
 
-    if (cancelled) return 0;
+    return result.chunksWritten;
+  }
 
-    // 同名文件只在新索引完整建立後先剷走，避免取消時清掉舊索引。
-    store.removeDoc(docName);
-    store.addAll(nextChunks);
-    await store.save();
-    return done;
+  Future<IngestResult> ingestDetailed({
+    required String docName,
+    required String text,
+    int maxChars = 800,
+    int overlap = 120,
+    IngestProgress? onProgress,
+    CancelCheck? cancelCheck,
+    int batchSize = 1,
+  }) async {
+    final pieces = chunk(text, maxChars: maxChars, overlap: overlap);
+    if (pieces.isEmpty) {
+      return const IngestResult(success: true, chunksWritten: 0);
+    }
+
+    final safeBatchSize = math.max(1, batchSize);
+    var done = 0;
+    final nextChunks = <DocChunk>[];
+    try {
+      for (var i = 0; i < pieces.length; i += safeBatchSize) {
+        if (cancelCheck?.call() == true) {
+          return IngestResult(
+            success: false,
+            chunksWritten: done,
+            cancelled: true,
+          );
+        }
+
+        final end = math.min(i + safeBatchSize, pieces.length);
+        final batch = pieces.sublist(i, end);
+        final embeddings = await embedder.embedAll(batch);
+
+        if (cancelCheck?.call() == true) {
+          return IngestResult(
+            success: false,
+            chunksWritten: done,
+            cancelled: true,
+          );
+        }
+
+        for (var j = 0; j < batch.length; j++) {
+          final chunkIndex = i + j;
+          nextChunks.add(DocChunk(
+            id: '${docName}_$chunkIndex',
+            docName: docName,
+            chunkIndex: chunkIndex,
+            text: batch[j],
+            embedding: embeddings[j],
+          ));
+          done++;
+          onProgress?.call(done, pieces.length);
+        }
+      }
+
+      if (cancelCheck?.call() == true) {
+        return IngestResult(
+          success: false,
+          chunksWritten: done,
+          cancelled: true,
+        );
+      }
+
+      // 同名文件只在新索引完整建立後先剷走，避免取消時清掉舊索引。
+      await store.replaceDoc(docName, nextChunks);
+
+      return IngestResult(success: true, chunksWritten: done);
+    } catch (error, stackTrace) {
+      return IngestResult(
+        success: false,
+        chunksWritten: done,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   /// 為一條查詢取相關段落
@@ -127,28 +205,52 @@ class RagService {
     int k = 4,
     String? docName,
     double minScore = 0.0,
+    RetrievalMode mode = RetrievalMode.hybrid,
   }) async {
-    if (store.length == 0) return [];
-    final qv = await embedder.embed(query);
-    final candidateK = math.max(k, math.min(store.length, k * 8));
-    final semanticHits = store
-        .topK(qv, k: candidateK, docName: docName)
-        .where((s) => s.score >= minScore)
-        .toList();
-    final keywordHits = bm25Rank(query, _searchPool(docName), k: candidateK);
-    final fused = rrfFuse(
-      semanticHits: semanticHits,
-      keywordHits: keywordHits,
-      k: k,
+    lastDiagnostics = const RagSearchDiagnostics(
+      semanticHits: [],
+      keywordHits: [],
+      fusedHits: [],
     );
+
+    if (store.length == 0) return [];
+    final pool = _searchPool(docName);
+    if (pool.isEmpty) return [];
+
+    final candidateK = math.max(k, math.min(pool.length, k * 8));
+
+    final semanticHits = mode == RetrievalMode.sparse
+        ? <ScoredChunk>[]
+        : store
+            .topK(
+              await embedder.embed(query),
+              k: candidateK,
+              docName: docName,
+            )
+            .where((s) => s.score >= minScore)
+            .toList();
+
+    final keywordHits = mode == RetrievalMode.dense
+        ? <ScoredChunk>[]
+        : bm25Rank(query, pool, k: candidateK);
+
+    final finalHits = switch (mode) {
+      RetrievalMode.dense => semanticHits.take(k).toList(),
+      RetrievalMode.sparse => keywordHits.take(k).toList(),
+      RetrievalMode.hybrid => rrfFuse(
+          semanticHits: semanticHits,
+          keywordHits: keywordHits,
+          k: k,
+        ),
+    };
 
     lastDiagnostics = RagSearchDiagnostics(
       semanticHits: semanticHits.take(k).toList(),
       keywordHits: keywordHits.take(k).toList(),
-      fusedHits: fused,
+      fusedHits: finalHits,
     );
 
-    return fused;
+    return finalHits;
   }
 
   /// 粗略確認檢索結果至少有一個實詞對得上問題，避免低質量
@@ -316,6 +418,12 @@ class RagService {
       '中',
       '有',
       '沒有',
+      '呢個',
+      '嗰個',
+      '邊個',
+      '邊度',
+      '點樣',
+      '乜嘢',
       '文件',
       '是否',
       '的',

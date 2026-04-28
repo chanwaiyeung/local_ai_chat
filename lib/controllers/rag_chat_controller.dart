@@ -1,0 +1,41 @@
+import '../services/embedding_service.dart';
+import '../services/rag_service.dart';
+import '../services/vector_store.dart';
+
+class RagChatController {
+  RagChatController({
+    required this.store,
+    required String initialEmbeddingModel,
+  }) {
+    applyEmbeddingModel(initialEmbeddingModel);
+  }
+
+  final VectorStore store;
+
+  late EmbeddingService _embedder;
+  late RagService _rag;
+  late String _embeddingModel;
+
+  RagService get rag => _rag;
+  String get embeddingModel => _embeddingModel;
+
+  void applyEmbeddingModel(String model) {
+    _embeddingModel = model;
+    _embedder = EmbeddingService(model: model);
+    _rag = RagService(embedder: _embedder, store: store);
+  }
+
+  bool hasEmbeddingMismatch(String currentModel) {
+    final storeModel = store.embeddingModel;
+    return store.length > 0 && storeModel != currentModel;
+  }
+
+  Future<void> clearVectorStore() async {
+    store.clear();
+    await store.save();
+  }
+
+  bool isValidActiveDoc(String? activeDoc) {
+    return activeDoc == null || store.docNames.contains(activeDoc);
+  }
+}

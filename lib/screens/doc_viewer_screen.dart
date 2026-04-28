@@ -2,6 +2,8 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+
+import '../services/debug_log_service.dart';
 import '../services/vector_store.dart';
 
 /// 文件預覽：顯示某份文件嘅所有切塊，支援搜尋同剔選 chunk。
@@ -61,6 +63,11 @@ class _DocViewerScreenState extends State<DocViewerScreen> {
 
     final chunks = _chunks;
     if (chunks.indexWhere((chunk) => chunk.chunkIndex == index) < 0) {
+      await DebugLogService.append(
+        'DocViewer scroll: doc=${widget.docName} chunkIndex=$index '
+        'success=false reason=missing_chunk',
+        level: 'WARN',
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('找不到引用段落 #$index')),
@@ -76,6 +83,11 @@ class _DocViewerScreenState extends State<DocViewerScreen> {
 
     final ctx = _chunkKeys[index]?.currentContext;
     if (ctx == null) {
+      await DebugLogService.append(
+        'DocViewer scroll: doc=${widget.docName} chunkIndex=$index '
+        'success=false reason=no_context',
+        level: 'WARN',
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('無法定位引用段落 #$index')),
@@ -93,6 +105,9 @@ class _DocViewerScreenState extends State<DocViewerScreen> {
       duration: const Duration(milliseconds: 550),
       curve: Curves.easeInOut,
       alignment: 0.15,
+    );
+    await DebugLogService.append(
+      'DocViewer scroll: doc=${widget.docName} chunkIndex=$index success=true',
     );
 
     await Future.delayed(const Duration(seconds: 2));

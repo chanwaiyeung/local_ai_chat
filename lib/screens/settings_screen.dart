@@ -25,6 +25,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   late bool _useCustom;
   late String _selectedPreset;
+  late RetrievalMode _retrievalMode;
 
   bool _loadingModels = true;
   Set<String> _installedModels = const {};
@@ -43,6 +44,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _selectedPreset = AppSettings.defaultEmbeddingModel;
       _customController.text = current;
     }
+    _retrievalMode = widget.currentSettings.retrievalMode;
 
     _loadInstalledModels();
   }
@@ -84,7 +86,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
 
     Navigator.of(context).pop(
-      AppSettings(embeddingModel: model),
+      AppSettings(
+        embeddingModel: model,
+        retrievalMode: _retrievalMode,
+      ),
     );
   }
 
@@ -139,6 +144,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 4),
             Text(
               '目前使用：${widget.currentSettings.embeddingModel}',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            Text(
+              '檢索模式：${widget.currentSettings.retrievalMode.name}',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 12),
@@ -202,6 +211,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: 12),
                     const Text(
                       '注意：更換 embedding model 會清空目前 vector store，請重新匯入文件。',
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Retrieval Mode',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<RetrievalMode>(
+                      initialValue: _retrievalMode,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: '檢索模式',
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: RetrievalMode.dense,
+                          child: Text('Dense：向量語意搜尋'),
+                        ),
+                        DropdownMenuItem(
+                          value: RetrievalMode.sparse,
+                          child: Text('Sparse：BM25 關鍵字搜尋'),
+                        ),
+                        DropdownMenuItem(
+                          value: RetrievalMode.hybrid,
+                          child: Text('Hybrid：Dense + BM25 + RRF'),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() => _retrievalMode = value);
+                      },
                     ),
                     const SizedBox(height: 16),
                     FilledButton.icon(

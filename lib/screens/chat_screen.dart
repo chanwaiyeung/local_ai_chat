@@ -5,24 +5,28 @@ import 'dart:io' show File;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
 
+import '../controllers/rag_chat_controller.dart';
 import '../models/app_settings.dart';
 import '../models/message.dart';
 import '../services/app_settings_service.dart';
 import '../services/chat_session_service.dart';
 import '../services/debug_log_service.dart';
-import '../services/embedding_service.dart';
 import '../services/export_service.dart';
 import '../services/ollama_service.dart';
 import '../services/pdf_service.dart';
 import '../services/rag_service.dart';
 import '../services/speech_service.dart';
 import '../services/vector_store.dart';
-import '../utils/citation_parser.dart';
-import '../widgets/code_block.dart';
+import '../widgets/chat_app_bar.dart';
+import '../widgets/chat_app_bar_actions.dart';
+import '../widgets/chat_ingest_status_bar.dart';
+import '../widgets/chat_input_bar.dart';
+import '../widgets/chat_library_sheet.dart';
+import '../widgets/chat_message_bubble.dart';
+import '../widgets/chat_session_drawer.dart';
+import '../widgets/rag_context_banner.dart';
 import 'doc_viewer_screen.dart';
 import 'rag_evaluation_screen.dart';
 import 'settings_screen.dart';
@@ -56,8 +60,8 @@ class _ChatScreenState extends State<ChatScreen> {
   late final SaveDebouncer _saveDebouncer;
 
   late OllamaService _ollama;
-  late EmbeddingService _embedder;
-  late RagService _rag;
+  late RagChatController _ragController;
+  RagService get _rag => _ragController.rag;
   final _settingsService = AppSettingsService();
 
   final _sessions = <ChatSession>[];
@@ -85,8 +89,10 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     _ollama = OllamaService(model: _model);
-    _embedder = EmbeddingService(model: _embedModel);
-    _rag = RagService(embedder: _embedder, store: _store);
+    _ragController = RagChatController(
+      store: _store,
+      initialEmbeddingModel: _embedModel,
+    );
     _saveDebouncer = SaveDebouncer(
       delay: const Duration(milliseconds: 600),
       onSave: ChatSessionService.saveSession,
@@ -99,16 +105,18 @@ class _ChatScreenState extends State<ChatScreen> {
     await _store.load();
     await _clearVectorStoreIfEmbeddingMismatch();
     await _loadSessions();
+    if (_normalizeActiveDoc()) {
+      _scheduleSave();
+    }
     await _loadModels();
     if (mounted) setState(() {});
   }
 
   Future<void> _clearVectorStoreIfEmbeddingMismatch() async {
     final storeModel = _store.embeddingModel;
-    if (_store.length == 0 || storeModel == _embedModel) return;
+    if (!_ragController.hasEmbeddingMismatch(_embedModel)) return;
 
-    _store.clear();
-    await _store.save();
+    await _ragController.clearVectorStore();
     await DebugLogService.append(
       'Embedding mismatch detected: store=$storeModel current=$_embedModel '
       'storeCleared=true',
@@ -127,8 +135,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _applyEmbeddingModel(String model) {
     _embedModel = model;
-    _embedder = EmbeddingService(model: model);
-    _rag = RagService(embedder: _embedder, store: _store);
+    _ragController.applyEmbeddingModel(model);
     unawaited(DebugLogService.append(
       'Embedding apply: embeddingModel=$model',
     ));
@@ -188,6 +195,18 @@ class _ChatScreenState extends State<ChatScreen> {
         content: '你好！👋\n你想聊些什麼？😊',
       ));
     }
+  }
+
+  bool _normalizeActiveDoc() {
+    final active = _activeDoc;
+    if (_ragController.isValidActiveDoc(active)) return false;
+
+    _activeDoc = null;
+    unawaited(DebugLogService.append(
+      'Active doc cleared: missingDoc=$active reason=not_in_vector_store',
+      level: 'WARN',
+    ));
+    return true;
   }
 
   void _syncToCurrentSession() {
@@ -485,9 +504,10 @@ class _ChatScreenState extends State<ChatScreen> {
           _ingestProgressText = '正在用 $_embedModel 切塊並建立向量索引…';
         });
       }
-      final count = await _rag.ingest(
+      final ingestResult = await _rag.ingestDetailed(
         docName: name,
         text: text,
+        batchSize: 4,
         onProgress: (done, total) {
           if (_cancelIngest) return;
           if (mounted) {
@@ -499,10 +519,21 @@ class _ChatScreenState extends State<ChatScreen> {
         },
         cancelCheck: () => _cancelIngest,
       );
-      if (_cancelIngest) {
+      if (_cancelIngest || ingestResult.cancelled) {
         _snack('已取消匯入「$name」');
         return;
       }
+      if (ingestResult.failed) {
+        await DebugLogService.append(
+          'RAG ingest: failed doc=$name embeddingModel=$_embedModel '
+          'chunksWritten=${ingestResult.chunksWritten} '
+          'error=${ingestResult.error}\n${ingestResult.stackTrace}',
+          level: 'ERROR',
+        );
+        _snack('建立向量索引失敗：${ingestResult.error}', showLogAction: true);
+        return;
+      }
+      final count = ingestResult.chunksWritten;
       _store.setEmbeddingModel(_embedModel);
       await _store.save();
       final ingestMs = DateTime.now().difference(ingestStarted).inMilliseconds;
@@ -562,7 +593,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _store.removeDoc(name);
     await _store.save();
     setState(() {
-      if (_activeDoc == name) _activeDoc = null;
+      _normalizeActiveDoc();
     });
     _scheduleSave();
     _snack('已移除：$name');
@@ -572,11 +603,12 @@ class _ChatScreenState extends State<ChatScreen> {
     String docName, {
     int? initialChunkIndex,
   }) async {
-    if (initialChunkIndex != null) {
-      unawaited(DebugLogService.append(
-        'Citation tapped: doc=$docName chunkIndex=$initialChunkIndex',
-      ));
-    }
+    final isCitationOpen = initialChunkIndex != null;
+    unawaited(DebugLogService.append(
+      isCitationOpen
+          ? 'Citation tapped: doc=$docName chunkIndex=$initialChunkIndex'
+          : 'DocViewer opened: doc=$docName source=library',
+    ));
 
     final selected = await Navigator.of(context).push<List<String>>(
       MaterialPageRoute(
@@ -614,6 +646,24 @@ class _ChatScreenState extends State<ChatScreen> {
     await _handleProposedSettings(proposed);
   }
 
+  void _openRagEvaluation() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => RagEvaluationScreen(
+          chatModel: _model,
+          embeddingModel: _embedModel,
+        ),
+      ),
+    );
+  }
+
+  void _setChatModel(String model) {
+    setState(() {
+      _model = model;
+      _ollama = OllamaService(model: model);
+    });
+  }
+
   Future<void> _handleProposedSettings(AppSettings proposed) async {
     final oldModel = _settings.embeddingModel;
     final newModel = proposed.embeddingModel;
@@ -623,6 +673,11 @@ class _ChatScreenState extends State<ChatScreen> {
         _settings = proposed;
         _applyEmbeddingModel(newModel);
       });
+      await _settingsService.save(proposed);
+      await DebugLogService.append(
+        'Settings changed: embeddingModel=$newModel '
+        'retrievalMode=${proposed.retrievalMode.name}',
+      );
       return;
     }
 
@@ -785,10 +840,16 @@ class _ChatScreenState extends State<ChatScreen> {
         final retrieveStarted = DateTime.now();
         final retrieveStartLog =
             'RAG retrieve: start query="$text" embeddingModel=$_embedModel '
+            'mode=${_settings.retrievalMode.name} '
             'doc=${_activeDoc ?? '(all)'} topK=$_topK chunks=${_store.length}';
         debugPrint(retrieveStartLog);
         unawaited(DebugLogService.append(retrieveStartLog));
-        hits = await _rag.retrieve(text, k: _topK, docName: _activeDoc);
+        hits = await _rag.retrieve(
+          text,
+          k: _topK,
+          docName: _activeDoc,
+          mode: _settings.retrievalMode,
+        );
         final retrieveMs =
             DateTime.now().difference(retrieveStarted).inMilliseconds;
         final scores = hits
@@ -824,6 +885,7 @@ class _ChatScreenState extends State<ChatScreen> {
       } catch (e, st) {
         await DebugLogService.append(
           'RAG retrieve failed: query="$text" embeddingModel=$_embedModel '
+          'mode=${_settings.retrievalMode.name} '
           'doc=${_activeDoc ?? '(all)'} error=$e\n$st',
           level: 'ERROR',
         );
@@ -921,165 +983,23 @@ class _ChatScreenState extends State<ChatScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (_) {
-        final docs = _store.docNames;
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.library_books),
-                  title: const Text('文件庫'),
-                  subtitle: Text('共 ${docs.length} 份文件 / ${_store.length} 個片段'),
-                ),
-                const Divider(height: 1),
-                if (docs.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Text('尚未載入任何文件'),
-                  ),
-                ...docs.map((d) => ListTile(
-                      leading: Icon(
-                        _activeDoc == d
-                            ? Icons.radio_button_checked
-                            : Icons.radio_button_off,
-                      ),
-                      title: Text(d),
-                      subtitle: Text('${_store.chunksOf(d).length} 個片段 — 點擊預覽'),
-                      onTap: () {
-                        Navigator.pop(context);
-                        _openDocViewer(d);
-                      },
-                      onLongPress: () {
-                        setState(() => _activeDoc = _activeDoc == d ? null : d);
-                        _scheduleSave();
-                        Navigator.pop(context);
-                        _snack(_activeDoc == null
-                            ? '已重設：搜尋全部文件'
-                            : '只搜尋：$_activeDoc');
-                      },
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: () async {
-                          Navigator.pop(context);
-                          await _removeDoc(d);
-                        },
-                      ),
-                    )),
-                if (docs.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Wrap(
-                      spacing: 8,
-                      children: [
-                        FilterChip(
-                          label: Text(_activeDoc == null ? '搜全部 ✓' : '搜全部'),
-                          selected: _activeDoc == null,
-                          onSelected: (_) {
-                            setState(() => _activeDoc = null);
-                            _scheduleSave();
-                            Navigator.pop(context);
-                          },
-                        ),
-                        InputChip(
-                          avatar: const Icon(Icons.tune, size: 18),
-                          label: Text('Top-K：$_topK'),
-                          onPressed: () async {
-                            final v = await showDialog<int>(
-                              context: context,
-                              builder: (_) => _TopKPicker(current: _topK),
-                            );
-                            if (v != null) setState(() => _topK = v);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                const SizedBox(height: 8),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildDrawer(BuildContext context) {
-    return Drawer(
-      child: SafeArea(
-        child: Column(
-          children: [
-            const ListTile(
-              leading: Icon(Icons.forum),
-              title: Text('AI 語言圖書館'),
-              subtitle: Text('多對話 sessions'),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: FilledButton.icon(
-                onPressed: _newSession,
-                icon: const Icon(Icons.add),
-                label: const Text('新對話'),
-              ),
-            ),
-            const Divider(),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _sessions.length,
-                itemBuilder: (context, index) {
-                  final session = _sessions[index];
-                  final selected = session.id == _currentSession?.id;
-                  return ListTile(
-                    selected: selected,
-                    leading: const Icon(Icons.chat_bubble_outline),
-                    title: Text(
-                      session.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    subtitle: Text(
-                      '${session.messages.where((m) => m.role != Role.system).length} 則訊息 · ${_formatTime(session.updatedAt)}',
-                    ),
-                    onTap: () => _switchSession(session),
-                    trailing: PopupMenuButton<String>(
-                      onSelected: (value) {
-                        switch (value) {
-                          case 'rename':
-                            _renameSession(session);
-                            break;
-                          case 'delete':
-                            _deleteSession(session);
-                            break;
-                        }
-                      },
-                      itemBuilder: (context) => const [
-                        PopupMenuItem(
-                          value: 'rename',
-                          child: Text('重新命名'),
-                        ),
-                        PopupMenuItem(
-                          value: 'delete',
-                          child: Text('刪除'),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+      builder: (_) => ChatLibrarySheet(
+        store: _store,
+        activeDoc: _activeDoc,
+        topK: _topK,
+        onOpenDoc: (docName) => unawaited(_openDocViewer(docName)),
+        onRemoveDoc: _removeDoc,
+        onSetActiveDoc: (docName) {
+          setState(() {
+            _activeDoc = docName;
+            _normalizeActiveDoc();
+          });
+          _scheduleSave();
+          _snack(docName == null ? '已重設：搜尋全部文件' : '只搜尋：$docName');
+        },
+        onTopKChanged: (topK) => setState(() => _topK = topK),
       ),
     );
-  }
-
-  String _formatTime(DateTime time) {
-    final local = time.toLocal();
-    return '${local.month}/${local.day} '
-        '${local.hour.toString().padLeft(2, '0')}:'
-        '${local.minute.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -1088,167 +1008,49 @@ class _ChatScreenState extends State<ChatScreen> {
     final title = _currentSession?.title ?? 'AI 語音圖書館';
 
     return Scaffold(
-      drawer: _buildDrawer(context),
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-            if (_activeDoc != null)
-              Text(
-                '正在問：$_activeDoc',
-                style: Theme.of(context).textTheme.labelSmall,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-          ],
+      drawer: ChatSessionDrawer(
+        sessions: _sessions,
+        currentSession: _currentSession,
+        onNewSession: _newSession,
+        onSwitchSession: _switchSession,
+        onRenameSession: _renameSession,
+        onDeleteSession: _deleteSession,
+      ),
+      appBar: ChatAppBar(
+        title: title,
+        activeDoc: _activeDoc,
+        availableModels: _availableModels,
+        model: _model,
+        busy: _busy,
+        ragEnabled: _ragEnabled,
+        actions: ChatAppBarActions(
+          onOpenEvaluation: _openRagEvaluation,
+          onOpenSettings: _openSettings,
+          onModelChanged: _setChatModel,
+          onToggleRag: () => setState(() => _ragEnabled = !_ragEnabled),
+          onLoadModels: _loadModels,
+          onOpenLibrary: _openLibrary,
+          onExportChat: _exportChat,
+          onClearChat: _clearChat,
+          onShowSessionsPath: _showSessionsPath,
+          onShowDebugLogPath: _showDebugLogPath,
         ),
-        actions: [
-          IconButton(
-            tooltip: 'RAG 評測記錄',
-            icon: const Icon(Icons.fact_check_outlined),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => RagEvaluationScreen(
-                    chatModel: _model,
-                    embeddingModel: _embedModel,
-                  ),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            tooltip: '設定',
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: _openSettings,
-          ),
-          if (_availableModels.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: DropdownButton<String>(
-                value: _model,
-                underline: const SizedBox(),
-                items: _availableModels
-                    .map((m) => DropdownMenuItem(value: m, child: Text(m)))
-                    .toList(),
-                onChanged: (v) {
-                  if (v == null) return;
-                  setState(() {
-                    _model = v;
-                    _ollama = OllamaService(model: v);
-                  });
-                },
-              ),
-            ),
-          IconButton(
-            icon: Icon(
-                _ragEnabled ? Icons.auto_awesome : Icons.auto_awesome_outlined),
-            tooltip: _ragEnabled ? '停用 RAG' : '啟用 RAG',
-            onPressed: () => setState(() => _ragEnabled = !_ragEnabled),
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: '重整模型列表',
-            onPressed: _busy ? null : _loadModels,
-          ),
-          IconButton(
-            icon: const Icon(Icons.library_books),
-            tooltip: '文件庫',
-            onPressed: _openLibrary,
-          ),
-          PopupMenuButton<String>(
-            onSelected: (k) {
-              switch (k) {
-                case 'export':
-                  _exportChat();
-                  break;
-                case 'clear':
-                  _clearChat();
-                  break;
-                case 'path':
-                  _showSessionsPath();
-                  break;
-                case 'debugLog':
-                  _showDebugLogPath();
-                  break;
-                case 'settings':
-                  _openSettings();
-                  break;
-              }
-            },
-            itemBuilder: (_) => const [
-              PopupMenuItem(
-                value: 'settings',
-                child: ListTile(
-                  leading: Icon(Icons.settings_outlined),
-                  title: Text('Embedding 設定'),
-                ),
-              ),
-              PopupMenuItem(
-                value: 'export',
-                child: ListTile(
-                  leading: Icon(Icons.ios_share),
-                  title: Text('匯出對話為 Markdown'),
-                ),
-              ),
-              PopupMenuItem(
-                value: 'clear',
-                child: ListTile(
-                  leading: Icon(Icons.delete_sweep),
-                  title: Text('清除目前對話'),
-                ),
-              ),
-              PopupMenuItem(
-                value: 'path',
-                child: ListTile(
-                  leading: Icon(Icons.folder),
-                  title: Text('Session 儲存位置'),
-                ),
-              ),
-              PopupMenuItem(
-                value: 'debugLog',
-                child: ListTile(
-                  leading: Icon(Icons.article_outlined),
-                  title: Text('RAG debug log 位置'),
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
       body: Column(
         children: [
-          if (_store.length > 0)
-            Container(
-              width: double.infinity,
-              color: Theme.of(context).colorScheme.secondaryContainer,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  const Icon(Icons.menu_book, size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _activeDoc != null
-                          ? '正在問：$_activeDoc'
-                          : '搜尋全部文件（${_store.docNames.length} 份）',
-                    ),
-                  ),
-                  Text(
-                    'Top-$_topK · $_embedModel',
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                ],
-              ),
-            ),
+          RagContextBanner(
+            hasChunks: _store.length > 0,
+            docCount: _store.docNames.length,
+            activeDoc: _activeDoc,
+            topK: _topK,
+            embeddingModel: _embedModel,
+          ),
           Expanded(
             child: ListView.builder(
               controller: _scroll,
               padding: const EdgeInsets.all(12),
               itemCount: visible.length,
-              itemBuilder: (_, i) => _Bubble(
+              itemBuilder: (_, i) => ChatMessageBubble(
                 message: visible[i],
                 onCitationTap: (docName, chunkIndex) async {
                   await _openDocViewer(
@@ -1259,77 +1061,20 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
           ),
-          if (_ingesting)
-            Material(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                child: Row(
-                  children: [
-                    const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        _ingestProgressText ?? '正在建立向量索引…',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    TextButton.icon(
-                      onPressed: _cancelIngest ? null : _cancelCurrentIngest,
-                      icon: const Icon(Icons.close),
-                      label: const Text('取消'),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else if (_busy)
-            const LinearProgressIndicator(minHeight: 2),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.attach_file),
-                    tooltip: '載入 PDF / TXT',
-                    onPressed: _busy ? null : _pickFile,
-                  ),
-                  IconButton(
-                    icon: Icon(_listening ? Icons.mic : Icons.mic_none),
-                    color: _listening ? Colors.red : null,
-                    tooltip: '語音輸入',
-                    onPressed: _busy ? null : _toggleMic,
-                  ),
-                  Expanded(
-                    child: TextField(
-                      controller: _input,
-                      minLines: 1,
-                      maxLines: 5,
-                      textInputAction: TextInputAction.send,
-                      onSubmitted: (_) => _send(),
-                      decoration: const InputDecoration(
-                        hintText: '輸入訊息…',
-                        border: OutlineInputBorder(),
-                        isDense: true,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  FilledButton.icon(
-                    onPressed: _busy ? null : _send,
-                    icon: const Icon(Icons.send),
-                    label: const Text('傳送'),
-                  ),
-                ],
-              ),
-            ),
+          ChatIngestStatusBar(
+            ingesting: _ingesting,
+            busy: _busy,
+            cancelIngest: _cancelIngest,
+            progressText: _ingestProgressText,
+            onCancel: _cancelCurrentIngest,
+          ),
+          ChatInputBar(
+            controller: _input,
+            busy: _busy,
+            listening: _listening,
+            onPickFile: _pickFile,
+            onToggleMic: _toggleMic,
+            onSend: _send,
           ),
         ],
       ),
@@ -1345,136 +1090,5 @@ class _ChatScreenState extends State<ChatScreen> {
     _scroll.dispose();
     _speech.cancel();
     super.dispose();
-  }
-}
-
-class _Bubble extends StatelessWidget {
-  final ChatMessage message;
-  final Future<void> Function(String docName, int? chunkIndex)? onCitationTap;
-
-  const _Bubble({
-    required this.message,
-    this.onCitationTap,
-  });
-
-  void _showSnack(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
-
-  Future<void> _handleLink(BuildContext context, String? href) async {
-    if (href == null || href.trim().isEmpty) {
-      _showSnack(context, '連結格式錯誤');
-      return;
-    }
-
-    final normalizedHref = href.trim().replaceAll('&amp;', '&');
-    final uri = Uri.tryParse(normalizedHref);
-    if (uri == null) {
-      _showSnack(context, '連結格式錯誤');
-      return;
-    }
-
-    if (uri.scheme == 'chunk') {
-      final target = parseCitationLinkTarget(normalizedHref);
-      if (target == null) {
-        _showSnack(context, '引用缺少文件名稱');
-        return;
-      }
-
-      await onCitationTap?.call(target.docName, target.chunkIndex);
-      return;
-    }
-
-    const allowedSchemes = {'http', 'https', 'mailto', 'tel'};
-    if (!allowedSchemes.contains(uri.scheme)) {
-      _showSnack(context, '不支援的連結類型');
-      return;
-    }
-
-    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!launched && context.mounted) {
-      _showSnack(context, '無法開啟連結');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isUser = message.role == Role.user;
-    final cs = Theme.of(context).colorScheme;
-    final codeBlockBuilder = CodeBlockBuilder();
-    return Align(
-      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.78,
-        ),
-        decoration: BoxDecoration(
-          color: isUser ? cs.primaryContainer : cs.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: MarkdownBody(
-          data: message.content.isEmpty ? '…' : message.content,
-          selectable: true,
-          builders: {
-            'pre': codeBlockBuilder,
-            'code': codeBlockBuilder,
-          },
-          onTapLink: (text, href, title) {
-            unawaited(_handleLink(context, href));
-          },
-          styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-            p: TextStyle(
-              color: isUser ? cs.onPrimaryContainer : cs.onSurface,
-              height: 1.4,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _TopKPicker extends StatefulWidget {
-  final int current;
-  const _TopKPicker({required this.current});
-  @override
-  State<_TopKPicker> createState() => _TopKPickerState();
-}
-
-class _TopKPickerState extends State<_TopKPicker> {
-  late int v = widget.current;
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('檢索片段數量 (Top-K)'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Slider(
-            value: v.toDouble(),
-            min: 1,
-            max: 10,
-            divisions: 9,
-            label: '$v',
-            onChanged: (x) => setState(() => v = x.round()),
-          ),
-          Text('每次檢索取最相關嘅 $v 個片段'),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, v),
-          child: const Text('確定'),
-        ),
-      ],
-    );
   }
 }
