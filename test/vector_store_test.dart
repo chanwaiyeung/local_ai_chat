@@ -16,6 +16,46 @@ void main() {
     expect(snapshot.chunks.first.docName, 'README.txt');
     expect(snapshot.chunks.first.chunkIndex, 0);
     expect(snapshot.migratedFromLegacy, isFalse);
+    expect(snapshot.needsSparseIndexMigration, isTrue);
+  });
+
+  test('decodes schema v3 snapshot with sparse index', () {
+    final snapshot = VectorStore.decodeSnapshot({
+      'schemaVersion': 3,
+      'embeddingModel': 'bge-m3',
+      'chunks': [
+        _chunkJson(chunkIndex: 0),
+      ],
+      'sparseIndex': {
+        'docCount': 1,
+        'avgDocLength': 2.0,
+        'chunkLengths': {'README.txt::0': 2},
+        'documentFrequency': {'demo': 1},
+        'termFrequency': {
+          'README.txt::0': {'demo': 1, 'chunk': 1},
+        },
+      },
+    });
+
+    expect(snapshot.embeddingModel, 'bge-m3');
+    expect(snapshot.chunks, hasLength(1));
+    expect(snapshot.sparseIndex, isNotNull);
+    expect(snapshot.sparseIndex!.docCount, 1);
+    expect(snapshot.sparseIndex!.termFrequency['README.txt::0']!['demo'], 1);
+    expect(snapshot.needsSparseIndexMigration, isFalse);
+  });
+
+  test('decodes schema v3 without sparse index as migration candidate', () {
+    final snapshot = VectorStore.decodeSnapshot({
+      'schemaVersion': 3,
+      'embeddingModel': 'bge-m3',
+      'chunks': [
+        _chunkJson(chunkIndex: 0),
+      ],
+    });
+
+    expect(snapshot.sparseIndex, isNull);
+    expect(snapshot.needsSparseIndexMigration, isTrue);
   });
 
   test('decodes legacy list snapshot', () {
@@ -108,6 +148,28 @@ void main() {
     expect(snapshot.migratedFromLegacy, isTrue);
     expect(snapshot.embeddingModel, 'bge-m3');
     expect(snapshot.chunks, hasLength(1));
+  });
+
+  test('clear resets sparse index', () {
+    final store = VectorStore()
+      ..add(DocChunk.fromJson(_chunkJson(chunkIndex: 0)))
+      ..setSparseIndex(
+        const SparseIndexSnapshot(
+          docCount: 1,
+          avgDocLength: 1,
+          chunkLengths: {'README.txt::0': 1},
+          documentFrequency: {'demo': 1},
+          termFrequency: {
+            'README.txt::0': {'demo': 1},
+          },
+        ),
+      );
+
+    store.clear();
+
+    expect(store.length, 0);
+    expect(store.embeddingModel, isNull);
+    expect(store.sparseIndex, isNull);
   });
 }
 

@@ -79,6 +79,68 @@ void main() {
     expect(ranked.first.score, greaterThan(ranked.last.score));
   });
 
+  test('buildSparseIndex stores compact term frequencies', () {
+    final chunks = [
+      _chunk('refund refund policy', index: 0),
+      _chunk('setup guide', index: 1),
+    ];
+
+    final index = RagService.buildSparseIndex(chunks);
+
+    expect(index.docCount, 2);
+    expect(index.chunkLengths['doc_0'], 3);
+    expect(index.documentFrequency['refund'], 1);
+    expect(index.termFrequency['doc_0']!['refund'], 2);
+    expect(index.termFrequency['doc_1']!['setup'], 1);
+  });
+
+  test('bm25RankWithIndex matches runtime bm25 ranking', () {
+    final chunks = [
+      _chunk('General introduction only.', index: 0),
+      _chunk('The refund policy allows a 14 day return window.', index: 1),
+      _chunk('Build instructions and setup.', index: 2),
+    ];
+    final index = RagService.buildSparseIndex(chunks);
+
+    final runtime = RagService.bm25Rank('refund policy', chunks, k: 2);
+    final persisted = RagService.bm25RankWithIndex(
+      'refund policy',
+      chunks,
+      index,
+      k: 2,
+    );
+
+    expect(
+      persisted.map((hit) => hit.chunk.id),
+      runtime.map((hit) => hit.chunk.id),
+    );
+    expect(persisted.first.score, closeTo(runtime.first.score, 0.000001));
+  });
+
+  test('sparse retrieval uses persisted sparse index when available', () async {
+    final store = VectorStore()
+      ..add(_chunk('Semantic-looking but irrelevant setup text.', index: 0))
+      ..add(_chunk('The customer refund policy is described here.', index: 1));
+    store.setSparseIndex(RagService.buildSparseIndex(store.chunks));
+
+    final embedder = _FakeEmbeddingService();
+    final service = RagService(
+      embedder: embedder,
+      store: store,
+    );
+
+    final hits = await service.retrieve(
+      'refund policy',
+      k: 1,
+      mode: RetrievalMode.sparse,
+    );
+
+    expect(hits, hasLength(1));
+    expect(hits.first.chunk.chunkIndex, 1);
+    expect(embedder.embedCalls, 0);
+    expect(service.lastDiagnostics!.keywordHits.first.chunk.chunkIndex, 1);
+  });
+
   test('rrf fusion can recover keyword hit missed by semantic top result',
       () async {
     final store = VectorStore()
@@ -283,6 +345,7 @@ void main() {
       () async {
     final store = _FailingSaveVectorStore()
       ..add(_chunk('Existing content.', index: 0));
+    store.setSparseIndex(RagService.buildSparseIndex(store.chunks));
     final service = RagService(
       embedder: _FakeEmbeddingService(),
       store: store,
@@ -298,6 +361,8 @@ void main() {
     expect(result.error, isA<StateError>());
     expect(store.length, 1);
     expect(store.chunks.first.text, 'Existing content.');
+    expect(store.sparseIndex, isNotNull);
+    expect(store.sparseIndex!.termFrequency, contains('doc_0'));
   });
 
   test('grounding rejects absent facts', () {

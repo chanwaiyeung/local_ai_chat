@@ -102,7 +102,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _bootstrap() async {
     await _loadSettings();
-    await _store.load();
+    await _store.load(sparseIndexBuilder: RagService.buildSparseIndex);
     await _clearVectorStoreIfEmbeddingMismatch();
     await _loadSessions();
     if (_normalizeActiveDoc()) {

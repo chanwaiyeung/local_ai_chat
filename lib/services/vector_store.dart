@@ -48,15 +48,70 @@ class ScoredChunk {
   ScoredChunk(this.chunk, this.score);
 }
 
+class SparseIndexSnapshot {
+  const SparseIndexSnapshot({
+    required this.docCount,
+    required this.avgDocLength,
+    required this.chunkLengths,
+    required this.documentFrequency,
+    required this.termFrequency,
+  });
+
+  final int docCount;
+  final double avgDocLength;
+  final Map<String, int> chunkLengths;
+  final Map<String, int> documentFrequency;
+  final Map<String, Map<String, int>> termFrequency;
+
+  Map<String, dynamic> toJson() => {
+        'docCount': docCount,
+        'avgDocLength': avgDocLength,
+        'chunkLengths': chunkLengths,
+        'documentFrequency': documentFrequency,
+        'termFrequency': termFrequency,
+      };
+
+  factory SparseIndexSnapshot.fromJson(Map<String, dynamic> json) {
+    return SparseIndexSnapshot(
+      docCount: (json['docCount'] as num?)?.toInt() ?? 0,
+      avgDocLength: (json['avgDocLength'] as num?)?.toDouble() ?? 0.0,
+      chunkLengths: _intMap(json['chunkLengths']),
+      documentFrequency: _intMap(json['documentFrequency']),
+      termFrequency: (json['termFrequency'] as Map? ?? {}).map(
+        (key, value) => MapEntry(
+          key.toString(),
+          _intMap(value),
+        ),
+      ),
+    );
+  }
+
+  static Map<String, int> _intMap(Object? raw) {
+    return (raw as Map? ?? {}).map(
+      (key, value) => MapEntry(
+        key.toString(),
+        (value as num?)?.toInt() ?? 0,
+      ),
+    );
+  }
+}
+
+typedef SparseIndexBuilder = SparseIndexSnapshot Function(
+    List<DocChunk> chunks);
+
 class VectorStoreSnapshot {
   const VectorStoreSnapshot({
     required this.embeddingModel,
     required this.chunks,
+    this.sparseIndex,
+    this.needsSparseIndexMigration = false,
     this.migratedFromLegacy = false,
   });
 
   final String? embeddingModel;
   final List<DocChunk> chunks;
+  final SparseIndexSnapshot? sparseIndex;
+  final bool needsSparseIndexMigration;
   final bool migratedFromLegacy;
 }
 
@@ -64,37 +119,61 @@ class VectorStoreSnapshot {
 class VectorStore {
   final List<DocChunk> _chunks = [];
   String? _embeddingModel;
+  SparseIndexSnapshot? _sparseIndex;
 
   int get length => _chunks.length;
   String? get embeddingModel => _embeddingModel;
+  SparseIndexSnapshot? get sparseIndex => _sparseIndex;
   List<String> get docNames => _chunks.map((c) => c.docName).toSet().toList();
   List<DocChunk> get chunks => List.unmodifiable(_chunks);
 
-  void add(DocChunk c) => _chunks.add(c);
-  void addAll(Iterable<DocChunk> cs) => _chunks.addAll(cs);
+  void add(DocChunk c) {
+    _chunks.add(c);
+    _sparseIndex = null;
+  }
+
+  void addAll(Iterable<DocChunk> cs) {
+    _chunks.addAll(cs);
+    _sparseIndex = null;
+  }
 
   void clear() {
     _chunks.clear();
     _embeddingModel = null;
+    _sparseIndex = null;
   }
 
   void setEmbeddingModel(String model) {
     _embeddingModel = model;
   }
 
-  void removeDoc(String docName) =>
-      _chunks.removeWhere((c) => c.docName == docName);
+  void setSparseIndex(SparseIndexSnapshot? index) {
+    _sparseIndex = index;
+  }
 
-  Future<void> replaceDoc(String docName, Iterable<DocChunk> chunks) async {
+  void removeDoc(String docName) {
+    _chunks.removeWhere((c) => c.docName == docName);
+    _sparseIndex = null;
+  }
+
+  Future<void> replaceDoc(
+    String docName,
+    Iterable<DocChunk> chunks, {
+    SparseIndexSnapshot? sparseIndex,
+  }) async {
     final previousChunks = List<DocChunk>.of(_chunks);
+    final previousSparseIndex = _sparseIndex;
     try {
-      removeDoc(docName);
-      addAll(chunks);
+      _chunks
+        ..removeWhere((c) => c.docName == docName)
+        ..addAll(chunks);
+      _sparseIndex = sparseIndex;
       await save();
     } catch (_) {
       _chunks
         ..clear()
         ..addAll(previousChunks);
+      _sparseIndex = previousSparseIndex;
       rethrow;
     }
   }
@@ -142,9 +221,10 @@ class VectorStore {
     final f = await _file();
     final tmp = File('${f.path}.tmp');
     final payload = {
-      'schemaVersion': 2,
+      'schemaVersion': 3,
       'embeddingModel': _embeddingModel,
       'chunks': _chunks.map((c) => c.toJson()).toList(),
+      if (_sparseIndex != null) 'sparseIndex': _sparseIndex!.toJson(),
     };
     final data = jsonEncode(payload);
     await tmp.writeAsString(data, flush: true);
@@ -154,7 +234,7 @@ class VectorStore {
     await tmp.rename(f.path);
   }
 
-  Future<void> load() async {
+  Future<void> load({SparseIndexBuilder? sparseIndexBuilder}) async {
     final f = await _file();
     if (!await f.exists()) return;
     try {
@@ -164,10 +244,17 @@ class VectorStore {
       _chunks
         ..clear()
         ..addAll(snapshot.chunks);
-      if (snapshot.migratedFromLegacy) {
+      _sparseIndex = snapshot.sparseIndex;
+      if (snapshot.needsSparseIndexMigration &&
+          _chunks.isNotEmpty &&
+          sparseIndexBuilder != null) {
+        _sparseIndex = sparseIndexBuilder(chunks);
+      }
+      if (snapshot.migratedFromLegacy || snapshot.needsSparseIndexMigration) {
         await DebugLogService.append(
-          'VectorStore: loaded legacy/malformed vector_store.json format; '
-          'normalizing schemaVersion=2 chunks=${_chunks.length}',
+          'VectorStore: migrated vector_store.json to schemaVersion=3 '
+          'chunks=${_chunks.length} '
+          'sparseIndex=${_sparseIndex == null ? 'missing' : 'present'}',
         );
         await save();
       }
@@ -179,6 +266,8 @@ class VectorStore {
   static VectorStoreSnapshot decodeSnapshot(Object? decoded) {
     final List list;
     final String? embeddingModel;
+    SparseIndexSnapshot? sparseIndex;
+    var needsSparseIndexMigration = false;
 
     if (decoded is List) {
       embeddingModel = null;
@@ -186,10 +275,17 @@ class VectorStore {
       return VectorStoreSnapshot(
         embeddingModel: embeddingModel,
         chunks: _decodeChunks(list),
+        needsSparseIndexMigration: true,
         migratedFromLegacy: true,
       );
     } else if (decoded is Map<String, dynamic>) {
       embeddingModel = decoded['embeddingModel'] as String?;
+      final schemaVersion = (decoded['schemaVersion'] as num?)?.toInt() ?? 1;
+      final rawSparseIndex = decoded['sparseIndex'];
+      if (rawSparseIndex is Map<String, dynamic>) {
+        sparseIndex = SparseIndexSnapshot.fromJson(rawSparseIndex);
+      }
+      needsSparseIndexMigration = schemaVersion < 3 || sparseIndex == null;
       final rawChunks = decoded['chunks'];
       if (rawChunks is List) {
         list = rawChunks;
@@ -199,6 +295,8 @@ class VectorStore {
         return VectorStoreSnapshot(
           embeddingModel: embeddingModel,
           chunks: _decodeChunks(list),
+          sparseIndex: sparseIndex,
+          needsSparseIndexMigration: true,
           migratedFromLegacy: true,
         );
       } else {
@@ -214,6 +312,8 @@ class VectorStore {
     return VectorStoreSnapshot(
       embeddingModel: embeddingModel,
       chunks: _decodeChunks(list),
+      sparseIndex: sparseIndex,
+      needsSparseIndexMigration: needsSparseIndexMigration,
     );
   }
 

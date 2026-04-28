@@ -186,7 +186,16 @@ class RagService {
       }
 
       // 同名文件只在新索引完整建立後先剷走，避免取消時清掉舊索引。
-      await store.replaceDoc(docName, nextChunks);
+      final indexedChunks = [
+        for (final chunk in store.chunks)
+          if (chunk.docName != docName) chunk,
+        ...nextChunks,
+      ];
+      await store.replaceDoc(
+        docName,
+        nextChunks,
+        sparseIndex: buildSparseIndex(indexedChunks),
+      );
 
       return IngestResult(success: true, chunksWritten: done);
     } catch (error, stackTrace) {
@@ -232,7 +241,14 @@ class RagService {
 
     final keywordHits = mode == RetrievalMode.dense
         ? <ScoredChunk>[]
-        : bm25Rank(query, pool, k: candidateK);
+        : store.sparseIndex == null
+            ? bm25Rank(query, pool, k: candidateK)
+            : bm25RankWithIndex(
+                query,
+                pool,
+                store.sparseIndex!,
+                k: candidateK,
+              );
 
     final finalHits = switch (mode) {
       RetrievalMode.dense => semanticHits.take(k).toList(),
@@ -333,6 +349,95 @@ class RagService {
     return scored.take(k).toList();
   }
 
+  static SparseIndexSnapshot buildSparseIndex(List<DocChunk> chunks) {
+    if (chunks.isEmpty) {
+      return const SparseIndexSnapshot(
+        docCount: 0,
+        avgDocLength: 0,
+        chunkLengths: {},
+        documentFrequency: {},
+        termFrequency: {},
+      );
+    }
+
+    final chunkLengths = <String, int>{};
+    final documentFrequency = <String, int>{};
+    final termFrequency = <String, Map<String, int>>{};
+    var totalLength = 0;
+
+    for (final chunk in chunks) {
+      final terms = keywordTerms(chunk.text);
+      chunkLengths[chunk.id] = terms.length;
+      totalLength += terms.length;
+
+      final frequencies = <String, int>{};
+      for (final term in terms) {
+        frequencies[term] = (frequencies[term] ?? 0) + 1;
+      }
+      for (final term in frequencies.keys) {
+        documentFrequency[term] = (documentFrequency[term] ?? 0) + 1;
+      }
+      termFrequency[chunk.id] = frequencies;
+    }
+
+    return SparseIndexSnapshot(
+      docCount: chunks.length,
+      avgDocLength: totalLength / chunks.length,
+      chunkLengths: chunkLengths,
+      documentFrequency: documentFrequency,
+      termFrequency: termFrequency,
+    );
+  }
+
+  static List<ScoredChunk> bm25RankWithIndex(
+    String query,
+    List<DocChunk> chunks,
+    SparseIndexSnapshot index, {
+    int k = 8,
+  }) {
+    if (chunks.isEmpty || index.docCount == 0) return [];
+
+    final queryTerms = expandedKeywords(keywords(query)).toList();
+    if (queryTerms.isEmpty) return [];
+
+    const k1 = 1.2;
+    const b = 0.75;
+    final idfByTerm = <String, double>{};
+    for (final term in queryTerms) {
+      final df = index.documentFrequency[term] ?? 0;
+      if (df == 0) continue;
+      idfByTerm[term] = math.log(
+        1 + (index.docCount - df + 0.5) / (df + 0.5),
+      );
+    }
+    if (idfByTerm.isEmpty) return [];
+
+    final avgDocLength = math.max(index.avgDocLength, 1);
+    final scored = <ScoredChunk>[];
+    for (final chunk in chunks) {
+      final frequencies = index.termFrequency[chunk.id];
+      final length = index.chunkLengths[chunk.id];
+      if (frequencies == null || length == null || length == 0) continue;
+
+      var score = 0.0;
+      for (final term in queryTerms) {
+        final tf = frequencies[term] ?? 0;
+        final idf = idfByTerm[term];
+        if (tf == 0 || idf == null) continue;
+
+        final lengthNorm = 1 - b + b * (length / avgDocLength);
+        score += idf * ((tf * (k1 + 1)) / (tf + k1 * lengthNorm));
+      }
+
+      if (score > 0) {
+        scored.add(ScoredChunk(chunk, score));
+      }
+    }
+
+    scored.sort((a, b) => b.score.compareTo(a.score));
+    return scored.take(k).toList();
+  }
+
   static List<ScoredChunk> rrfFuse({
     required List<ScoredChunk> semanticHits,
     required List<ScoredChunk> keywordHits,
@@ -422,8 +527,12 @@ class RagService {
       '嗰個',
       '邊個',
       '邊度',
+      '點解',
       '點樣',
+      '幾多',
       '乜嘢',
+      '而家',
+      '之後',
       '文件',
       '是否',
       '的',

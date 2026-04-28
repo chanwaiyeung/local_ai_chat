@@ -138,13 +138,28 @@ regress production behavior.
 
 These are good ideas, but should not be mixed into v1.10.x hardening:
 
-- persisted BM25 index / schema v3
 - per-chunk embedding model metadata
 - configurable BM25 / RRF weights
 - domain-specific synonym config
 - reranker support
 - multi-file batch ingest queue
 - quantitative dense vs sparse vs hybrid comparison
+
+### v2.0 Phase 1 Implemented
+
+Persisted BM25 index / schema v3 has now been implemented as the first v2.0
+phase:
+
+- `VectorStore` writes schema v3 with an optional compact `sparseIndex`.
+- schema v2 and legacy snapshots are migration candidates and can be rebuilt
+  into schema v3 during load.
+- `RagService` can build a persisted sparse index and rank with precomputed
+  term/document statistics.
+- retrieval falls back to runtime BM25 when no persisted sparse index exists.
+- ingest commits replacement chunks and the rebuilt sparse index together, with
+  rollback on save failure.
+- tests cover schema v3 decode, migration flags, compact sparse index shape,
+  indexed BM25 ranking, retrieval with persisted sparse index, and rollback.
 
 ## Manual Baseline Status
 
