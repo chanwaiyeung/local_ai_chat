@@ -37,6 +37,7 @@ migrate_working_dir/
 /*.png
 /rag_citation_test*.pdf
 /lib_backup/
+/*_current.txt
 
 # Symbolication related
 app.*.symbols

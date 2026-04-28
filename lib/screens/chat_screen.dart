@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/app_settings.dart';
@@ -397,13 +398,33 @@ class _ChatScreenState extends State<ChatScreen> {
         }
       });
     } catch (e) {
+      await DebugLogService.append(
+        'Ollama model list failed: error=$e',
+        level: 'ERROR',
+      );
       _snack('連接 Ollama 失敗：$e\n請確認已執行 `ollama serve`');
     }
   }
 
-  void _snack(String msg) {
+  void _snack(String msg, {bool showLogAction = false}) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        action: showLogAction
+            ? SnackBarAction(
+                label: '複製 log 路徑',
+                onPressed: () => unawaited(_copyDebugLogPath()),
+              )
+            : null,
+      ),
+    );
+  }
+
+  Future<void> _copyDebugLogPath() async {
+    final file = await DebugLogService.logFile();
+    await Clipboard.setData(ClipboardData(text: file.path));
+    _snack('已複製 debug log 路徑');
   }
 
   Future<void> _pickFile() async {
@@ -509,13 +530,14 @@ class _ChatScreenState extends State<ChatScreen> {
         'error=$e',
         level: 'WARN',
       );
-      _snack('處理超時，請再試一次或使用較小檔案。');
-    } catch (e) {
+      _snack('處理超時，請再試一次或使用較小檔案。', showLogAction: true);
+    } catch (e, st) {
       await DebugLogService.append(
-        'RAG ingest: failed doc=$name embeddingModel=$_embedModel error=$e',
+        'RAG ingest: failed doc=$name embeddingModel=$_embedModel '
+        'error=$e\n$st',
         level: 'ERROR',
       );
-      _snack('讀取失敗：$e');
+      _snack('讀取失敗：$e', showLogAction: true);
     } finally {
       if (mounted) {
         setState(() {
@@ -664,9 +686,19 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       );
     } catch (e) {
+      await DebugLogService.append(
+        'Settings save failed: error=$e',
+        level: 'ERROR',
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('設定儲存失敗：$e')),
+        SnackBar(
+          content: Text('設定儲存失敗：$e'),
+          action: SnackBarAction(
+            label: '複製 log 路徑',
+            onPressed: () => unawaited(_copyDebugLogPath()),
+          ),
+        ),
       );
     }
   }
@@ -686,6 +718,10 @@ class _ChatScreenState extends State<ChatScreen> {
       );
       setState(() => _listening = true);
     } catch (e) {
+      await DebugLogService.append(
+        'Speech input failed: error=$e',
+        level: 'WARN',
+      );
       final msg = e.toString().toLowerCase();
       if (msg.contains('missingplugin') ||
           msg.contains('unimplemented') ||
@@ -694,7 +730,7 @@ class _ChatScreenState extends State<ChatScreen> {
             '請喺 Windows 設定 → 時間和語言 → 語音 中開啟「線上語音辨識」，\n'
             '或者直接用鍵盤輸入。');
       } else {
-        _snack('語音失敗：$e');
+        _snack('語音失敗：$e', showLogAction: true);
       }
     }
   }
@@ -708,8 +744,12 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       final path = await ExportService.saveAs(messages: _messages);
       if (path != null) _snack('已匯出：$path');
-    } catch (e) {
-      _snack('匯出失敗：$e');
+    } catch (e, st) {
+      await DebugLogService.append(
+        'Chat export failed: error=$e\n$st',
+        level: 'ERROR',
+      );
+      _snack('匯出失敗：$e', showLogAction: true);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -775,8 +815,13 @@ class _ChatScreenState extends State<ChatScreen> {
             content: RagService.buildContext(hits),
           ));
         }
-      } catch (e) {
-        _snack('檢索失敗（將直接問模型）：$e');
+      } catch (e, st) {
+        await DebugLogService.append(
+          'RAG retrieve failed: query="$text" embeddingModel=$_embedModel '
+          'doc=${_activeDoc ?? '(all)'} error=$e\n$st',
+          level: 'ERROR',
+        );
+        _snack('檢索失敗（將直接問模型）：$e', showLogAction: true);
       }
     }
 
@@ -818,11 +863,16 @@ class _ChatScreenState extends State<ChatScreen> {
         });
         await _saveNow();
       }
-    } catch (e) {
+    } catch (e, st) {
+      await DebugLogService.append(
+        'Ollama chat stream failed: model=$_model error=$e\n$st',
+        level: 'ERROR',
+      );
       setState(() {
         _messages[_messages.length - 1] =
             ChatMessage(role: Role.assistant, content: '出錯：$e');
       });
+      _snack('模型回覆失敗，詳情已寫入 debug log。', showLogAction: true);
     } finally {
       if (mounted) setState(() => _busy = false);
       await _saveNow();
