@@ -4,6 +4,19 @@
 
 Status: accepted.
 
+### Phase 3A — Query Expansion Experimental Evaluation
+
+Status: evaluated, not merged to default.
+
+- Added experimental sparse-query expansion behind `useQueryExpansion`.
+- Deterministic synonym-based query expansion for BM25.
+- Production default remains unchanged: `useQueryExpansion = false`.
+- Result: 12 PASS / 1 PARTIAL / 0 FAIL, pass rate 96.2%.
+- Difference vs baseline: 0%.
+- Regression: none.
+- Decision: do not change production default because improvement is below the
+  2% threshold.
+
 ### Phase 1.2 Automated Evaluation Runner
 
 - Added reusable 13-case RAG evaluation cases under `test/eval/`.

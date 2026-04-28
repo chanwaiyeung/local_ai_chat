@@ -194,6 +194,16 @@ Good candidates: RRF weight tuning behind before/after evaluation, sparseIndex
 size measurement, or optional sparseIndex compression.
 ```
 
+## Phase 3A Archived Experiment
+
+Query expansion was evaluated as an opt-in experiment only. It adds
+deterministic BM25 sparse-query expansion behind `useQueryExpansion`, while the
+production default remains unchanged.
+
+- Result: 12 PASS / 1 PARTIAL / 0 FAIL, 96.2%.
+- Difference from baseline: 0%.
+- Decision: archive the experiment and do not enable it by default.
+
 ## Verification Commands
 
 Run from `C:\dev\local_ai_chat`:

@@ -46,6 +46,8 @@ void main() {
         embeddingModel: 'bge-m3',
         retrievalMode: RetrievalMode.hybrid,
         topK: 4,
+        useQueryExpansion:
+            Platform.environment['RAG_EVAL_USE_QUERY_EXPANSION'] == '1',
       );
 
       final outputPath = Platform.environment['RAG_EVAL_OUTPUT'] ??
@@ -61,6 +63,7 @@ void main() {
             'DOSBox 0.74 Manual.txt',
           ],
           'comparisonTarget': 'v1.10.4',
+          'productionDefaultChanged': false,
         },
       );
 

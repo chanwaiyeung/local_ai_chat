@@ -65,6 +65,7 @@ class RagEvalRunner {
     required this.retrievalMode,
     this.topK = 4,
     this.cases = ragEvalCases,
+    this.useQueryExpansion = false,
   });
 
   final RagService rag;
@@ -72,6 +73,7 @@ class RagEvalRunner {
   final RetrievalMode retrievalMode;
   final int topK;
   final List<RagEvalCase> cases;
+  final bool useQueryExpansion;
 
   Future<Map<String, Object?>> run({
     required String version,
@@ -120,6 +122,7 @@ class RagEvalRunner {
       'embeddingModel': embeddingModel,
       'retrievalMode': retrievalMode.name,
       'topK': topK,
+      'useQueryExpansion': useQueryExpansion,
       if (baselineSnapshot != null) 'baselineSnapshot': baselineSnapshot,
       ...extraMetadata,
       'summary': {
@@ -148,6 +151,7 @@ class RagEvalRunner {
         evalCase.question,
         k: topK,
         mode: retrievalMode,
+        useQueryExpansion: useQueryExpansion,
       );
     }
 
@@ -155,11 +159,13 @@ class RagEvalRunner {
       evalCase.question,
       k: topK,
       mode: retrievalMode,
+      useQueryExpansion: useQueryExpansion,
     );
     return rag.retrieve(
       evalCase.followUpQuestion,
       k: topK,
       mode: retrievalMode,
+      useQueryExpansion: useQueryExpansion,
     );
   }
 

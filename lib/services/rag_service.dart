@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import '../models/app_settings.dart';
 import 'embedding_service.dart';
+import 'query_expansion.dart';
 import 'vector_store.dart';
 
 typedef IngestProgress = void Function(int done, int total);
@@ -49,6 +50,18 @@ class RagSearchDiagnostics {
         'keyword=[${format(keywordHits)}] '
         'final=[${format(fusedHits)}]';
   }
+}
+
+class RrfConfig {
+  const RrfConfig({
+    this.rankConstant = 60,
+    this.semanticWeight = 1.0,
+    this.keywordWeight = 1.3,
+  });
+
+  final int rankConstant;
+  final double semanticWeight;
+  final double keywordWeight;
 }
 
 class RagService {
@@ -215,6 +228,8 @@ class RagService {
     String? docName,
     double minScore = 0.0,
     RetrievalMode mode = RetrievalMode.hybrid,
+    RrfConfig rrfConfig = const RrfConfig(),
+    bool useQueryExpansion = false,
   }) async {
     lastDiagnostics = const RagSearchDiagnostics(
       semanticHits: [],
@@ -239,12 +254,16 @@ class RagService {
             .where((s) => s.score >= minScore)
             .toList();
 
+    final sparseQuery = mode == RetrievalMode.hybrid && useQueryExpansion
+        ? const QueryExpansion().expandSparseQuery(query)
+        : query;
+
     final keywordHits = mode == RetrievalMode.dense
         ? <ScoredChunk>[]
         : store.sparseIndex == null
-            ? bm25Rank(query, pool, k: candidateK)
+            ? bm25Rank(sparseQuery, pool, k: candidateK)
             : bm25RankWithIndex(
-                query,
+                sparseQuery,
                 pool,
                 store.sparseIndex!,
                 k: candidateK,
@@ -257,6 +276,9 @@ class RagService {
           semanticHits: semanticHits,
           keywordHits: keywordHits,
           k: k,
+          rankConstant: rrfConfig.rankConstant,
+          semanticWeight: rrfConfig.semanticWeight,
+          keywordWeight: rrfConfig.keywordWeight,
         ),
     };
 
