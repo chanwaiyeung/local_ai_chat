@@ -1,7 +1,11 @@
 {
   "version": "v2.0-phase3b-rrf-tuning",
-  "date": "2026-04-28T22:35:21.754818Z",
-  "source": "automated_rrf_tuning_grid",
+  "date": "2026-04-28T22:44:55.226806Z",
+  "source": "rrf_tuning_runner",
+  "embeddingModel": "bge-m3",
+  "retrievalMode": "hybrid",
+  "topK": 4,
+  "baselineSnapshot": "docs/eval_snapshots/eval_v2_persisted_bm25_auto_2026-04-28.json",
   "baselinePassRate": 0.962,
   "best": {
     "config": {
@@ -17,6 +21,7 @@
   },
   "improvementVsBaseline": 0.0,
   "recommendProductionDefaultChange": false,
+  "productionDefaultChanged": false,
   "gridSize": 36,
   "results": [
     {

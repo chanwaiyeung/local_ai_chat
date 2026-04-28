@@ -1,0 +1,68 @@
+@Tags(['integration'])
+library;
+
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:local_ai_chat/services/embedding_service.dart';
+import 'package:local_ai_chat/services/rag_service.dart';
+import 'package:local_ai_chat/services/vector_store.dart';
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+
+import '../eval/rrf_tuning_runner.dart';
+
+void main() {
+  final runIntegration =
+      Platform.environment['RUN_RRF_TUNING_INTEGRATION'] == '1';
+
+  test(
+    'runs offline RRF tuning grid through shared runner',
+    () async {
+      final appSupportDir = Platform.environment['RAG_EVAL_APP_SUPPORT_DIR'];
+      if (appSupportDir != null && appSupportDir.isNotEmpty) {
+        PathProviderPlatform.instance =
+            _FakePathProviderPlatform(appSupportDir);
+      }
+
+      final store = VectorStore();
+      await store.load(sparseIndexBuilder: RagService.buildSparseIndex);
+      expect(store.length, greaterThan(0));
+
+      final rag = RagService(
+        embedder: EmbeddingService(model: 'bge-m3'),
+        store: store,
+      );
+      final outputPath = Platform.environment['RRF_TUNING_OUTPUT'] ??
+          'docs/eval_snapshots/rrf_tuning_report_2026-04-28.json';
+      final report = await const RrfTuningRunner().runTuning(
+        rag: rag,
+        outputPath: outputPath,
+        baselineSnapshot:
+            'docs/eval_snapshots/eval_v2_persisted_bm25_auto_2026-04-28.json',
+      );
+
+      final best = report['best'] as Map<String, Object?>;
+
+      expect(report['gridSize'], 36);
+      expect((best['passRate'] as num).toDouble(), greaterThanOrEqualTo(0.962));
+      expect(report['recommendProductionDefaultChange'], isFalse);
+      expect(report['productionDefaultChanged'], isFalse);
+      expect(File(outputPath).existsSync(), isTrue);
+    },
+    skip: runIntegration
+        ? false
+        : 'Set RUN_RRF_TUNING_INTEGRATION=1 to run the offline grid.',
+    timeout: const Timeout(Duration(minutes: 20)),
+  );
+}
+
+class _FakePathProviderPlatform extends PathProviderPlatform
+    with MockPlatformInterfaceMixin {
+  _FakePathProviderPlatform(this.path);
+
+  final String path;
+
+  @override
+  Future<String?> getApplicationSupportPath() async => path;
+}
