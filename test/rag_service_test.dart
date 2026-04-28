@@ -61,6 +61,23 @@ void main() {
     expect(hits.first.score, greaterThan(0));
   });
 
+  test('bm25 expands query terms without expanding document terms', () {
+    final chunks = [
+      _chunk('The risk is noted once.', index: 0),
+      _chunk('The risk danger issue problem limitation are all listed.',
+          index: 1),
+    ];
+
+    final ranked = RagService.bm25Rank(
+      'danger issue problem limitation',
+      chunks,
+      k: 2,
+    );
+
+    expect(ranked.first.chunk.chunkIndex, 1);
+    expect(ranked.first.score, greaterThan(ranked.last.score));
+  });
+
   test('rrf fusion can recover keyword hit missed by semantic top result',
       () async {
     final store = VectorStore()

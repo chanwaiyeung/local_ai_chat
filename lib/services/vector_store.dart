@@ -4,6 +4,8 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'package:path_provider/path_provider.dart';
 
+import 'debug_log_service.dart';
+
 /// 一段被切碎並向量化嘅文字片段
 class DocChunk {
   final String id;
@@ -50,10 +52,12 @@ class VectorStoreSnapshot {
   const VectorStoreSnapshot({
     required this.embeddingModel,
     required this.chunks,
+    this.migratedFromLegacy = false,
   });
 
   final String? embeddingModel;
   final List<DocChunk> chunks;
+  final bool migratedFromLegacy;
 }
 
 /// 簡單嘅 in-memory 向量庫，支援 JSON 持久化
@@ -146,6 +150,12 @@ class VectorStore {
       _chunks
         ..clear()
         ..addAll(snapshot.chunks);
+      if (snapshot.migratedFromLegacy) {
+        await DebugLogService.append(
+          'VectorStore: loaded legacy vector_store.json format; '
+          'next save will write schemaVersion=2 chunks=${_chunks.length}',
+        );
+      }
     } catch (_) {
       // 檔案損壞就當冇
     }
@@ -158,6 +168,11 @@ class VectorStore {
     if (decoded is List) {
       embeddingModel = null;
       list = decoded;
+      return VectorStoreSnapshot(
+        embeddingModel: embeddingModel,
+        chunks: _decodeChunks(list),
+        migratedFromLegacy: true,
+      );
     } else if (decoded is Map<String, dynamic>) {
       embeddingModel = decoded['embeddingModel'] as String?;
       final rawChunks = decoded['chunks'];
@@ -166,6 +181,11 @@ class VectorStore {
       } else if (rawChunks is Map<String, dynamic> &&
           rawChunks['value'] is List) {
         list = rawChunks['value'] as List;
+        return VectorStoreSnapshot(
+          embeddingModel: embeddingModel,
+          chunks: _decodeChunks(list),
+          migratedFromLegacy: true,
+        );
       } else {
         list = const [];
       }
@@ -178,10 +198,14 @@ class VectorStore {
 
     return VectorStoreSnapshot(
       embeddingModel: embeddingModel,
-      chunks: list
-          .whereType<Map<String, dynamic>>()
-          .map(DocChunk.fromJson)
-          .toList(),
+      chunks: _decodeChunks(list),
     );
+  }
+
+  static List<DocChunk> _decodeChunks(List list) {
+    return list
+        .whereType<Map<String, dynamic>>()
+        .map(DocChunk.fromJson)
+        .toList();
   }
 }

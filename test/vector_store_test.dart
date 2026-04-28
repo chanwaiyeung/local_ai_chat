@@ -15,6 +15,7 @@ void main() {
     expect(snapshot.chunks, hasLength(1));
     expect(snapshot.chunks.first.docName, 'README.txt');
     expect(snapshot.chunks.first.chunkIndex, 0);
+    expect(snapshot.migratedFromLegacy, isFalse);
   });
 
   test('decodes legacy list snapshot', () {
@@ -25,6 +26,7 @@ void main() {
     expect(snapshot.embeddingModel, isNull);
     expect(snapshot.chunks, hasLength(1));
     expect(snapshot.chunks.first.chunkIndex, 1);
+    expect(snapshot.migratedFromLegacy, isTrue);
   });
 
   test('decodes accidental chunks value wrapper', () {
@@ -41,6 +43,7 @@ void main() {
     expect(snapshot.embeddingModel, 'bge-m3');
     expect(snapshot.chunks, hasLength(1));
     expect(snapshot.chunks.first.chunkIndex, 2);
+    expect(snapshot.migratedFromLegacy, isTrue);
   });
 
   test('ignores malformed chunk entries', () {

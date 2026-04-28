@@ -206,7 +206,7 @@ class RagService {
       final terms = tokenized[i];
       if (terms.isEmpty) continue;
       final frequencies = <String, int>{};
-      for (final term in expandedKeywords(terms.toSet())) {
+      for (final term in terms) {
         frequencies[term] = (frequencies[term] ?? 0) + 1;
       }
 
