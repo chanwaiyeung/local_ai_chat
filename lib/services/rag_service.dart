@@ -62,6 +62,12 @@ class RrfConfig {
   final int rankConstant;
   final double semanticWeight;
   final double keywordWeight;
+
+  Map<String, Object?> toJson() => {
+        'rankConstant': rankConstant,
+        'semanticWeight': semanticWeight,
+        'keywordWeight': keywordWeight,
+      };
 }
 
 class RagService {

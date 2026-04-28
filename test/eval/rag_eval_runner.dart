@@ -66,6 +66,7 @@ class RagEvalRunner {
     this.topK = 4,
     this.cases = ragEvalCases,
     this.useQueryExpansion = false,
+    this.rrfConfig = const RrfConfig(),
   });
 
   final RagService rag;
@@ -74,6 +75,7 @@ class RagEvalRunner {
   final int topK;
   final List<RagEvalCase> cases;
   final bool useQueryExpansion;
+  final RrfConfig rrfConfig;
 
   Future<Map<String, Object?>> run({
     required String version,
@@ -123,6 +125,7 @@ class RagEvalRunner {
       'retrievalMode': retrievalMode.name,
       'topK': topK,
       'useQueryExpansion': useQueryExpansion,
+      'rrfConfig': rrfConfig.toJson(),
       if (baselineSnapshot != null) 'baselineSnapshot': baselineSnapshot,
       ...extraMetadata,
       'summary': {
@@ -152,6 +155,7 @@ class RagEvalRunner {
         k: topK,
         mode: retrievalMode,
         useQueryExpansion: useQueryExpansion,
+        rrfConfig: rrfConfig,
       );
     }
 
@@ -160,12 +164,14 @@ class RagEvalRunner {
       k: topK,
       mode: retrievalMode,
       useQueryExpansion: useQueryExpansion,
+      rrfConfig: rrfConfig,
     );
     return rag.retrieve(
       evalCase.followUpQuestion,
       k: topK,
       mode: retrievalMode,
       useQueryExpansion: useQueryExpansion,
+      rrfConfig: rrfConfig,
     );
   }
 

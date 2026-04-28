@@ -204,6 +204,18 @@ production default remains unchanged.
 - Difference from baseline: 0%.
 - Decision: archive the experiment and do not enable it by default.
 
+## Phase 3B Archived Experiment
+
+RRF weight tuning was evaluated as an offline-only grid search. Production
+defaults remain unchanged.
+
+- Grid size: 36 RRF configurations.
+- Best config: `{ rankConstant: 60, semanticWeight: 0.3, keywordWeight: 0.7 }`.
+- Result: 12 PASS / 1 PARTIAL / 0 FAIL, 96.2%.
+- Difference from baseline: 0%.
+- Report: `docs/eval_snapshots/rrf_tuning_report_2026-04-28.json`.
+- Decision: archive the experiment and do not change default RRF weights.
+
 ## Verification Commands
 
 Run from `C:\dev\local_ai_chat`:
