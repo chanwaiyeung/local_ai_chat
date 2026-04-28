@@ -4,6 +4,19 @@
 
 Status: accepted.
 
+### Phase 1.2 Automated Evaluation Runner
+
+- Added reusable 13-case RAG evaluation cases under `test/eval/`.
+- Added `RagEvalRunner` for automated snapshot generation, summary scoring,
+  follow-up case handling, and v1.10.4 comparison metadata.
+- Added an integration-tagged baseline test:
+  `test/integration/rag_eval_runner_test.dart`.
+- Integration execution is opt-in with `RUN_RAG_EVAL_INTEGRATION=1` so normal
+  CI does not depend on a local Ollama server or user vector store.
+- Automated snapshot:
+  `docs/eval_snapshots/eval_v2_persisted_bm25_auto_2026-04-28.json`.
+- Automated result: 12 PASS / 1 PARTIAL / 0 FAIL, 96.2%.
+
 ### Added
 
 - `VectorStore` schema v3 with `SparseIndexSnapshot`.

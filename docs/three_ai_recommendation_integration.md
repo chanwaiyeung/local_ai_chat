@@ -164,6 +164,10 @@ phase:
   `docs/eval_snapshots/eval_v2_persisted_bm25_2026-04-28.json`.
 - comparison result: v1.10.4 dynamic BM25 and v2.0 persisted BM25 both score
   12 PASS / 1 PARTIAL / 0 FAIL, 96.2%, with no observed regression.
+- automated evaluation runner snapshot:
+  `docs/eval_snapshots/eval_v2_persisted_bm25_auto_2026-04-28.json`.
+- integration runner is opt-in via `RUN_RAG_EVAL_INTEGRATION=1` and validates
+  the same 96.2% threshold against a local Ollama/vector-store setup.
 
 ## Manual Baseline Status
 
