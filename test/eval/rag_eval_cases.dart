@@ -8,6 +8,7 @@ class RagEvalCase {
     this.allowPartial = false,
     this.isFollowUp = false,
     this.followUpQuestion = '',
+    this.category = 'baseline',
   });
 
   final int id;
@@ -18,6 +19,7 @@ class RagEvalCase {
   final bool allowPartial;
   final bool isFollowUp;
   final String followUpQuestion;
+  final String category;
 }
 
 const ragEvalCases = [

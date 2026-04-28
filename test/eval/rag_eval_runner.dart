@@ -65,6 +65,7 @@ class RagEvalRunner {
     required this.retrievalMode,
     this.topK = 4,
     this.cases = ragEvalCases,
+    this.dataset = 'v1',
     this.useQueryExpansion = false,
     this.rrfConfig = const RrfConfig(),
   });
@@ -74,6 +75,7 @@ class RagEvalRunner {
   final RetrievalMode retrievalMode;
   final int topK;
   final List<RagEvalCase> cases;
+  final String dataset;
   final bool useQueryExpansion;
   final RrfConfig rrfConfig;
 
@@ -116,11 +118,14 @@ class RagEvalRunner {
     final fail = results.where((result) => result.verdict == 'FAIL').length;
     final score = results.fold<double>(0, (sum, result) => sum + result.score);
     final passRate = cases.isEmpty ? 0.0 : score / cases.length;
+    final categoryCounts = _categoryCounts(cases);
+    final categorySummary = _categorySummary(cases, results);
 
     final payload = <String, Object?>{
       'version': version,
       'date': DateTime.now().toUtc().toIso8601String(),
       'source': 'automated_rag_eval_runner',
+      'dataset': dataset,
       'embeddingModel': embeddingModel,
       'retrievalMode': retrievalMode.name,
       'topK': topK,
@@ -136,6 +141,8 @@ class RagEvalRunner {
         'score': score,
         'passRate': double.parse(passRate.toStringAsFixed(3)),
       },
+      'categoryCounts': categoryCounts,
+      'categorySummary': categorySummary,
       'cases': [for (final result in results) result.toJson()],
     };
 
@@ -207,7 +214,7 @@ class RagEvalRunner {
 
   String _determineVerdict(RagEvalCase evalCase, List<ScoredChunk> hits) {
     final effectiveHits = _effectiveHits(evalCase, hits);
-    if (evalCase.expectedStatus == 'missing') {
+    if (_expectsNoHits(evalCase)) {
       return effectiveHits.isEmpty ? 'PASS' : 'PARTIAL';
     }
 
@@ -228,10 +235,15 @@ class RagEvalRunner {
 
   List<ScoredChunk> _effectiveHits(
       RagEvalCase evalCase, List<ScoredChunk> hits) {
-    if (evalCase.expectedStatus == 'missing') {
+    if (_expectsNoHits(evalCase)) {
       return const [];
     }
     return hits;
+  }
+
+  bool _expectsNoHits(RagEvalCase evalCase) {
+    return evalCase.expectedStatus == 'missing' ||
+        evalCase.expectedStatus == 'negative';
   }
 
   String? _notesFor(
@@ -239,14 +251,55 @@ class RagEvalRunner {
     List<ScoredChunk> hits,
     String verdict,
   ) {
-    if (evalCase.expectedStatus == 'missing' &&
-        verdict == 'PARTIAL' &&
-        hits.isNotEmpty) {
+    if (_expectsNoHits(evalCase) && verdict == 'PARTIAL' && hits.isNotEmpty) {
       return 'Expected no supporting citation, but retrieval returned hits.';
     }
     if (evalCase.allowPartial && verdict == 'PARTIAL') {
       return 'Allowed partial result for limited source coverage.';
     }
     return null;
+  }
+
+  Map<String, int> _categoryCounts(List<RagEvalCase> cases) {
+    final counts = <String, int>{};
+    for (final evalCase in cases) {
+      counts[evalCase.category] = (counts[evalCase.category] ?? 0) + 1;
+    }
+    return counts;
+  }
+
+  Map<String, Object?> _categorySummary(
+    List<RagEvalCase> cases,
+    List<RagEvalResult> results,
+  ) {
+    final byId = {for (final result in results) result.id: result};
+    final grouped = <String, List<RagEvalResult>>{};
+    for (final evalCase in cases) {
+      final result = byId[evalCase.id];
+      if (result == null) continue;
+      grouped.putIfAbsent(evalCase.category, () => []).add(result);
+    }
+
+    return {
+      for (final entry in grouped.entries)
+        entry.key: _summaryForResults(entry.value),
+    };
+  }
+
+  Map<String, Object?> _summaryForResults(List<RagEvalResult> results) {
+    final pass = results.where((result) => result.verdict == 'PASS').length;
+    final partial =
+        results.where((result) => result.verdict == 'PARTIAL').length;
+    final fail = results.where((result) => result.verdict == 'FAIL').length;
+    final score = results.fold<double>(0, (sum, result) => sum + result.score);
+    final passRate = results.isEmpty ? 0.0 : score / results.length;
+    return {
+      'total': results.length,
+      'pass': pass,
+      'partial': partial,
+      'fail': fail,
+      'score': score,
+      'passRate': double.parse(passRate.toStringAsFixed(3)),
+    };
   }
 }

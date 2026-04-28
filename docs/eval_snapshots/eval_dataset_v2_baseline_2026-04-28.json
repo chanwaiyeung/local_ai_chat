@@ -1,0 +1,1499 @@
+{
+  "version": "v2.0-phase3c-eval-dataset-v2",
+  "date": "2026-04-28T23:15:43.444480Z",
+  "source": "automated_rag_eval_runner",
+  "dataset": "v2",
+  "embeddingModel": "bge-m3",
+  "retrievalMode": "hybrid",
+  "topK": 4,
+  "useQueryExpansion": false,
+  "rrfConfig": {
+    "rankConstant": 60,
+    "semanticWeight": 1.0,
+    "keywordWeight": 1.3
+  },
+  "baselineSnapshot": "docs/eval_snapshots/eval_v2_persisted_bm25_auto_2026-04-28.json",
+  "productionDefaultChanged": false,
+  "purpose": "analysis_only_dataset_expansion",
+  "summary": {
+    "total": 45,
+    "pass": 35,
+    "partial": 10,
+    "fail": 0,
+    "score": 40.0,
+    "passRate": 0.889
+  },
+  "categoryCounts": {
+    "Fact Retrieval": 10,
+    "Missing": 5,
+    "Synonym": 5,
+    "Multi-hop": 8,
+    "Ambiguous": 5,
+    "Long Context": 5,
+    "Cross-document": 7
+  },
+  "categorySummary": {
+    "Fact Retrieval": {
+      "total": 10,
+      "pass": 10,
+      "partial": 0,
+      "fail": 0,
+      "score": 10.0,
+      "passRate": 1.0
+    },
+    "Missing": {
+      "total": 5,
+      "pass": 5,
+      "partial": 0,
+      "fail": 0,
+      "score": 5.0,
+      "passRate": 1.0
+    },
+    "Synonym": {
+      "total": 5,
+      "pass": 5,
+      "partial": 0,
+      "fail": 0,
+      "score": 5.0,
+      "passRate": 1.0
+    },
+    "Multi-hop": {
+      "total": 8,
+      "pass": 8,
+      "partial": 0,
+      "fail": 0,
+      "score": 8.0,
+      "passRate": 1.0
+    },
+    "Ambiguous": {
+      "total": 5,
+      "pass": 0,
+      "partial": 5,
+      "fail": 0,
+      "score": 2.5,
+      "passRate": 0.5
+    },
+    "Long Context": {
+      "total": 5,
+      "pass": 0,
+      "partial": 5,
+      "fail": 0,
+      "score": 2.5,
+      "passRate": 0.5
+    },
+    "Cross-document": {
+      "total": 7,
+      "pass": 7,
+      "partial": 0,
+      "fail": 0,
+      "score": 7.0,
+      "passRate": 1.0
+    }
+  },
+  "cases": [
+    {
+      "id": 1001,
+      "question": "What CPU emulation cores does DOSBox 0.74 support?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 12,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #87",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 87,
+          "score": 0.036593
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 88,
+          "score": 0.035238
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 64,
+          "score": 0.03419
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 89,
+          "score": 0.033992
+        }
+      ]
+    },
+    {
+      "id": 1002,
+      "question": "What is the default key combination to release the mouse in DOSBox?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 8,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #64",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 64,
+          "score": 0.036936
+        },
+        {
+          "docName": "README.txt",
+          "chunkIndex": 2,
+          "score": 0.036764
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 16,
+          "score": 0.034788
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 66,
+          "score": 0.034703
+        }
+      ]
+    },
+    {
+      "id": 1003,
+      "question": "Which configuration file does DOSBox load on startup?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 3,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #97",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 97,
+          "score": 0.036764
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 75,
+          "score": 0.035597
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 98,
+          "score": 0.03557
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 25,
+          "score": 0.034493
+        }
+      ]
+    },
+    {
+      "id": 1004,
+      "question": "What command lists available keyboard layouts in DOSBox?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 45,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #77",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 77,
+          "score": 0.037361
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 78,
+          "score": 0.036463
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 60,
+          "score": 0.035873
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 61,
+          "score": 0.033487
+        }
+      ]
+    },
+    {
+      "id": 1005,
+      "question": "What is the maximum supported CPU cycles setting?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 18,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #86",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 86,
+          "score": 0.036508
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 85,
+          "score": 0.036352
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 89,
+          "score": 0.035625
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 64,
+          "score": 0.035597
+        }
+      ]
+    },
+    {
+      "id": 1006,
+      "question": "How do you mount a directory as a drive in DOSBox?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #35",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 35,
+          "score": 0.037705
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 38,
+          "score": 0.036442
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 3,
+          "score": 0.03556
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 30,
+          "score": 0.03546
+        }
+      ]
+    },
+    {
+      "id": 1007,
+      "question": "What does the SDL section in dosbox.conf control?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #96",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 96,
+          "score": 0.035786
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 97,
+          "score": 0.035052
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 24,
+          "score": 0.03501
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 92,
+          "score": 0.033646
+        }
+      ]
+    },
+    {
+      "id": 1008,
+      "question": "What output setting does DOSBox use by default?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #11",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 11,
+          "score": 0.037361
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 90,
+          "score": 0.03556
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 14,
+          "score": 0.034706
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 85,
+          "score": 0.034132
+        }
+      ]
+    },
+    {
+      "id": 1009,
+      "question": "How do you enable fullscreen mode in DOSBox configuration?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #5",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 5,
+          "score": 0.037705
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 4,
+          "score": 0.037097
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 1,
+          "score": 0.03556
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 2,
+          "score": 0.035385
+        }
+      ]
+    },
+    {
+      "id": 1010,
+      "question": "What does the auto CPU core do in DOSBox?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 12,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #88",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 88,
+          "score": 0.037705
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 87,
+          "score": 0.037097
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 86,
+          "score": 0.035873
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 89,
+          "score": 0.035322
+        }
+      ]
+    },
+    {
+      "id": 2001,
+      "question": "Who is the current CEO of DOSBox project?",
+      "expectedStatus": "missing",
+      "verdict": "PASS",
+      "hits": 0,
+      "mainCitation": null,
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 41,
+          "score": 0.034481
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 40,
+          "score": 0.033216
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 39,
+          "score": 0.032684
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 42,
+          "score": 0.032658
+        }
+      ]
+    },
+    {
+      "id": 2002,
+      "question": "What is the price of DOSBox Pro Edition?",
+      "expectedStatus": "missing",
+      "verdict": "PASS",
+      "hits": 0,
+      "mainCitation": null,
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 13,
+          "score": 0.036119
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 11,
+          "score": 0.035804
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.035511
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 20,
+          "score": 0.034185
+        }
+      ]
+    },
+    {
+      "id": 2003,
+      "question": "When was DOSBox 1.0 officially released?",
+      "expectedStatus": "missing",
+      "verdict": "PASS",
+      "hits": 0,
+      "mainCitation": null,
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 11,
+          "score": 0.034269
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 3,
+          "score": 0.034185
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 83,
+          "score": 0.033896
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 96,
+          "score": 0.033781
+        }
+      ]
+    },
+    {
+      "id": 2004,
+      "question": "Does DOSBox support DirectX 12?",
+      "expectedStatus": "missing",
+      "verdict": "PASS",
+      "hits": 0,
+      "mainCitation": null,
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 95,
+          "score": 0.036442
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.03609
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 92,
+          "score": 0.036017
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 5,
+          "score": 0.034991
+        }
+      ]
+    },
+    {
+      "id": 2005,
+      "question": "What is the GitHub repository URL for DOSBox?",
+      "expectedStatus": "missing",
+      "verdict": "PASS",
+      "hits": 0,
+      "mainCitation": null,
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 21,
+          "score": 0.03626
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.033983
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 96,
+          "score": 0.033646
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 95,
+          "score": 0.03336
+        }
+      ]
+    },
+    {
+      "id": 3001,
+      "question": "How do I let go of the mouse cursor?",
+      "expectedStatus": "synonym",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 8,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #9",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 9,
+          "score": 0.03602
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 2,
+          "score": 0.036017
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 18,
+          "score": 0.035893
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 64,
+          "score": 0.034965
+        }
+      ]
+    },
+    {
+      "id": 3002,
+      "question": "How can I control CPU speed?",
+      "expectedStatus": "synonym",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 18,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #88",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 88,
+          "score": 0.037097
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 86,
+          "score": 0.037028
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 84,
+          "score": 0.036017
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 87,
+          "score": 0.03557
+        }
+      ]
+    },
+    {
+      "id": 3003,
+      "question": "What command configures keyboard mapping?",
+      "expectedStatus": "synonym",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 45,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #75",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 75,
+          "score": 0.037441
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 69,
+          "score": 0.035276
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 16,
+          "score": 0.034666
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 73,
+          "score": 0.033727
+        }
+      ]
+    },
+    {
+      "id": 3004,
+      "question": "Where is the startup configuration stored?",
+      "expectedStatus": "synonym",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 3,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #43",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 43,
+          "score": 0.037441
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 75,
+          "score": 0.034857
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 42,
+          "score": 0.034706
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 91,
+          "score": 0.03419
+        }
+      ]
+    },
+    {
+      "id": 3005,
+      "question": "How do I change the virtual processor mode?",
+      "expectedStatus": "synonym",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 12,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #86",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 86,
+          "score": 0.036393
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 91,
+          "score": 0.035396
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 88,
+          "score": 0.034196
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 42,
+          "score": 0.033135
+        }
+      ]
+    },
+    {
+      "id": 4001,
+      "question": "Which file controls startup and which command helps configure keyboard layout?",
+      "expectedStatus": "multiHop",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #77",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 77,
+          "score": 0.036017
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 60,
+          "score": 0.035697
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 41,
+          "score": 0.035625
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 76,
+          "score": 0.035532
+        }
+      ]
+    },
+    {
+      "id": 4002,
+      "question": "How does increasing cycles affect performance and what setting controls CPU core behavior?",
+      "expectedStatus": "multiHop",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #86",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 86,
+          "score": 0.037705
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 88,
+          "score": 0.036129
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 87,
+          "score": 0.036119
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 85,
+          "score": 0.035937
+        }
+      ]
+    },
+    {
+      "id": 4003,
+      "question": "How do I mount a game folder and then switch to that DOS drive?",
+      "expectedStatus": "multiHop",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #36",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 36,
+          "score": 0.037184
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 29,
+          "score": 0.036764
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 3,
+          "score": 0.035625
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 35,
+          "score": 0.034965
+        }
+      ]
+    },
+    {
+      "id": 4004,
+      "question": "If the keyboard and mouse are both captured incorrectly, which controls help?",
+      "expectedStatus": "multiHop",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #2",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 2,
+          "score": 0.035396
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 9,
+          "score": 0.034328
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 17,
+          "score": 0.033499
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 69,
+          "score": 0.033064
+        }
+      ]
+    },
+    {
+      "id": 4005,
+      "question": "Which CPU core should I consider for speed, and what cycles setting should I tune?",
+      "expectedStatus": "multiHop",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #89",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 89,
+          "score": 0.036936
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 87,
+          "score": 0.036841
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 88,
+          "score": 0.036764
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 86,
+          "score": 0.036706
+        }
+      ]
+    },
+    {
+      "id": 4006,
+      "question": "What configuration areas matter for both display output and fullscreen behavior?",
+      "expectedStatus": "multiHop",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #4",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 4,
+          "score": 0.037441
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 5,
+          "score": 0.037361
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 2,
+          "score": 0.033016
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 1,
+          "score": 0.032729
+        }
+      ]
+    },
+    {
+      "id": 4007,
+      "question": "What should I check if a game is too fast and the keyboard layout is wrong?",
+      "expectedStatus": "multiHop",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #2",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 2,
+          "score": 0.036696
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 85,
+          "score": 0.03626
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 19,
+          "score": 0.035873
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 18,
+          "score": 0.035796
+        }
+      ]
+    },
+    {
+      "id": 4008,
+      "question": "How do startup configuration and mounting work together for launching games?",
+      "expectedStatus": "multiHop",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #35",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 35,
+          "score": 0.036764
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 3,
+          "score": 0.036593
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 1,
+          "score": 0.036393
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 91,
+          "score": 0.034201
+        }
+      ]
+    },
+    {
+      "id": 5001,
+      "question": "How do I configure it correctly?",
+      "expectedStatus": "ambiguous",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PARTIAL",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #9",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 9,
+          "score": 0.034466
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 98,
+          "score": 0.034298
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 68,
+          "score": 0.033793
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 1,
+          "score": 0.033689
+        }
+      ],
+      "notes": "Allowed partial result for limited source coverage."
+    },
+    {
+      "id": 5002,
+      "question": "How do I fix the mouse?",
+      "expectedStatus": "ambiguous",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PARTIAL",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #2",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 2,
+          "score": 0.037441
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 9,
+          "score": 0.037028
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 18,
+          "score": 0.034991
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 64,
+          "score": 0.033935
+        }
+      ],
+      "notes": "Allowed partial result for limited source coverage."
+    },
+    {
+      "id": 5003,
+      "question": "Why is my game slow?",
+      "expectedStatus": "ambiguous",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PARTIAL",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #19",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 19,
+          "score": 0.037097
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 18,
+          "score": 0.037028
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 85,
+          "score": 0.036696
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 2,
+          "score": 0.035018
+        }
+      ],
+      "notes": "Allowed partial result for limited source coverage."
+    },
+    {
+      "id": 5004,
+      "question": "Where do I put my settings?",
+      "expectedStatus": "ambiguous",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PARTIAL",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #40",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 40,
+          "score": 0.036508
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 97,
+          "score": 0.036442
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 41,
+          "score": 0.035385
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 96,
+          "score": 0.035028
+        }
+      ],
+      "notes": "Allowed partial result for limited source coverage."
+    },
+    {
+      "id": 5005,
+      "question": "How do I make the screen better?",
+      "expectedStatus": "ambiguous",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PARTIAL",
+      "hits": 4,
+      "mainCitation": "README.txt #2",
+      "citations": [
+        {
+          "docName": "README.txt",
+          "chunkIndex": 2,
+          "score": 0.036764
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 19,
+          "score": 0.035674
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 63,
+          "score": 0.034328
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 9,
+          "score": 0.034183
+        }
+      ],
+      "notes": "Allowed partial result for limited source coverage."
+    },
+    {
+      "id": 6001,
+      "question": "Summarize all major configuration sections in the DOSBox manual.",
+      "expectedStatus": "longContext",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PARTIAL",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #96",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 96,
+          "score": 0.037441
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 40,
+          "score": 0.036841
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.036706
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 21,
+          "score": 0.033935
+        }
+      ],
+      "notes": "Allowed partial result for limited source coverage."
+    },
+    {
+      "id": 6002,
+      "question": "List the main setup steps needed before running an old DOS game.",
+      "expectedStatus": "longContext",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PARTIAL",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #29",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 29,
+          "score": 0.035893
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 93,
+          "score": 0.035786
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 94,
+          "score": 0.035322
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 95,
+          "score": 0.034444
+        }
+      ],
+      "notes": "Allowed partial result for limited source coverage."
+    },
+    {
+      "id": 6003,
+      "question": "Give a troubleshooting guide for input, CPU speed, and configuration issues.",
+      "expectedStatus": "longContext",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PARTIAL",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #90",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 90,
+          "score": 0.036393
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 86,
+          "score": 0.035826
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 19,
+          "score": 0.035597
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 88,
+          "score": 0.035052
+        }
+      ],
+      "notes": "Allowed partial result for limited source coverage."
+    },
+    {
+      "id": 6004,
+      "question": "Collect the key facts about input, display, sound, and CPU configuration.",
+      "expectedStatus": "longContext",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PARTIAL",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #90",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 90,
+          "score": 0.036706
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 14,
+          "score": 0.035826
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 15,
+          "score": 0.034481
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 10,
+          "score": 0.033461
+        }
+      ],
+      "notes": "Allowed partial result for limited source coverage."
+    },
+    {
+      "id": 6005,
+      "question": "Explain the relationship between mounting, drives, configuration, and running programs.",
+      "expectedStatus": "longContext",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PARTIAL",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #1",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 1,
+          "score": 0.035625
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 35,
+          "score": 0.034449
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 4,
+          "score": 0.033497
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 32,
+          "score": 0.033455
+        }
+      ],
+      "notes": "Allowed partial result for limited source coverage."
+    },
+    {
+      "id": 7001,
+      "question": "Compare installation instructions between README.txt and the DOSBox manual.",
+      "expectedStatus": "crossDocument",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #3",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 3,
+          "score": 0.033723
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.033234
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 25,
+          "score": 0.032675
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 96,
+          "score": 0.032247
+        }
+      ]
+    },
+    {
+      "id": 7002,
+      "question": "Which document is better for DOSBox keyboard help: README.txt or the manual?",
+      "expectedStatus": "crossDocument",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #0",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.036129
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 30,
+          "score": 0.035028
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 3,
+          "score": 0.032981
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 25,
+          "score": 0.032423
+        }
+      ]
+    },
+    {
+      "id": 7003,
+      "question": "Find overlap between README.txt and the DOSBox manual about setup steps.",
+      "expectedStatus": "crossDocument",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #99",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 99,
+          "score": 0.034555
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.032756
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 3,
+          "score": 0.032105
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 96,
+          "score": 0.030838
+        }
+      ]
+    },
+    {
+      "id": 7004,
+      "question": "Use both README.txt and the DOSBox manual to describe what a new user should read first.",
+      "expectedStatus": "crossDocument",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #98",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 98,
+          "score": 0.036237
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 36,
+          "score": 0.034481
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.032849
+        },
+        {
+          "docName": "README.txt",
+          "chunkIndex": 1,
+          "score": 0.032683
+        }
+      ]
+    },
+    {
+      "id": 7005,
+      "question": "Do README.txt and the DOSBox manual mention the same configuration workflow?",
+      "expectedStatus": "crossDocument",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #26",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 26,
+          "score": 0.03556
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.035322
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 20,
+          "score": 0.034301
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 25,
+          "score": 0.034132
+        }
+      ]
+    },
+    {
+      "id": 7006,
+      "question": "Compare any quick-start notes in README.txt with detailed manual instructions.",
+      "expectedStatus": "crossDocument",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #1",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 1,
+          "score": 0.037361
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 84,
+          "score": 0.035018
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.0347
+        },
+        {
+          "docName": "README.txt",
+          "chunkIndex": 2,
+          "score": 0.033487
+        }
+      ]
+    },
+    {
+      "id": 7007,
+      "question": "Which file should I cite for a complete answer about running DOSBox?",
+      "expectedStatus": "crossDocument",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #23",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 23,
+          "score": 0.03501
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 36,
+          "score": 0.033983
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.033727
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 56,
+          "score": 0.033468
+        }
+      ]
+    }
+  ]
+}
