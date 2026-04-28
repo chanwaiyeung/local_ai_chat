@@ -12,6 +12,14 @@ class QueryExpansion {
     'windows': ['win32', 'windows'],
   };
 
+  String sparseQueryForRetrieval(
+    String query, {
+    required bool enabled,
+    int maxTerms = 12,
+  }) {
+    return enabled ? expandSparseQuery(query, maxTerms: maxTerms) : query;
+  }
+
   String expandSparseQuery(String query, {int maxTerms = 12}) {
     final normalized = query.toLowerCase();
     final candidates = <String>[];

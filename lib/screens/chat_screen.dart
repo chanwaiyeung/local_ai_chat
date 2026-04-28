@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../controllers/chat_send_controller.dart';
 import '../controllers/rag_chat_controller.dart';
 import '../models/app_settings.dart';
 import '../models/message.dart';
@@ -57,6 +58,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final _store = VectorStore();
   final _messages = <ChatMessage>[];
   final _availableModels = <String>[];
+  final _sendController = const ChatSendController();
   late final SaveDebouncer _saveDebouncer;
 
   late OllamaService _ollama;
@@ -830,105 +832,40 @@ class _ChatScreenState extends State<ChatScreen> {
     });
     _scheduleSave();
 
-    final outgoing = <ChatMessage>[
-      ChatMessage(role: Role.system, content: _systemPrompt),
-    ];
-
-    List<ScoredChunk> hits = const [];
-    if (_ragEnabled && _store.length > 0) {
-      try {
-        final retrieveStarted = DateTime.now();
-        final retrieveStartLog =
-            'RAG retrieve: start query="$text" embeddingModel=$_embedModel '
-            'mode=${_settings.retrievalMode.name} '
-            'doc=${_activeDoc ?? '(all)'} topK=$_topK chunks=${_store.length}';
-        debugPrint(retrieveStartLog);
-        unawaited(DebugLogService.append(retrieveStartLog));
-        hits = await _rag.retrieve(
-          text,
-          k: _topK,
-          docName: _activeDoc,
-          mode: _settings.retrievalMode,
-        );
-        final retrieveMs =
-            DateTime.now().difference(retrieveStarted).inMilliseconds;
-        final scores = hits
-            .map((hit) =>
-                '${hit.chunk.docName}#${hit.chunk.chunkIndex}:${hit.score.toStringAsFixed(3)}')
-            .join(', ');
-        final diagnostics = _rag.lastDiagnostics?.summary();
-        final retrieveDoneLog =
-            'RAG retrieve: done hits=${hits.length} durationMs=$retrieveMs '
-            'scores=[$scores]'
-            '${diagnostics == null ? '' : ' $diagnostics'}';
-        debugPrint(retrieveDoneLog);
-        unawaited(DebugLogService.append(retrieveDoneLog));
-        if (hits.isNotEmpty && !RagService.hasKeywordGrounding(text, hits)) {
-          setState(() {
-            _messages[_messages.length - 1] = ChatMessage(
-              role: Role.assistant,
-              content: '在文件中沒有找到相關資訊。請確認已載入正確文件，或換個問法再試。',
-            );
-          });
-          _scrollToEnd();
-          if (mounted) setState(() => _busy = false);
-          await _saveNow();
-          return;
-        }
-
-        if (hits.isNotEmpty) {
-          outgoing.add(ChatMessage(
-            role: Role.system,
-            content: RagService.buildContext(hits),
-          ));
-        }
-      } catch (e, st) {
-        await DebugLogService.append(
-          'RAG retrieve failed: query="$text" embeddingModel=$_embedModel '
-          'mode=${_settings.retrievalMode.name} '
-          'doc=${_activeDoc ?? '(all)'} error=$e\n$st',
-          level: 'ERROR',
-        );
-        _snack('檢索失敗（將直接問模型）：$e', showLogAction: true);
-      }
+    final context = await _sendController.buildContext(
+      query: text,
+      ragEnabled: _ragEnabled,
+      storeLength: _store.length,
+      rag: _rag,
+      embeddingModel: _embedModel,
+      retrievalMode: _settings.retrievalMode,
+      activeDoc: _activeDoc,
+      topK: _topK,
+      systemPrompt: _systemPrompt,
+      currentMessages: _messages,
+    );
+    if (context.retrieveError != null) {
+      _snack('檢索失敗（將直接問模型）：${context.retrieveError}', showLogAction: true);
     }
-
-    outgoing.addAll(_messages.where(
-      (m) =>
-          m.role != Role.system ||
-          m.content.startsWith('【') ||
-          m.content.startsWith('【相關段落】'),
-    ));
+    if (context.blockedMessage != null) {
+      _replaceAssistantMessage(context.blockedMessage!);
+      if (mounted) setState(() => _busy = false);
+      await _saveNow();
+      return;
+    }
 
     _scrollToEnd(force: true);
 
-    final buffer = StringBuffer();
     try {
-      final stream = _ollama.chatStream(outgoing);
-      await for (final chunk in stream) {
-        buffer.write(chunk);
-        setState(() {
-          _messages[_messages.length - 1] = ChatMessage(
-            role: Role.assistant,
-            content: buffer.toString(),
-          );
-        });
-        _scrollToEnd();
-      }
-      if (hits.isNotEmpty) {
-        final sources = hits.map((h) {
-          final docName = h.chunk.docName;
-          final doc = Uri.encodeQueryComponent(docName);
-          final index = h.chunk.chunkIndex;
-          final score = h.score.toStringAsFixed(2);
-          return '• [$docName #$index ($score)](chunk:?doc=$doc&i=$index)';
-        }).join('\n');
-        setState(() {
-          _messages[_messages.length - 1] = ChatMessage(
-            role: Role.assistant,
-            content: '${buffer.toString().trim()}\n\n📚 引用來源：\n$sources',
-          );
-        });
+      final content = await _sendController.streamAssistantResponse(
+        ollama: _ollama,
+        outgoing: context.outgoing,
+        onContent: _replaceAssistantMessage,
+      );
+      if (context.hits.isNotEmpty) {
+        _replaceAssistantMessage(
+          _sendController.appendSources(content, context.hits),
+        );
         await _saveNow();
       }
     } catch (e, st) {
@@ -945,6 +882,16 @@ class _ChatScreenState extends State<ChatScreen> {
       if (mounted) setState(() => _busy = false);
       await _saveNow();
     }
+  }
+
+  void _replaceAssistantMessage(String content) {
+    setState(() {
+      _messages[_messages.length - 1] = ChatMessage(
+        role: Role.assistant,
+        content: content,
+      );
+    });
+    _scrollToEnd();
   }
 
   void _scrollToEnd({

@@ -254,9 +254,10 @@ class RagService {
             .where((s) => s.score >= minScore)
             .toList();
 
-    final sparseQuery = mode == RetrievalMode.hybrid && useQueryExpansion
-        ? const QueryExpansion().expandSparseQuery(query)
-        : query;
+    final sparseQuery = const QueryExpansion().sparseQueryForRetrieval(
+      query,
+      enabled: mode == RetrievalMode.hybrid && useQueryExpansion,
+    );
 
     final keywordHits = mode == RetrievalMode.dense
         ? <ScoredChunk>[]
