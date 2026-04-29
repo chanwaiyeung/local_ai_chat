@@ -130,6 +130,49 @@ void main() {
         lessThanOrEqualTo(v2Summary['fail'] as int),
       );
       expect(File(phase4aOutputPath).existsSync(), isTrue);
+
+      final phase4bOutputPath =
+          Platform.environment['RAG_EVAL_PHASE4B_OUTPUT'] ??
+              'docs/eval_snapshots/eval_phase4b_multihop_2026-04-28.json';
+      final phase4bPayload = await RagEvalRunner(
+        rag: rag,
+        embeddingModel: 'bge-m3',
+        retrievalMode: RetrievalMode.hybrid,
+        dataset: 'v2-phase4b',
+        cases: ragEvalCasesV2,
+        topK: 4,
+        detectAmbiguous: true,
+        enableMultiHop: true,
+      ).run(
+        version: 'v2.0-phase4b-multihop-reasoning',
+        outputPath: phase4bOutputPath,
+        baselineSnapshot: phase4aOutputPath,
+        extraMetadata: const {
+          'productionDefaultChanged': false,
+          'purpose': 'experimental_multihop_reasoning',
+          'usesLlm': false,
+        },
+      );
+
+      final phase4bSummary = phase4bPayload['summary'] as Map<String, Object?>;
+      final phase4bCategorySummary =
+          phase4bPayload['categorySummary'] as Map<String, Object?>;
+      final multiHopSummary =
+          phase4bCategorySummary['Multi-hop'] as Map<String, Object?>;
+
+      expect(
+        (phase4bSummary['passRate'] as num).toDouble(),
+        greaterThanOrEqualTo(0.944),
+      );
+      expect(
+        (multiHopSummary['passRate'] as num).toDouble(),
+        greaterThanOrEqualTo(0.7),
+      );
+      expect(
+        phase4bSummary['fail'] as int,
+        lessThanOrEqualTo(phase4aSummary['fail'] as int),
+      );
+      expect(File(phase4bOutputPath).existsSync(), isTrue);
     },
     skip: runIntegration
         ? false

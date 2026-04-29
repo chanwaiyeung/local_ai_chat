@@ -83,6 +83,7 @@ class _FakeRagService extends RagService {
     RrfConfig rrfConfig = const RrfConfig(),
     bool useQueryExpansion = false,
     bool detectAmbiguous = false,
+    bool enableMultiHop = false,
   }) async {
     return hits;
   }

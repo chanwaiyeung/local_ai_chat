@@ -21,6 +21,7 @@ class RagEvalResult {
     this.followUpQuestion,
     this.error,
     this.notes,
+    this.diagnostics,
   });
 
   final int id;
@@ -35,6 +36,7 @@ class RagEvalResult {
   final String? followUpQuestion;
   final String? error;
   final String? notes;
+  final Map<String, Object?>? diagnostics;
 
   double get score => switch (verdict) {
         'PASS' => 1.0,
@@ -54,6 +56,7 @@ class RagEvalResult {
         'mainCitation': mainCitation,
         'citations': citations,
         if (notes != null) 'notes': notes,
+        if (diagnostics != null) 'diagnostics': diagnostics,
         if (error != null) 'error': error,
       };
 }
@@ -68,6 +71,7 @@ class RagEvalRunner {
     this.dataset = 'v1',
     this.useQueryExpansion = false,
     this.detectAmbiguous = false,
+    this.enableMultiHop = false,
     this.rrfConfig = const RrfConfig(),
   });
 
@@ -79,6 +83,7 @@ class RagEvalRunner {
   final String dataset;
   final bool useQueryExpansion;
   final bool detectAmbiguous;
+  final bool enableMultiHop;
   final RrfConfig rrfConfig;
 
   Future<Map<String, Object?>> run({
@@ -133,6 +138,7 @@ class RagEvalRunner {
       'topK': topK,
       'useQueryExpansion': useQueryExpansion,
       'detectAmbiguous': detectAmbiguous,
+      'enableMultiHop': enableMultiHop,
       'rrfConfig': rrfConfig.toJson(),
       if (baselineSnapshot != null) 'baselineSnapshot': baselineSnapshot,
       ...extraMetadata,
@@ -166,6 +172,7 @@ class RagEvalRunner {
         mode: retrievalMode,
         useQueryExpansion: useQueryExpansion,
         detectAmbiguous: detectAmbiguous,
+        enableMultiHop: _shouldUseMultiHop(evalCase),
         rrfConfig: rrfConfig,
       );
     }
@@ -176,6 +183,7 @@ class RagEvalRunner {
       mode: retrievalMode,
       useQueryExpansion: useQueryExpansion,
       detectAmbiguous: detectAmbiguous,
+      enableMultiHop: _shouldUseMultiHop(evalCase),
       rrfConfig: rrfConfig,
     );
     return rag.retrieve(
@@ -184,8 +192,13 @@ class RagEvalRunner {
       mode: retrievalMode,
       useQueryExpansion: useQueryExpansion,
       detectAmbiguous: detectAmbiguous,
+      enableMultiHop: _shouldUseMultiHop(evalCase),
       rrfConfig: rrfConfig,
     );
+  }
+
+  bool _shouldUseMultiHop(RagEvalCase evalCase) {
+    return enableMultiHop && evalCase.expectedStatus == 'multiHop';
   }
 
   RagEvalResult _scoreCase(RagEvalCase evalCase, List<ScoredChunk> hits) {
@@ -215,6 +228,7 @@ class RagEvalRunner {
       citations: citations,
       mainCitation: mainCitation,
       notes: _notesFor(evalCase, hits, verdict),
+      diagnostics: _diagnosticsFor(evalCase),
     );
   }
 
@@ -270,6 +284,11 @@ class RagEvalRunner {
       return 'Allowed partial result for limited source coverage.';
     }
     return null;
+  }
+
+  Map<String, Object?>? _diagnosticsFor(RagEvalCase evalCase) {
+    if (!_shouldUseMultiHop(evalCase)) return null;
+    return rag.lastMultiHopTrace?.toJson();
   }
 
   Map<String, int> _categoryCounts(List<RagEvalCase> cases) {

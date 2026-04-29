@@ -1,0 +1,159 @@
+import 'vector_store.dart';
+
+typedef MultiHopRetriever = Future<List<ScoredChunk>> Function(
+  String query, {
+  required int k,
+});
+
+class MultiHopTrace {
+  const MultiHopTrace({
+    required this.originalQuery,
+    required this.subQueries,
+    required this.subQueryHits,
+    required this.mergedHits,
+  });
+
+  final String originalQuery;
+  final List<String> subQueries;
+  final Map<String, List<ScoredChunk>> subQueryHits;
+  final List<ScoredChunk> mergedHits;
+
+  Map<String, Object?> toJson() => {
+        'originalQuery': originalQuery,
+        'subQueries': subQueries,
+        'subQueryHits': {
+          for (final entry in subQueryHits.entries)
+            entry.key: [
+              for (final hit in entry.value)
+                {
+                  'docName': hit.chunk.docName,
+                  'chunkIndex': hit.chunk.chunkIndex,
+                  'score': double.parse(hit.score.toStringAsFixed(6)),
+                },
+            ],
+        },
+        'mergedHits': [
+          for (final hit in mergedHits)
+            {
+              'docName': hit.chunk.docName,
+              'chunkIndex': hit.chunk.chunkIndex,
+              'score': double.parse(hit.score.toStringAsFixed(6)),
+            },
+        ],
+      };
+}
+
+class MultiHopResult {
+  const MultiHopResult({
+    required this.hits,
+    required this.trace,
+  });
+
+  final List<ScoredChunk> hits;
+  final MultiHopTrace trace;
+}
+
+class MultiHopReasoner {
+  const MultiHopReasoner();
+
+  bool isMultiHop(String query) {
+    final q = query.toLowerCase();
+    return q.contains(' and ') ||
+        q.contains(' both ') ||
+        q.contains('relationship between') ||
+        q.contains('compare') ||
+        q.contains('after ') ||
+        q.contains(' then ') ||
+        q.contains('if ') ||
+        q.contains('which file') && q.contains('which command');
+  }
+
+  List<String> decompose(String query) {
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) return const [];
+
+    final normalized = trimmed.replaceAll(RegExp(r'\s+'), ' ');
+    final parts = normalized
+        .split(RegExp(
+          r'\s+(?:and then|then|and|while|with)\s+|[,;]\s*',
+          caseSensitive: false,
+        ))
+        .map(_cleanSubQuery)
+        .where((part) => part.length >= 6)
+        .toList();
+
+    final result = <String>[];
+    for (final part in parts) {
+      if (!result.contains(part)) result.add(part);
+    }
+
+    if (result.length < 2 && isMultiHop(normalized)) {
+      result.add(normalized);
+      final focused = _focusedSubQueries(normalized);
+      for (final item in focused) {
+        if (!result.contains(item)) result.add(item);
+      }
+    }
+
+    return result.length < 2 ? [normalized] : result.take(4).toList();
+  }
+
+  Future<MultiHopResult> retrieve({
+    required String query,
+    required int k,
+    required MultiHopRetriever retriever,
+  }) async {
+    final subQueries = decompose(query);
+    final subQueryHits = <String, List<ScoredChunk>>{};
+    final merged = <String, ScoredChunk>{};
+
+    for (final subQuery in subQueries) {
+      final hits = await retriever(subQuery, k: k);
+      subQueryHits[subQuery] = hits;
+      for (var rank = 0; rank < hits.length; rank++) {
+        final hit = hits[rank];
+        final key = hit.chunk.id;
+        final weightedScore = hit.score + (1.0 / (rank + 1));
+        final current = merged[key];
+        if (current == null || weightedScore > current.score) {
+          merged[key] = ScoredChunk(hit.chunk, weightedScore);
+        }
+      }
+    }
+
+    final mergedHits = merged.values.toList()
+      ..sort((a, b) => b.score.compareTo(a.score));
+    final finalHits = mergedHits.take(k).toList();
+    return MultiHopResult(
+      hits: finalHits,
+      trace: MultiHopTrace(
+        originalQuery: query,
+        subQueries: subQueries,
+        subQueryHits: subQueryHits,
+        mergedHits: finalHits,
+      ),
+    );
+  }
+
+  String _cleanSubQuery(String value) {
+    return value.trim().replaceAll(RegExp(r'[?.!]+$'), '');
+  }
+
+  List<String> _focusedSubQueries(String query) {
+    final focused = <String>[];
+    const keywordGroups = [
+      ['cpu', 'core', 'cycles'],
+      ['mouse', 'keyboard', 'keymapper'],
+      ['config', 'configuration', 'dosbox.conf'],
+      ['mount', 'drive', 'folder'],
+      ['fullscreen', 'output', 'screen'],
+    ];
+
+    for (final group in keywordGroups) {
+      if (group.any(query.contains)) {
+        focused.add(group.join(' '));
+      }
+    }
+    return focused;
+  }
+}
