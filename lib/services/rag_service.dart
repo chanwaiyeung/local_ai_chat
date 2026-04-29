@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import '../models/app_settings.dart';
 import 'ambiguous_query_detector.dart';
 import 'embedding_service.dart';
+import 'long_context_optimizer.dart';
 import 'multi_hop_reasoner.dart';
 import 'query_expansion.dart';
 import 'vector_store.dart';
@@ -77,6 +78,7 @@ class RagService {
   final VectorStore store;
   RagSearchDiagnostics? lastDiagnostics;
   MultiHopTrace? lastMultiHopTrace;
+  LongContextTrace? lastLongContextTrace;
 
   RagService({required this.embedder, required this.store});
 
@@ -241,6 +243,7 @@ class RagService {
     bool useQueryExpansion = false,
     bool detectAmbiguous = false,
     bool enableMultiHop = false,
+    bool enableLongContext = false,
   }) async {
     lastDiagnostics = const RagSearchDiagnostics(
       semanticHits: [],
@@ -248,6 +251,7 @@ class RagService {
       fusedHits: [],
     );
     lastMultiHopTrace = null;
+    lastLongContextTrace = null;
 
     if (detectAmbiguous &&
         const AmbiguousQueryDetector().isAmbiguous(query, activeDoc: docName)) {
@@ -257,6 +261,35 @@ class RagService {
     if (store.length == 0) return [];
     final pool = _searchPool(docName);
     if (pool.isEmpty) return [];
+
+    final longContextOptimizer = const LongContextOptimizer();
+    if (enableLongContext && longContextOptimizer.isLongContext(query)) {
+      final result = await longContextOptimizer.retrieve(
+        query: query,
+        k: k,
+        retriever: (subQuery, {required k}) {
+          return retrieve(
+            subQuery,
+            k: k,
+            docName: docName,
+            minScore: minScore,
+            mode: mode,
+            rrfConfig: rrfConfig,
+            useQueryExpansion: useQueryExpansion,
+            detectAmbiguous: false,
+            enableMultiHop: false,
+            enableLongContext: false,
+          );
+        },
+      );
+      lastLongContextTrace = result.trace;
+      lastDiagnostics = RagSearchDiagnostics(
+        semanticHits: lastDiagnostics?.semanticHits ?? const [],
+        keywordHits: lastDiagnostics?.keywordHits ?? const [],
+        fusedHits: result.hits,
+      );
+      return result.hits;
+    }
 
     final multiHopReasoner = const MultiHopReasoner();
     if (enableMultiHop && multiHopReasoner.isMultiHop(query)) {
@@ -274,6 +307,7 @@ class RagService {
             useQueryExpansion: useQueryExpansion,
             detectAmbiguous: false,
             enableMultiHop: false,
+            enableLongContext: false,
           );
         },
       );

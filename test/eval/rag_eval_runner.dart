@@ -72,6 +72,7 @@ class RagEvalRunner {
     this.useQueryExpansion = false,
     this.detectAmbiguous = false,
     this.enableMultiHop = false,
+    this.enableLongContext = false,
     this.rrfConfig = const RrfConfig(),
   });
 
@@ -84,6 +85,7 @@ class RagEvalRunner {
   final bool useQueryExpansion;
   final bool detectAmbiguous;
   final bool enableMultiHop;
+  final bool enableLongContext;
   final RrfConfig rrfConfig;
 
   Future<Map<String, Object?>> run({
@@ -139,6 +141,7 @@ class RagEvalRunner {
       'useQueryExpansion': useQueryExpansion,
       'detectAmbiguous': detectAmbiguous,
       'enableMultiHop': enableMultiHop,
+      'enableLongContext': enableLongContext,
       'rrfConfig': rrfConfig.toJson(),
       if (baselineSnapshot != null) 'baselineSnapshot': baselineSnapshot,
       ...extraMetadata,
@@ -173,6 +176,7 @@ class RagEvalRunner {
         useQueryExpansion: useQueryExpansion,
         detectAmbiguous: detectAmbiguous,
         enableMultiHop: _shouldUseMultiHop(evalCase),
+        enableLongContext: _shouldUseLongContext(evalCase),
         rrfConfig: rrfConfig,
       );
     }
@@ -184,6 +188,7 @@ class RagEvalRunner {
       useQueryExpansion: useQueryExpansion,
       detectAmbiguous: detectAmbiguous,
       enableMultiHop: _shouldUseMultiHop(evalCase),
+      enableLongContext: _shouldUseLongContext(evalCase),
       rrfConfig: rrfConfig,
     );
     return rag.retrieve(
@@ -193,12 +198,17 @@ class RagEvalRunner {
       useQueryExpansion: useQueryExpansion,
       detectAmbiguous: detectAmbiguous,
       enableMultiHop: _shouldUseMultiHop(evalCase),
+      enableLongContext: _shouldUseLongContext(evalCase),
       rrfConfig: rrfConfig,
     );
   }
 
   bool _shouldUseMultiHop(RagEvalCase evalCase) {
     return enableMultiHop && evalCase.expectedStatus == 'multiHop';
+  }
+
+  bool _shouldUseLongContext(RagEvalCase evalCase) {
+    return enableLongContext && evalCase.expectedStatus == 'longContext';
   }
 
   RagEvalResult _scoreCase(RagEvalCase evalCase, List<ScoredChunk> hits) {
@@ -287,8 +297,11 @@ class RagEvalRunner {
   }
 
   Map<String, Object?>? _diagnosticsFor(RagEvalCase evalCase) {
-    if (!_shouldUseMultiHop(evalCase)) return null;
-    return rag.lastMultiHopTrace?.toJson();
+    if (_shouldUseMultiHop(evalCase)) return rag.lastMultiHopTrace?.toJson();
+    if (_shouldUseLongContext(evalCase)) {
+      return rag.lastLongContextTrace?.toJson();
+    }
+    return null;
   }
 
   Map<String, int> _categoryCounts(List<RagEvalCase> cases) {

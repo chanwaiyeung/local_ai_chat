@@ -84,6 +84,7 @@ class _FakeRagService extends RagService {
     bool useQueryExpansion = false,
     bool detectAmbiguous = false,
     bool enableMultiHop = false,
+    bool enableLongContext = false,
   }) async {
     return hits;
   }
