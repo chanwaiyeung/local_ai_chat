@@ -52,3 +52,4 @@ app.*.map.json
 /copilot_handoff/
 /copilot_handoff_split/
 /handoff_exports/
+*.zip
