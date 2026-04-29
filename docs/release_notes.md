@@ -1,5 +1,36 @@
 # Release Notes
 
+## v2.0 RC1 — Production Ready Candidate (2026-04-28)
+
+Status: Release Candidate.
+
+### Highlights
+
+- Dataset v2 (45 cases): **100.0%** pass rate.
+- Original 13 cases: 12 PASS / 1 PARTIAL / 0 FAIL.
+- All experimental features reviewed and documented.
+- No release blockers.
+
+### Promoted to Default (Recommended)
+
+- Persisted BM25 with schema v3.
+- Auto Evaluation Runner.
+- Ambiguous Query Handling.
+- Multi-hop Reasoning.
+- Long Context Optimization.
+
+### Experimental (Not yet promoted)
+
+- Query Expansion.
+- RRF Grid Tuning.
+
+### Validation
+
+- `flutter analyze`: PASS.
+- `flutter test -r expanded`: 101 passed.
+- Integration tests: PASS.
+- Windows release build: PASS.
+
 ## v2.0 RC — Production Readiness Lock
 
 Status: Production Ready Candidate.

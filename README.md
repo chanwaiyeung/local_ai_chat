@@ -7,6 +7,15 @@
 - 對話匯出為 Markdown
 - 文件片段預覽 / 搜尋 / 揀選
 
+## v2.0 RC1 狀態
+
+v2.0 RC1 已完成 Production Readiness Lock。RAG 評測 Dataset v2（45 題）
+達到 100.0% pass rate，原有 13 cases 維持 12 PASS / 1 PARTIAL / 0 FAIL，
+目前無 release blocker。RC1 推薦的 production default 候選包括 persisted
+BM25 schema v3、自動評測 runner、ambiguous query handling、multi-hop
+reasoning，以及 long context optimization；Query Expansion 與 RRF Grid
+Tuning 保留為實驗封存。
+
 ---
 
 ## 一、前置安裝
