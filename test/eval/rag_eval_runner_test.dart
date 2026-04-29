@@ -112,6 +112,7 @@ class _FakeRagService extends RagService {
     RetrievalMode mode = RetrievalMode.hybrid,
     RrfConfig rrfConfig = const RrfConfig(),
     bool useQueryExpansion = false,
+    bool detectAmbiguous = false,
   }) async {
     queries.add(query);
     return responses[query] ?? const [];

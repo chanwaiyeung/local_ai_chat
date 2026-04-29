@@ -2,6 +2,7 @@
 import 'dart:math' as math;
 
 import '../models/app_settings.dart';
+import 'ambiguous_query_detector.dart';
 import 'embedding_service.dart';
 import 'query_expansion.dart';
 import 'vector_store.dart';
@@ -236,12 +237,18 @@ class RagService {
     RetrievalMode mode = RetrievalMode.hybrid,
     RrfConfig rrfConfig = const RrfConfig(),
     bool useQueryExpansion = false,
+    bool detectAmbiguous = false,
   }) async {
     lastDiagnostics = const RagSearchDiagnostics(
       semanticHits: [],
       keywordHits: [],
       fusedHits: [],
     );
+
+    if (detectAmbiguous &&
+        const AmbiguousQueryDetector().isAmbiguous(query, activeDoc: docName)) {
+      return [];
+    }
 
     if (store.length == 0) return [];
     final pool = _searchPool(docName);

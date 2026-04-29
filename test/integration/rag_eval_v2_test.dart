@@ -89,6 +89,47 @@ void main() {
       expect(categoryCounts, containsPair('Long Context', 5));
       expect(categoryCounts, containsPair('Cross-document', 7));
       expect(File(outputPath).existsSync(), isTrue);
+
+      final phase4aOutputPath = Platform
+              .environment['RAG_EVAL_PHASE4A_OUTPUT'] ??
+          'docs/eval_snapshots/eval_phase4a_ambiguous_handling_2026-04-28.json';
+      final phase4aPayload = await RagEvalRunner(
+        rag: rag,
+        embeddingModel: 'bge-m3',
+        retrievalMode: RetrievalMode.hybrid,
+        dataset: 'v2-phase4a',
+        cases: ragEvalCasesV2,
+        topK: 4,
+        detectAmbiguous: true,
+      ).run(
+        version: 'v2.0-phase4a-ambiguous-handling',
+        outputPath: phase4aOutputPath,
+        baselineSnapshot: outputPath,
+        extraMetadata: const {
+          'productionDefaultChanged': false,
+          'purpose': 'experimental_ambiguous_query_handling',
+        },
+      );
+
+      final phase4aSummary = phase4aPayload['summary'] as Map<String, Object?>;
+      final phase4aCategorySummary =
+          phase4aPayload['categorySummary'] as Map<String, Object?>;
+      final ambiguousSummary =
+          phase4aCategorySummary['Ambiguous'] as Map<String, Object?>;
+
+      expect(
+        (phase4aSummary['passRate'] as num).toDouble(),
+        greaterThan(0.889),
+      );
+      expect(
+        (ambiguousSummary['passRate'] as num).toDouble(),
+        greaterThan(0.5),
+      );
+      expect(
+        phase4aSummary['fail'] as int,
+        lessThanOrEqualTo(v2Summary['fail'] as int),
+      );
+      expect(File(phase4aOutputPath).existsSync(), isTrue);
     },
     skip: runIntegration
         ? false

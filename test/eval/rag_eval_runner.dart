@@ -67,6 +67,7 @@ class RagEvalRunner {
     this.cases = ragEvalCases,
     this.dataset = 'v1',
     this.useQueryExpansion = false,
+    this.detectAmbiguous = false,
     this.rrfConfig = const RrfConfig(),
   });
 
@@ -77,6 +78,7 @@ class RagEvalRunner {
   final List<RagEvalCase> cases;
   final String dataset;
   final bool useQueryExpansion;
+  final bool detectAmbiguous;
   final RrfConfig rrfConfig;
 
   Future<Map<String, Object?>> run({
@@ -130,6 +132,7 @@ class RagEvalRunner {
       'retrievalMode': retrievalMode.name,
       'topK': topK,
       'useQueryExpansion': useQueryExpansion,
+      'detectAmbiguous': detectAmbiguous,
       'rrfConfig': rrfConfig.toJson(),
       if (baselineSnapshot != null) 'baselineSnapshot': baselineSnapshot,
       ...extraMetadata,
@@ -162,6 +165,7 @@ class RagEvalRunner {
         k: topK,
         mode: retrievalMode,
         useQueryExpansion: useQueryExpansion,
+        detectAmbiguous: detectAmbiguous,
         rrfConfig: rrfConfig,
       );
     }
@@ -171,6 +175,7 @@ class RagEvalRunner {
       k: topK,
       mode: retrievalMode,
       useQueryExpansion: useQueryExpansion,
+      detectAmbiguous: detectAmbiguous,
       rrfConfig: rrfConfig,
     );
     return rag.retrieve(
@@ -178,6 +183,7 @@ class RagEvalRunner {
       k: topK,
       mode: retrievalMode,
       useQueryExpansion: useQueryExpansion,
+      detectAmbiguous: detectAmbiguous,
       rrfConfig: rrfConfig,
     );
   }
@@ -214,6 +220,12 @@ class RagEvalRunner {
 
   String _determineVerdict(RagEvalCase evalCase, List<ScoredChunk> hits) {
     final effectiveHits = _effectiveHits(evalCase, hits);
+    if (detectAmbiguous &&
+        evalCase.expectedStatus == 'ambiguous' &&
+        effectiveHits.isEmpty) {
+      return 'PASS';
+    }
+
     if (_expectsNoHits(evalCase)) {
       return effectiveHits.isEmpty ? 'PASS' : 'PARTIAL';
     }
