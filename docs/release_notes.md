@@ -1,5 +1,36 @@
 # Release Notes
 
+## v2.0 RC — Production Readiness Lock
+
+Status: Production Ready Candidate.
+
+### Summary
+
+- Dataset v2 (45 cases): 100.0%.
+- Original 13 cases: 12 PASS / 1 PARTIAL / 0 FAIL.
+- Tests: 100+ passed.
+- Release blockers: None.
+
+### Recommended for Production Default
+
+- Persisted BM25 (schema v3).
+- Auto Evaluation Runner.
+- Ambiguous Query Handling.
+- Multi-hop Reasoning.
+- Long Context Optimization.
+
+### Experimental (Not Promoted)
+
+- Query Expansion.
+- RRF Grid Tuning.
+
+### Validation
+
+- `flutter analyze`: PASS.
+- `flutter test -r expanded`: PASS.
+- Integration tests: PASS.
+- Windows release build: PASS.
+
 ## v2.0 Phase 1 — Persisted BM25 Index
 
 Status: accepted.
