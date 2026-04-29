@@ -1,5 +1,34 @@
 # Release Notes
 
+## v2.0.0 — General Availability (2026-04-28)
+
+**Status**: Released.
+
+### Summary
+
+- Based on v2.0-rc1.
+- No release blockers.
+- Dataset v2 (45 cases): **100.0%**.
+- Original 13 cases: 12 PASS / 1 PARTIAL / 0 FAIL.
+- Tests: 101 passed, 4 skipped.
+
+### Key Features
+
+- Persisted BM25 with schema v3.
+- Hybrid retrieval (dense + BM25 + RRF).
+- Auto Evaluation Runner.
+- Ambiguous Query Handling (experimental).
+- Multi-hop Reasoning (experimental).
+- Long Context Optimization (experimental).
+
+### Validation
+
+- `flutter analyze`: PASS.
+- `flutter test -r expanded`: 101 passed.
+- Windows release build: PASS.
+
+This is the first General Availability release of v2.0.
+
 ## v2.0 RC1 — Production Ready Candidate (2026-04-28)
 
 Status: Release Candidate.

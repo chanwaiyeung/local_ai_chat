@@ -1,7 +1,7 @@
 name: local_ai_chat
 description: "AI 語音圖書館（本地 Ollama AI + Windows 語音 + PDF 文件問答）"
 publish_to: 'none'
-version: 1.0.0+1
+version: 2.0.0+1
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
