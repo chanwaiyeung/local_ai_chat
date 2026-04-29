@@ -244,6 +244,7 @@ class RagService {
     bool detectAmbiguous = false,
     bool enableMultiHop = false,
     bool enableLongContext = false,
+    bool enableDeepLongContext = false,
   }) async {
     lastDiagnostics = const RagSearchDiagnostics(
       semanticHits: [],
@@ -263,10 +264,12 @@ class RagService {
     if (pool.isEmpty) return [];
 
     final longContextOptimizer = const LongContextOptimizer();
-    if (enableLongContext && longContextOptimizer.isLongContext(query)) {
+    if ((enableLongContext || enableDeepLongContext) &&
+        longContextOptimizer.isLongContext(query)) {
       final result = await longContextOptimizer.retrieve(
         query: query,
         k: k,
+        deep: enableDeepLongContext,
         retriever: (subQuery, {required k}) {
           return retrieve(
             subQuery,
@@ -279,6 +282,7 @@ class RagService {
             detectAmbiguous: false,
             enableMultiHop: false,
             enableLongContext: false,
+            enableDeepLongContext: false,
           );
         },
       );
@@ -308,6 +312,7 @@ class RagService {
             detectAmbiguous: false,
             enableMultiHop: false,
             enableLongContext: false,
+            enableDeepLongContext: false,
           );
         },
       );

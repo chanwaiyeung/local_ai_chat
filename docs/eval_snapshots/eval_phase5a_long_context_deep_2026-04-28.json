@@ -1,0 +1,3619 @@
+{
+  "version": "v2.0-phase5a-long-context-deep-optimization",
+  "date": "2026-04-29T01:32:23.622059Z",
+  "source": "automated_rag_eval_runner",
+  "dataset": "v2-phase5a",
+  "embeddingModel": "bge-m3",
+  "retrievalMode": "hybrid",
+  "topK": 4,
+  "useQueryExpansion": false,
+  "detectAmbiguous": true,
+  "enableMultiHop": true,
+  "enableLongContext": false,
+  "enableDeepLongContext": true,
+  "rrfConfig": {
+    "rankConstant": 60,
+    "semanticWeight": 1.0,
+    "keywordWeight": 1.3
+  },
+  "baselineSnapshot": "docs\\eval_snapshots\\eval_phase4c_long_context_2026-04-28.json",
+  "productionDefaultChanged": false,
+  "purpose": "experimental_deep_long_context_optimization",
+  "usesLlm": false,
+  "summary": {
+    "total": 45,
+    "pass": 45,
+    "partial": 0,
+    "fail": 0,
+    "score": 45.0,
+    "passRate": 1.0
+  },
+  "categoryCounts": {
+    "Fact Retrieval": 10,
+    "Missing": 5,
+    "Synonym": 5,
+    "Multi-hop": 8,
+    "Ambiguous": 5,
+    "Long Context": 5,
+    "Cross-document": 7
+  },
+  "categorySummary": {
+    "Fact Retrieval": {
+      "total": 10,
+      "pass": 10,
+      "partial": 0,
+      "fail": 0,
+      "score": 10.0,
+      "passRate": 1.0
+    },
+    "Missing": {
+      "total": 5,
+      "pass": 5,
+      "partial": 0,
+      "fail": 0,
+      "score": 5.0,
+      "passRate": 1.0
+    },
+    "Synonym": {
+      "total": 5,
+      "pass": 5,
+      "partial": 0,
+      "fail": 0,
+      "score": 5.0,
+      "passRate": 1.0
+    },
+    "Multi-hop": {
+      "total": 8,
+      "pass": 8,
+      "partial": 0,
+      "fail": 0,
+      "score": 8.0,
+      "passRate": 1.0
+    },
+    "Ambiguous": {
+      "total": 5,
+      "pass": 5,
+      "partial": 0,
+      "fail": 0,
+      "score": 5.0,
+      "passRate": 1.0
+    },
+    "Long Context": {
+      "total": 5,
+      "pass": 5,
+      "partial": 0,
+      "fail": 0,
+      "score": 5.0,
+      "passRate": 1.0
+    },
+    "Cross-document": {
+      "total": 7,
+      "pass": 7,
+      "partial": 0,
+      "fail": 0,
+      "score": 7.0,
+      "passRate": 1.0
+    }
+  },
+  "cases": [
+    {
+      "id": 1001,
+      "question": "What CPU emulation cores does DOSBox 0.74 support?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 12,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #87",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 87,
+          "score": 0.036593
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 88,
+          "score": 0.035238
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 64,
+          "score": 0.03419
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 89,
+          "score": 0.033992
+        }
+      ]
+    },
+    {
+      "id": 1002,
+      "question": "What is the default key combination to release the mouse in DOSBox?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 8,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #64",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 64,
+          "score": 0.036936
+        },
+        {
+          "docName": "README.txt",
+          "chunkIndex": 2,
+          "score": 0.036764
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 16,
+          "score": 0.034788
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 66,
+          "score": 0.034703
+        }
+      ]
+    },
+    {
+      "id": 1003,
+      "question": "Which configuration file does DOSBox load on startup?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 3,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #97",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 97,
+          "score": 0.036764
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 75,
+          "score": 0.035597
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 98,
+          "score": 0.03557
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 25,
+          "score": 0.034493
+        }
+      ]
+    },
+    {
+      "id": 1004,
+      "question": "What command lists available keyboard layouts in DOSBox?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 45,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #77",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 77,
+          "score": 0.037361
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 78,
+          "score": 0.036463
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 60,
+          "score": 0.035873
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 61,
+          "score": 0.033487
+        }
+      ]
+    },
+    {
+      "id": 1005,
+      "question": "What is the maximum supported CPU cycles setting?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 18,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #86",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 86,
+          "score": 0.036508
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 85,
+          "score": 0.036352
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 89,
+          "score": 0.035625
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 64,
+          "score": 0.035597
+        }
+      ]
+    },
+    {
+      "id": 1006,
+      "question": "How do you mount a directory as a drive in DOSBox?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #35",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 35,
+          "score": 0.037705
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 38,
+          "score": 0.036442
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 3,
+          "score": 0.03556
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 30,
+          "score": 0.03546
+        }
+      ]
+    },
+    {
+      "id": 1007,
+      "question": "What does the SDL section in dosbox.conf control?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #96",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 96,
+          "score": 0.035786
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 97,
+          "score": 0.035052
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 24,
+          "score": 0.03501
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 92,
+          "score": 0.033646
+        }
+      ]
+    },
+    {
+      "id": 1008,
+      "question": "What output setting does DOSBox use by default?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #11",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 11,
+          "score": 0.037361
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 90,
+          "score": 0.03556
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 14,
+          "score": 0.034706
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 85,
+          "score": 0.034132
+        }
+      ]
+    },
+    {
+      "id": 1009,
+      "question": "How do you enable fullscreen mode in DOSBox configuration?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #5",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 5,
+          "score": 0.037705
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 4,
+          "score": 0.037097
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 1,
+          "score": 0.03556
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 2,
+          "score": 0.035385
+        }
+      ]
+    },
+    {
+      "id": 1010,
+      "question": "What does the auto CPU core do in DOSBox?",
+      "expectedStatus": "exists",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 12,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #88",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 88,
+          "score": 0.037705
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 87,
+          "score": 0.037097
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 86,
+          "score": 0.035873
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 89,
+          "score": 0.035322
+        }
+      ]
+    },
+    {
+      "id": 2001,
+      "question": "Who is the current CEO of DOSBox project?",
+      "expectedStatus": "missing",
+      "verdict": "PASS",
+      "hits": 0,
+      "mainCitation": null,
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 41,
+          "score": 0.034481
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 40,
+          "score": 0.033216
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 39,
+          "score": 0.032684
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 42,
+          "score": 0.032658
+        }
+      ]
+    },
+    {
+      "id": 2002,
+      "question": "What is the price of DOSBox Pro Edition?",
+      "expectedStatus": "missing",
+      "verdict": "PASS",
+      "hits": 0,
+      "mainCitation": null,
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 13,
+          "score": 0.036119
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 11,
+          "score": 0.035804
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.035511
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 20,
+          "score": 0.034185
+        }
+      ]
+    },
+    {
+      "id": 2003,
+      "question": "When was DOSBox 1.0 officially released?",
+      "expectedStatus": "missing",
+      "verdict": "PASS",
+      "hits": 0,
+      "mainCitation": null,
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 11,
+          "score": 0.034269
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 3,
+          "score": 0.034185
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 83,
+          "score": 0.033896
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 96,
+          "score": 0.033781
+        }
+      ]
+    },
+    {
+      "id": 2004,
+      "question": "Does DOSBox support DirectX 12?",
+      "expectedStatus": "missing",
+      "verdict": "PASS",
+      "hits": 0,
+      "mainCitation": null,
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 95,
+          "score": 0.036442
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.03609
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 92,
+          "score": 0.036017
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 5,
+          "score": 0.034991
+        }
+      ]
+    },
+    {
+      "id": 2005,
+      "question": "What is the GitHub repository URL for DOSBox?",
+      "expectedStatus": "missing",
+      "verdict": "PASS",
+      "hits": 0,
+      "mainCitation": null,
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 21,
+          "score": 0.03626
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.033983
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 96,
+          "score": 0.033646
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 95,
+          "score": 0.03336
+        }
+      ]
+    },
+    {
+      "id": 3001,
+      "question": "How do I let go of the mouse cursor?",
+      "expectedStatus": "synonym",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 8,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #9",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 9,
+          "score": 0.03602
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 2,
+          "score": 0.036017
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 18,
+          "score": 0.035893
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 64,
+          "score": 0.034965
+        }
+      ]
+    },
+    {
+      "id": 3002,
+      "question": "How can I control CPU speed?",
+      "expectedStatus": "synonym",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 18,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #88",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 88,
+          "score": 0.037097
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 86,
+          "score": 0.037028
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 84,
+          "score": 0.036017
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 87,
+          "score": 0.03557
+        }
+      ]
+    },
+    {
+      "id": 3003,
+      "question": "What command configures keyboard mapping?",
+      "expectedStatus": "synonym",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 45,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #75",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 75,
+          "score": 0.037441
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 69,
+          "score": 0.035276
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 16,
+          "score": 0.034666
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 73,
+          "score": 0.033727
+        }
+      ]
+    },
+    {
+      "id": 3004,
+      "question": "Where is the startup configuration stored?",
+      "expectedStatus": "synonym",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 3,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #43",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 43,
+          "score": 0.037441
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 75,
+          "score": 0.034857
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 42,
+          "score": 0.034706
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 91,
+          "score": 0.03419
+        }
+      ]
+    },
+    {
+      "id": 3005,
+      "question": "How do I change the virtual processor mode?",
+      "expectedStatus": "synonym",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "expectedChunk": 12,
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #86",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 86,
+          "score": 0.036393
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 91,
+          "score": 0.035396
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 88,
+          "score": 0.034196
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 42,
+          "score": 0.033135
+        }
+      ]
+    },
+    {
+      "id": 4001,
+      "question": "Which file controls startup and which command helps configure keyboard layout?",
+      "expectedStatus": "multiHop",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #77",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 77,
+          "score": 1.037184
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 41,
+          "score": 1.036936
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 60,
+          "score": 0.536764
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 91,
+          "score": 0.536442
+        }
+      ],
+      "diagnostics": {
+        "originalQuery": "Which file controls startup and which command helps configure keyboard layout?",
+        "subQueries": [
+          "Which file controls startup",
+          "which command helps configure keyboard layout"
+        ],
+        "subQueryHits": {
+          "Which file controls startup": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 41,
+              "score": 0.036936
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 91,
+              "score": 0.036442
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 25,
+              "score": 0.03602
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 3,
+              "score": 0.032561
+            }
+          ],
+          "which command helps configure keyboard layout": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 77,
+              "score": 0.037184
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 60,
+              "score": 0.036764
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 76,
+              "score": 0.036393
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 62,
+              "score": 0.036352
+            }
+          ]
+        },
+        "mergedHits": [
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 77,
+            "score": 1.037184
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 41,
+            "score": 1.036936
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 60,
+            "score": 0.536764
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 91,
+            "score": 0.536442
+          }
+        ]
+      }
+    },
+    {
+      "id": 4002,
+      "question": "How does increasing cycles affect performance and what setting controls CPU core behavior?",
+      "expectedStatus": "multiHop",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #85",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 85,
+          "score": 1.037361
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 86,
+          "score": 1.037361
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 88,
+          "score": 0.536764
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 20,
+          "score": 0.536237
+        }
+      ],
+      "diagnostics": {
+        "originalQuery": "How does increasing cycles affect performance and what setting controls CPU core behavior?",
+        "subQueries": [
+          "How does increasing cycles affect performance",
+          "what setting controls CPU core behavior"
+        ],
+        "subQueryHits": {
+          "How does increasing cycles affect performance": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 85,
+              "score": 0.037361
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 20,
+              "score": 0.036237
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 86,
+              "score": 0.035937
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 88,
+              "score": 0.035385
+            }
+          ],
+          "what setting controls CPU core behavior": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 86,
+              "score": 0.037361
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 88,
+              "score": 0.036764
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 87,
+              "score": 0.036696
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 85,
+              "score": 0.035464
+            }
+          ]
+        },
+        "mergedHits": [
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 85,
+            "score": 1.037361
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 86,
+            "score": 1.037361
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 88,
+            "score": 0.536764
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 20,
+            "score": 0.536237
+          }
+        ]
+      }
+    },
+    {
+      "id": 4003,
+      "question": "How do I mount a game folder and then switch to that DOS drive?",
+      "expectedStatus": "multiHop",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #36",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 36,
+          "score": 1.037441
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 29,
+          "score": 1.034439
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 1,
+          "score": 0.535674
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 16,
+          "score": 0.534085
+        }
+      ],
+      "diagnostics": {
+        "originalQuery": "How do I mount a game folder and then switch to that DOS drive?",
+        "subQueries": [
+          "How do I mount a game folder",
+          "switch to that DOS drive"
+        ],
+        "subQueryHits": {
+          "How do I mount a game folder": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 36,
+              "score": 0.037441
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 1,
+              "score": 0.035674
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 29,
+              "score": 0.035385
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 38,
+              "score": 0.035276
+            }
+          ],
+          "switch to that DOS drive": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 29,
+              "score": 0.034439
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 16,
+              "score": 0.034085
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 23,
+              "score": 0.033793
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 39,
+              "score": 0.032857
+            }
+          ]
+        },
+        "mergedHits": [
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 36,
+            "score": 1.037441
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 29,
+            "score": 1.034439
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 1,
+            "score": 0.535674
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 16,
+            "score": 0.534085
+          }
+        ]
+      }
+    },
+    {
+      "id": 4004,
+      "question": "If the keyboard and mouse are both captured incorrectly, which controls help?",
+      "expectedStatus": "multiHop",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #9",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 9,
+          "score": 1.037361
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 72,
+          "score": 1.036936
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 30,
+          "score": 1.035018
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 18,
+          "score": 0.537184
+        }
+      ],
+      "diagnostics": {
+        "originalQuery": "If the keyboard and mouse are both captured incorrectly, which controls help?",
+        "subQueries": [
+          "If the keyboard",
+          "mouse are both captured incorrectly",
+          "which controls help"
+        ],
+        "subQueryHits": {
+          "If the keyboard": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 72,
+              "score": 0.036936
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 73,
+              "score": 0.036393
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 17,
+              "score": 0.03602
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 60,
+              "score": 0.035893
+            }
+          ],
+          "mouse are both captured incorrectly": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 9,
+              "score": 0.037361
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 18,
+              "score": 0.037184
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 2,
+              "score": 0.034921
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 63,
+              "score": 0.033193
+            }
+          ],
+          "which controls help": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 30,
+              "score": 0.035018
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 20,
+              "score": 0.031602
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 41,
+              "score": 0.021311
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 55,
+              "score": 0.020968
+            }
+          ]
+        },
+        "mergedHits": [
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 9,
+            "score": 1.037361
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 72,
+            "score": 1.036936
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 30,
+            "score": 1.035018
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 18,
+            "score": 0.537184
+          }
+        ]
+      }
+    },
+    {
+      "id": 4005,
+      "question": "Which CPU core should I consider for speed, and what cycles setting should I tune?",
+      "expectedStatus": "multiHop",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #88",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 88,
+          "score": 1.037441
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 85,
+          "score": 1.036841
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 87,
+          "score": 0.537028
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 89,
+          "score": 0.536696
+        }
+      ],
+      "diagnostics": {
+        "originalQuery": "Which CPU core should I consider for speed, and what cycles setting should I tune?",
+        "subQueries": [
+          "Which CPU core should I consider for speed",
+          "and what cycles setting should I tune"
+        ],
+        "subQueryHits": {
+          "Which CPU core should I consider for speed": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 88,
+              "score": 0.037441
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 87,
+              "score": 0.037028
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 89,
+              "score": 0.036593
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 86,
+              "score": 0.036186
+            }
+          ],
+          "and what cycles setting should I tune": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 85,
+              "score": 0.036841
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 89,
+              "score": 0.036696
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 86,
+              "score": 0.036129
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 90,
+              "score": 0.035937
+            }
+          ]
+        },
+        "mergedHits": [
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 88,
+            "score": 1.037441
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 85,
+            "score": 1.036841
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 87,
+            "score": 0.537028
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 89,
+            "score": 0.536696
+          }
+        ]
+      }
+    },
+    {
+      "id": 4006,
+      "question": "What configuration areas matter for both display output and fullscreen behavior?",
+      "expectedStatus": "multiHop",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #5",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 5,
+          "score": 1.037705
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 26,
+          "score": 1.035826
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 4,
+          "score": 0.536593
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 90,
+          "score": 0.533723
+        }
+      ],
+      "diagnostics": {
+        "originalQuery": "What configuration areas matter for both display output and fullscreen behavior?",
+        "subQueries": [
+          "What configuration areas matter for both display output",
+          "fullscreen behavior"
+        ],
+        "subQueryHits": {
+          "What configuration areas matter for both display output": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 26,
+              "score": 0.035826
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 90,
+              "score": 0.033723
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 45,
+              "score": 0.03184
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 76,
+              "score": 0.031598
+            }
+          ],
+          "fullscreen behavior": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 5,
+              "score": 0.037705
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 4,
+              "score": 0.036593
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 2,
+              "score": 0.035873
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 1,
+              "score": 0.033826
+            }
+          ]
+        },
+        "mergedHits": [
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 5,
+            "score": 1.037705
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 26,
+            "score": 1.035826
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 4,
+            "score": 0.536593
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 90,
+            "score": 0.533723
+          }
+        ]
+      }
+    },
+    {
+      "id": 4007,
+      "question": "What should I check if a game is too fast and the keyboard layout is wrong?",
+      "expectedStatus": "multiHop",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #16",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 16,
+          "score": 1.037705
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 85,
+          "score": 1.037441
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 18,
+          "score": 0.537028
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 77,
+          "score": 0.536442
+        }
+      ],
+      "diagnostics": {
+        "originalQuery": "What should I check if a game is too fast and the keyboard layout is wrong?",
+        "subQueries": [
+          "What should I check if a game is too fast",
+          "the keyboard layout is wrong"
+        ],
+        "subQueryHits": {
+          "What should I check if a game is too fast": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 85,
+              "score": 0.037441
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 18,
+              "score": 0.037028
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 19,
+              "score": 0.036593
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 89,
+              "score": 0.03557
+            }
+          ],
+          "the keyboard layout is wrong": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 16,
+              "score": 0.037705
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 77,
+              "score": 0.036442
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 60,
+              "score": 0.03626
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 15,
+              "score": 0.035893
+            }
+          ]
+        },
+        "mergedHits": [
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 16,
+            "score": 1.037705
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 85,
+            "score": 1.037441
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 18,
+            "score": 0.537028
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 77,
+            "score": 0.536442
+          }
+        ]
+      }
+    },
+    {
+      "id": 4008,
+      "question": "How do startup configuration and mounting work together for launching games?",
+      "expectedStatus": "multiHop",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #35",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 35,
+          "score": 1.037184
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 75,
+          "score": 1.035128
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 9,
+          "score": 0.535796
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 91,
+          "score": 0.535028
+        }
+      ],
+      "diagnostics": {
+        "originalQuery": "How do startup configuration and mounting work together for launching games?",
+        "subQueries": [
+          "How do startup configuration",
+          "mounting work together for launching games"
+        ],
+        "subQueryHits": {
+          "How do startup configuration": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 75,
+              "score": 0.035128
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 91,
+              "score": 0.035028
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 25,
+              "score": 0.034706
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 1,
+              "score": 0.034502
+            }
+          ],
+          "mounting work together for launching games": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 35,
+              "score": 0.037184
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 9,
+              "score": 0.035796
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 94,
+              "score": 0.034743
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 36,
+              "score": 0.033723
+            }
+          ]
+        },
+        "mergedHits": [
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 35,
+            "score": 1.037184
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 75,
+            "score": 1.035128
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 9,
+            "score": 0.535796
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 91,
+            "score": 0.535028
+          }
+        ]
+      }
+    },
+    {
+      "id": 5001,
+      "question": "How do I configure it correctly?",
+      "expectedStatus": "ambiguous",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 0,
+      "mainCitation": null,
+      "citations": []
+    },
+    {
+      "id": 5002,
+      "question": "How do I fix the mouse?",
+      "expectedStatus": "ambiguous",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 0,
+      "mainCitation": null,
+      "citations": []
+    },
+    {
+      "id": 5003,
+      "question": "Why is my game slow?",
+      "expectedStatus": "ambiguous",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 0,
+      "mainCitation": null,
+      "citations": []
+    },
+    {
+      "id": 5004,
+      "question": "Where do I put my settings?",
+      "expectedStatus": "ambiguous",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 0,
+      "mainCitation": null,
+      "citations": []
+    },
+    {
+      "id": 5005,
+      "question": "How do I make the screen better?",
+      "expectedStatus": "ambiguous",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 0,
+      "mainCitation": null,
+      "citations": []
+    },
+    {
+      "id": 6001,
+      "question": "Summarize all major configuration sections in the DOSBox manual.",
+      "expectedStatus": "longContext",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #96",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 96,
+          "score": 1.537705
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 45,
+          "score": 1.537705
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 40,
+          "score": 1.537441
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 66,
+          "score": 1.53626
+        }
+      ],
+      "diagnostics": {
+        "originalQuery": "Summarize all major configuration sections in the DOSBox manual.",
+        "subQueries": [
+          "Summarize all major configuration sections in the DOSBox manual.",
+          "overview main sections important settings",
+          "key configuration options",
+          "dosbox.conf configuration sections",
+          "sdl render cpu mixer midi sblaster configuration"
+        ],
+        "subQueryHits": {
+          "Summarize all major configuration sections in the DOSBox manual.": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 96,
+              "score": 0.037441
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 40,
+              "score": 0.036841
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 0,
+              "score": 0.036706
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 21,
+              "score": 0.033935
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 66,
+              "score": 0.033497
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 41,
+              "score": 0.03344
+            },
+            {
+              "docName": "README.txt",
+              "chunkIndex": 2,
+              "score": 0.032539
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 20,
+              "score": 0.031746
+            }
+          ],
+          "overview main sections important settings": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 40,
+              "score": 0.037441
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 96,
+              "score": 0.036593
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 41,
+              "score": 0.034225
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 95,
+              "score": 0.034183
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 21,
+              "score": 0.033646
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 97,
+              "score": 0.032816
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 98,
+              "score": 0.032346
+            },
+            {
+              "docName": "README.txt",
+              "chunkIndex": 3,
+              "score": 0.032263
+            }
+          ],
+          "key configuration options": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 66,
+              "score": 0.03626
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 16,
+              "score": 0.0352
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 96,
+              "score": 0.034622
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 21,
+              "score": 0.032508
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 71,
+              "score": 0.032105
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 41,
+              "score": 0.032039
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 24,
+              "score": 0.032008
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 40,
+              "score": 0.031598
+            }
+          ],
+          "dosbox.conf configuration sections": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 96,
+              "score": 0.037705
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 97,
+              "score": 0.036593
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 40,
+              "score": 0.036442
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 24,
+              "score": 0.035341
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 43,
+              "score": 0.034848
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 23,
+              "score": 0.032987
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 22,
+              "score": 0.032631
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 75,
+              "score": 0.032539
+            }
+          ],
+          "sdl render cpu mixer midi sblaster configuration": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 45,
+              "score": 0.037705
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 14,
+              "score": 0.036841
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 46,
+              "score": 0.036764
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 10,
+              "score": 0.033956
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 34,
+              "score": 0.033689
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 13,
+              "score": 0.033433
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 93,
+              "score": 0.032803
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 88,
+              "score": 0.03194
+            }
+          ]
+        },
+        "mergedHits": [
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 96,
+            "score": 1.537705
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 45,
+            "score": 1.537705
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 40,
+            "score": 1.537441
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 66,
+            "score": 1.53626
+          }
+        ]
+      }
+    },
+    {
+      "id": 6002,
+      "question": "List the main setup steps needed before running an old DOS game.",
+      "expectedStatus": "longContext",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #40",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 40,
+          "score": 1.537441
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 36,
+          "score": 1.537184
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 97,
+          "score": 1.537097
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 66,
+          "score": 1.53626
+        }
+      ],
+      "diagnostics": {
+        "originalQuery": "List the main setup steps needed before running an old DOS game.",
+        "subQueries": [
+          "List the main setup steps needed before running an old DOS game.",
+          "overview main sections important settings",
+          "key configuration options",
+          "mount drive folder run game setup",
+          "startup configuration dosbox.conf autoexec"
+        ],
+        "subQueryHits": {
+          "List the main setup steps needed before running an old DOS game.": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 29,
+              "score": 0.035893
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 93,
+              "score": 0.035786
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 94,
+              "score": 0.035322
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 95,
+              "score": 0.034444
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 23,
+              "score": 0.033507
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 9,
+              "score": 0.033193
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 24,
+              "score": 0.032561
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 56,
+              "score": 0.032394
+            }
+          ],
+          "overview main sections important settings": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 40,
+              "score": 0.037441
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 96,
+              "score": 0.036593
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 41,
+              "score": 0.034225
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 95,
+              "score": 0.034183
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 21,
+              "score": 0.033646
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 97,
+              "score": 0.032816
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 98,
+              "score": 0.032346
+            },
+            {
+              "docName": "README.txt",
+              "chunkIndex": 3,
+              "score": 0.032263
+            }
+          ],
+          "key configuration options": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 66,
+              "score": 0.03626
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 16,
+              "score": 0.0352
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 96,
+              "score": 0.034622
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 21,
+              "score": 0.032508
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 71,
+              "score": 0.032105
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 41,
+              "score": 0.032039
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 24,
+              "score": 0.032008
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 40,
+              "score": 0.031598
+            }
+          ],
+          "mount drive folder run game setup": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 36,
+              "score": 0.037184
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 3,
+              "score": 0.036593
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 38,
+              "score": 0.035826
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 29,
+              "score": 0.035697
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 37,
+              "score": 0.034493
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 35,
+              "score": 0.033499
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 9,
+              "score": 0.033487
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 1,
+              "score": 0.032035
+            }
+          ],
+          "startup configuration dosbox.conf autoexec": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 97,
+              "score": 0.037097
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 26,
+              "score": 0.03626
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 24,
+              "score": 0.036186
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 25,
+              "score": 0.035804
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 96,
+              "score": 0.035511
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 41,
+              "score": 0.034225
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 16,
+              "score": 0.034109
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 4,
+              "score": 0.033586
+            }
+          ]
+        },
+        "mergedHits": [
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 40,
+            "score": 1.537441
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 36,
+            "score": 1.537184
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 97,
+            "score": 1.537097
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 66,
+            "score": 1.53626
+          }
+        ]
+      }
+    },
+    {
+      "id": 6003,
+      "question": "Give a troubleshooting guide for input, CPU speed, and configuration issues.",
+      "expectedStatus": "longContext",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #45",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 45,
+          "score": 1.537705
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 88,
+          "score": 1.537705
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 96,
+          "score": 1.537705
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 40,
+          "score": 1.537441
+        }
+      ],
+      "diagnostics": {
+        "originalQuery": "Give a troubleshooting guide for input, CPU speed, and configuration issues.",
+        "subQueries": [
+          "Give a troubleshooting guide for input, CPU speed, and configuration issues.",
+          "overview main sections important settings",
+          "key configuration options",
+          "dosbox.conf configuration sections",
+          "sdl render cpu mixer midi sblaster configuration",
+          "mouse keyboard input troubleshooting keymapper",
+          "cpu speed cycles core performance troubleshooting",
+          "input keyboard mouse keymapper"
+        ],
+        "subQueryHits": {
+          "Give a troubleshooting guide for input, CPU speed, and configuration issues.": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 90,
+              "score": 0.036393
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 86,
+              "score": 0.035826
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 19,
+              "score": 0.035597
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 88,
+              "score": 0.035052
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 91,
+              "score": 0.034805
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 0,
+              "score": 0.034502
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 87,
+              "score": 0.034148
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 89,
+              "score": 0.033992
+            }
+          ],
+          "overview main sections important settings": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 40,
+              "score": 0.037441
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 96,
+              "score": 0.036593
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 41,
+              "score": 0.034225
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 95,
+              "score": 0.034183
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 21,
+              "score": 0.033646
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 97,
+              "score": 0.032816
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 98,
+              "score": 0.032346
+            },
+            {
+              "docName": "README.txt",
+              "chunkIndex": 3,
+              "score": 0.032263
+            }
+          ],
+          "key configuration options": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 66,
+              "score": 0.03626
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 16,
+              "score": 0.0352
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 96,
+              "score": 0.034622
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 21,
+              "score": 0.032508
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 71,
+              "score": 0.032105
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 41,
+              "score": 0.032039
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 24,
+              "score": 0.032008
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 40,
+              "score": 0.031598
+            }
+          ],
+          "dosbox.conf configuration sections": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 96,
+              "score": 0.037705
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 97,
+              "score": 0.036593
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 40,
+              "score": 0.036442
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 24,
+              "score": 0.035341
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 43,
+              "score": 0.034848
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 23,
+              "score": 0.032987
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 22,
+              "score": 0.032631
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 75,
+              "score": 0.032539
+            }
+          ],
+          "sdl render cpu mixer midi sblaster configuration": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 45,
+              "score": 0.037705
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 14,
+              "score": 0.036841
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 46,
+              "score": 0.036764
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 10,
+              "score": 0.033956
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 34,
+              "score": 0.033689
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 13,
+              "score": 0.033433
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 93,
+              "score": 0.032803
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 88,
+              "score": 0.03194
+            }
+          ],
+          "mouse keyboard input troubleshooting keymapper": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 69,
+              "score": 0.037028
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 2,
+              "score": 0.035018
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 65,
+              "score": 0.0347
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 63,
+              "score": 0.033396
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 62,
+              "score": 0.033333
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 9,
+              "score": 0.033126
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 73,
+              "score": 0.032978
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 17,
+              "score": 0.032719
+            }
+          ],
+          "cpu speed cycles core performance troubleshooting": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 88,
+              "score": 0.037705
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 87,
+              "score": 0.036593
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 89,
+              "score": 0.036508
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 86,
+              "score": 0.036442
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 91,
+              "score": 0.034622
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 90,
+              "score": 0.033992
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 85,
+              "score": 0.033694
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 20,
+              "score": 0.03361
+            }
+          ],
+          "input keyboard mouse keymapper": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 69,
+              "score": 0.037097
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 65,
+              "score": 0.034991
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 63,
+              "score": 0.034925
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 62,
+              "score": 0.034598
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 73,
+              "score": 0.033961
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 72,
+              "score": 0.033723
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 2,
+              "score": 0.03283
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 17,
+              "score": 0.032548
+            }
+          ]
+        },
+        "mergedHits": [
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 45,
+            "score": 1.537705
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 88,
+            "score": 1.537705
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 96,
+            "score": 1.537705
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 40,
+            "score": 1.537441
+          }
+        ]
+      }
+    },
+    {
+      "id": 6004,
+      "question": "Collect the key facts about input, display, sound, and CPU configuration.",
+      "expectedStatus": "longContext",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #96",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 96,
+          "score": 1.537705
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 45,
+          "score": 1.537705
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 40,
+          "score": 1.537441
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 5,
+          "score": 1.537361
+        }
+      ],
+      "diagnostics": {
+        "originalQuery": "Collect the key facts about input, display, sound, and CPU configuration.",
+        "subQueries": [
+          "Collect the key facts about input, display, sound, and CPU configuration.",
+          "overview main sections important settings",
+          "key configuration options",
+          "dosbox.conf configuration sections",
+          "sdl render cpu mixer midi sblaster configuration",
+          "input keyboard mouse keymapper",
+          "display screen fullscreen output render",
+          "sound mixer midi sblaster"
+        ],
+        "subQueryHits": {
+          "Collect the key facts about input, display, sound, and CPU configuration.": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 90,
+              "score": 0.036706
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 14,
+              "score": 0.035826
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 15,
+              "score": 0.034481
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 10,
+              "score": 0.033461
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 84,
+              "score": 0.033403
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 86,
+              "score": 0.033158
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 13,
+              "score": 0.032958
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 88,
+              "score": 0.032939
+            }
+          ],
+          "overview main sections important settings": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 40,
+              "score": 0.037441
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 96,
+              "score": 0.036593
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 41,
+              "score": 0.034225
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 95,
+              "score": 0.034183
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 21,
+              "score": 0.033646
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 97,
+              "score": 0.032816
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 98,
+              "score": 0.032346
+            },
+            {
+              "docName": "README.txt",
+              "chunkIndex": 3,
+              "score": 0.032263
+            }
+          ],
+          "key configuration options": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 66,
+              "score": 0.03626
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 16,
+              "score": 0.0352
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 96,
+              "score": 0.034622
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 21,
+              "score": 0.032508
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 71,
+              "score": 0.032105
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 41,
+              "score": 0.032039
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 24,
+              "score": 0.032008
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 40,
+              "score": 0.031598
+            }
+          ],
+          "dosbox.conf configuration sections": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 96,
+              "score": 0.037705
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 97,
+              "score": 0.036593
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 40,
+              "score": 0.036442
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 24,
+              "score": 0.035341
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 43,
+              "score": 0.034848
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 23,
+              "score": 0.032987
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 22,
+              "score": 0.032631
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 75,
+              "score": 0.032539
+            }
+          ],
+          "sdl render cpu mixer midi sblaster configuration": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 45,
+              "score": 0.037705
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 14,
+              "score": 0.036841
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 46,
+              "score": 0.036764
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 10,
+              "score": 0.033956
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 34,
+              "score": 0.033689
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 13,
+              "score": 0.033433
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 93,
+              "score": 0.032803
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 88,
+              "score": 0.03194
+            }
+          ],
+          "input keyboard mouse keymapper": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 69,
+              "score": 0.037097
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 65,
+              "score": 0.034991
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 63,
+              "score": 0.034925
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 62,
+              "score": 0.034598
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 73,
+              "score": 0.033961
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 72,
+              "score": 0.033723
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 2,
+              "score": 0.03283
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 17,
+              "score": 0.032548
+            }
+          ],
+          "display screen fullscreen output render": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 5,
+              "score": 0.037361
+            },
+            {
+              "docName": "README.txt",
+              "chunkIndex": 2,
+              "score": 0.036764
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 4,
+              "score": 0.036696
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 63,
+              "score": 0.035937
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 1,
+              "score": 0.033102
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 22,
+              "score": 0.031729
+            },
+            {
+              "docName": "README.txt",
+              "chunkIndex": 1,
+              "score": 0.031389
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 14,
+              "score": 0.031349
+            }
+          ],
+          "sound mixer midi sblaster": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 45,
+              "score": 0.037705
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 14,
+              "score": 0.036841
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 13,
+              "score": 0.036442
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 10,
+              "score": 0.03602
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 46,
+              "score": 0.035625
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 11,
+              "score": 0.034555
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 12,
+              "score": 0.033546
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 2,
+              "score": 0.03246
+            }
+          ]
+        },
+        "mergedHits": [
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 96,
+            "score": 1.537705
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 45,
+            "score": 1.537705
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 40,
+            "score": 1.537441
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 5,
+            "score": 1.537361
+          }
+        ]
+      }
+    },
+    {
+      "id": 6005,
+      "question": "Explain the relationship between mounting, drives, configuration, and running programs.",
+      "expectedStatus": "longContext",
+      "expectedDoc": "DOSBox 0.74 Manual.txt",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #45",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 45,
+          "score": 1.537705
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 96,
+          "score": 1.537705
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 40,
+          "score": 1.537441
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 36,
+          "score": 1.537184
+        }
+      ],
+      "diagnostics": {
+        "originalQuery": "Explain the relationship between mounting, drives, configuration, and running programs.",
+        "subQueries": [
+          "Explain the relationship between mounting, drives, configuration, and running programs.",
+          "overview main sections important settings",
+          "key configuration options",
+          "dosbox.conf configuration sections",
+          "sdl render cpu mixer midi sblaster configuration",
+          "mount drive folder run game setup",
+          "startup configuration dosbox.conf autoexec",
+          "mounting drives configuration running programs relationship"
+        ],
+        "subQueryHits": {
+          "Explain the relationship between mounting, drives, configuration, and running programs.": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 1,
+              "score": 0.035625
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 35,
+              "score": 0.034449
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 4,
+              "score": 0.033497
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 32,
+              "score": 0.033455
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 31,
+              "score": 0.032675
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 23,
+              "score": 0.031619
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 0,
+              "score": 0.031494
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 26,
+              "score": 0.030392
+            }
+          ],
+          "overview main sections important settings": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 40,
+              "score": 0.037441
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 96,
+              "score": 0.036593
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 41,
+              "score": 0.034225
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 95,
+              "score": 0.034183
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 21,
+              "score": 0.033646
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 97,
+              "score": 0.032816
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 98,
+              "score": 0.032346
+            },
+            {
+              "docName": "README.txt",
+              "chunkIndex": 3,
+              "score": 0.032263
+            }
+          ],
+          "key configuration options": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 66,
+              "score": 0.03626
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 16,
+              "score": 0.0352
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 96,
+              "score": 0.034622
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 21,
+              "score": 0.032508
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 71,
+              "score": 0.032105
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 41,
+              "score": 0.032039
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 24,
+              "score": 0.032008
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 40,
+              "score": 0.031598
+            }
+          ],
+          "dosbox.conf configuration sections": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 96,
+              "score": 0.037705
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 97,
+              "score": 0.036593
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 40,
+              "score": 0.036442
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 24,
+              "score": 0.035341
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 43,
+              "score": 0.034848
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 23,
+              "score": 0.032987
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 22,
+              "score": 0.032631
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 75,
+              "score": 0.032539
+            }
+          ],
+          "sdl render cpu mixer midi sblaster configuration": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 45,
+              "score": 0.037705
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 14,
+              "score": 0.036841
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 46,
+              "score": 0.036764
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 10,
+              "score": 0.033956
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 34,
+              "score": 0.033689
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 13,
+              "score": 0.033433
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 93,
+              "score": 0.032803
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 88,
+              "score": 0.03194
+            }
+          ],
+          "mount drive folder run game setup": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 36,
+              "score": 0.037184
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 3,
+              "score": 0.036593
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 38,
+              "score": 0.035826
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 29,
+              "score": 0.035697
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 37,
+              "score": 0.034493
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 35,
+              "score": 0.033499
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 9,
+              "score": 0.033487
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 1,
+              "score": 0.032035
+            }
+          ],
+          "startup configuration dosbox.conf autoexec": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 97,
+              "score": 0.037097
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 26,
+              "score": 0.03626
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 24,
+              "score": 0.036186
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 25,
+              "score": 0.035804
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 96,
+              "score": 0.035511
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 41,
+              "score": 0.034225
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 16,
+              "score": 0.034109
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 4,
+              "score": 0.033586
+            }
+          ],
+          "mounting drives configuration running programs relationship": [
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 35,
+              "score": 0.0347
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 32,
+              "score": 0.033468
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 1,
+              "score": 0.032217
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 26,
+              "score": 0.031462
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 30,
+              "score": 0.031434
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 31,
+              "score": 0.031364
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 0,
+              "score": 0.031212
+            },
+            {
+              "docName": "DOSBox 0.74 Manual.txt",
+              "chunkIndex": 4,
+              "score": 0.031166
+            }
+          ]
+        },
+        "mergedHits": [
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 45,
+            "score": 1.537705
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 96,
+            "score": 1.537705
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 40,
+            "score": 1.537441
+          },
+          {
+            "docName": "DOSBox 0.74 Manual.txt",
+            "chunkIndex": 36,
+            "score": 1.537184
+          }
+        ]
+      }
+    },
+    {
+      "id": 7001,
+      "question": "Compare installation instructions between README.txt and the DOSBox manual.",
+      "expectedStatus": "crossDocument",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #3",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 3,
+          "score": 0.033723
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.033234
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 25,
+          "score": 0.032675
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 96,
+          "score": 0.032247
+        }
+      ]
+    },
+    {
+      "id": 7002,
+      "question": "Which document is better for DOSBox keyboard help: README.txt or the manual?",
+      "expectedStatus": "crossDocument",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #0",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.036129
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 30,
+          "score": 0.035028
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 3,
+          "score": 0.032981
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 25,
+          "score": 0.032423
+        }
+      ]
+    },
+    {
+      "id": 7003,
+      "question": "Find overlap between README.txt and the DOSBox manual about setup steps.",
+      "expectedStatus": "crossDocument",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #99",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 99,
+          "score": 0.034555
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.032756
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 3,
+          "score": 0.032105
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 96,
+          "score": 0.030838
+        }
+      ]
+    },
+    {
+      "id": 7004,
+      "question": "Use both README.txt and the DOSBox manual to describe what a new user should read first.",
+      "expectedStatus": "crossDocument",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #98",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 98,
+          "score": 0.036237
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 36,
+          "score": 0.034481
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.032849
+        },
+        {
+          "docName": "README.txt",
+          "chunkIndex": 1,
+          "score": 0.032683
+        }
+      ]
+    },
+    {
+      "id": 7005,
+      "question": "Do README.txt and the DOSBox manual mention the same configuration workflow?",
+      "expectedStatus": "crossDocument",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #26",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 26,
+          "score": 0.03556
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.035322
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 20,
+          "score": 0.034301
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 25,
+          "score": 0.034132
+        }
+      ]
+    },
+    {
+      "id": 7006,
+      "question": "Compare any quick-start notes in README.txt with detailed manual instructions.",
+      "expectedStatus": "crossDocument",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #1",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 1,
+          "score": 0.037361
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 84,
+          "score": 0.035018
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.0347
+        },
+        {
+          "docName": "README.txt",
+          "chunkIndex": 2,
+          "score": 0.033487
+        }
+      ]
+    },
+    {
+      "id": 7007,
+      "question": "Which file should I cite for a complete answer about running DOSBox?",
+      "expectedStatus": "crossDocument",
+      "verdict": "PASS",
+      "hits": 4,
+      "mainCitation": "DOSBox 0.74 Manual.txt #23",
+      "citations": [
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 23,
+          "score": 0.03501
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 36,
+          "score": 0.033983
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 0,
+          "score": 0.033727
+        },
+        {
+          "docName": "DOSBox 0.74 Manual.txt",
+          "chunkIndex": 56,
+          "score": 0.033468
+        }
+      ]
+    }
+  ]
+}

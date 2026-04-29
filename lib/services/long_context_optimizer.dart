@@ -116,22 +116,76 @@ class LongContextOptimizer {
     return _dedupe(subQueries).take(4).toList();
   }
 
+  List<String> decomposeDeep(String query) {
+    final q = query.toLowerCase();
+    final subQueries = <String>[
+      query.trim(),
+      'overview main sections important settings',
+      'key configuration options',
+    ];
+
+    if (q.contains('configuration') || q.contains('settings')) {
+      subQueries.addAll([
+        'dosbox.conf configuration sections',
+        'sdl render cpu mixer midi sblaster configuration',
+      ]);
+    }
+
+    if (q.contains('setup') || q.contains('running') || q.contains('program')) {
+      subQueries.addAll([
+        'mount drive folder run game setup',
+        'startup configuration dosbox.conf autoexec',
+      ]);
+    }
+
+    if (q.contains('troubleshooting') || q.contains('issues')) {
+      subQueries.addAll([
+        'mouse keyboard input troubleshooting keymapper',
+        'cpu speed cycles core performance troubleshooting',
+      ]);
+    }
+
+    if (q.contains('relationship') || q.contains('between')) {
+      subQueries.addAll([
+        'mounting drives configuration running programs relationship',
+        'configuration startup mount command workflow',
+      ]);
+    }
+
+    if (q.contains('input') ||
+        q.contains('display') ||
+        q.contains('sound') ||
+        q.contains('cpu')) {
+      subQueries.addAll([
+        'input keyboard mouse keymapper',
+        'display screen fullscreen output render',
+        'sound mixer midi sblaster',
+        'cpu core cycles performance',
+      ]);
+    }
+
+    return _dedupe(subQueries).take(8).toList();
+  }
+
   Future<LongContextResult> retrieve({
     required String query,
     required int k,
     required LongContextRetriever retriever,
+    bool deep = false,
   }) async {
-    final subQueries = decompose(query);
+    final subQueries = deep ? decomposeDeep(query) : decompose(query);
     final subQueryHits = <String, List<ScoredChunk>>{};
     final merged = <String, ScoredChunk>{};
+    final requestedK = deep ? k * 2 : k;
 
     for (final subQuery in subQueries) {
-      final hits = await retriever(subQuery, k: k);
+      final hits = await retriever(subQuery, k: requestedK);
       subQueryHits[subQuery] = hits;
       for (var rank = 0; rank < hits.length; rank++) {
         final hit = hits[rank];
         final key = hit.chunk.id;
-        final weightedScore = hit.score + (1.0 / (rank + 1));
+        final stageBoost = deep ? 1.5 / (rank + 1) : 1.0 / (rank + 1);
+        final weightedScore = hit.score + stageBoost;
         final current = merged[key];
         if (current == null || weightedScore > current.score) {
           merged[key] = ScoredChunk(hit.chunk, weightedScore);

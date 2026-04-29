@@ -11,6 +11,7 @@ void main() {
 
     expect(optimizer.isLongContext(query), isTrue);
     expect(optimizer.decompose(query).length, greaterThanOrEqualTo(2));
+    expect(optimizer.decomposeDeep(query).length, greaterThanOrEqualTo(3));
   });
 
   test('merges and deduplicates long context hits', () async {
@@ -42,5 +43,25 @@ void main() {
 
     expect(result.hits.where((hit) => hit.chunk.id == 'doc_1'), hasLength(1));
     expect(result.trace.subQueries.length, greaterThanOrEqualTo(2));
+  });
+
+  test('deep mode expands hierarchical subqueries', () async {
+    final chunk = DocChunk(
+      id: 'doc_1',
+      docName: 'doc.txt',
+      chunkIndex: 1,
+      text: 'cpu core cycles',
+      embedding: const [1.0],
+    );
+
+    final result = await optimizer.retrieve(
+      query:
+          'Collect the key facts about input, display, sound, and CPU configuration.',
+      k: 4,
+      deep: true,
+      retriever: (query, {required k}) async => [ScoredChunk(chunk, 0.8)],
+    );
+
+    expect(result.trace.subQueries.length, greaterThanOrEqualTo(4));
   });
 }

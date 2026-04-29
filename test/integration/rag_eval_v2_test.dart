@@ -217,6 +217,50 @@ void main() {
         lessThanOrEqualTo(phase4bSummary['fail'] as int),
       );
       expect(File(phase4cOutputPath).existsSync(), isTrue);
+
+      final phase5aOutputPath = Platform
+              .environment['RAG_EVAL_PHASE5A_OUTPUT'] ??
+          'docs/eval_snapshots/eval_phase5a_long_context_deep_2026-04-28.json';
+      final phase5aPayload = await RagEvalRunner(
+        rag: rag,
+        embeddingModel: 'bge-m3',
+        retrievalMode: RetrievalMode.hybrid,
+        dataset: 'v2-phase5a',
+        cases: ragEvalCasesV2,
+        topK: 4,
+        detectAmbiguous: true,
+        enableMultiHop: true,
+        enableDeepLongContext: true,
+      ).run(
+        version: 'v2.0-phase5a-long-context-deep-optimization',
+        outputPath: phase5aOutputPath,
+        baselineSnapshot: phase4cOutputPath,
+        extraMetadata: const {
+          'productionDefaultChanged': false,
+          'purpose': 'experimental_deep_long_context_optimization',
+          'usesLlm': false,
+        },
+      );
+
+      final phase5aSummary = phase5aPayload['summary'] as Map<String, Object?>;
+      final phase5aCategorySummary =
+          phase5aPayload['categorySummary'] as Map<String, Object?>;
+      final deepLongContextSummary =
+          phase5aCategorySummary['Long Context'] as Map<String, Object?>;
+
+      expect(
+        (phase5aSummary['passRate'] as num).toDouble(),
+        greaterThanOrEqualTo(0.944),
+      );
+      expect(
+        (deepLongContextSummary['passRate'] as num).toDouble(),
+        greaterThanOrEqualTo(0.75),
+      );
+      expect(
+        phase5aSummary['fail'] as int,
+        lessThanOrEqualTo(phase4cSummary['fail'] as int),
+      );
+      expect(File(phase5aOutputPath).existsSync(), isTrue);
     },
     skip: runIntegration
         ? false

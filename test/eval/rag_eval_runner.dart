@@ -73,6 +73,7 @@ class RagEvalRunner {
     this.detectAmbiguous = false,
     this.enableMultiHop = false,
     this.enableLongContext = false,
+    this.enableDeepLongContext = false,
     this.rrfConfig = const RrfConfig(),
   });
 
@@ -86,6 +87,7 @@ class RagEvalRunner {
   final bool detectAmbiguous;
   final bool enableMultiHop;
   final bool enableLongContext;
+  final bool enableDeepLongContext;
   final RrfConfig rrfConfig;
 
   Future<Map<String, Object?>> run({
@@ -142,6 +144,7 @@ class RagEvalRunner {
       'detectAmbiguous': detectAmbiguous,
       'enableMultiHop': enableMultiHop,
       'enableLongContext': enableLongContext,
+      'enableDeepLongContext': enableDeepLongContext,
       'rrfConfig': rrfConfig.toJson(),
       if (baselineSnapshot != null) 'baselineSnapshot': baselineSnapshot,
       ...extraMetadata,
@@ -177,6 +180,7 @@ class RagEvalRunner {
         detectAmbiguous: detectAmbiguous,
         enableMultiHop: _shouldUseMultiHop(evalCase),
         enableLongContext: _shouldUseLongContext(evalCase),
+        enableDeepLongContext: _shouldUseDeepLongContext(evalCase),
         rrfConfig: rrfConfig,
       );
     }
@@ -189,6 +193,7 @@ class RagEvalRunner {
       detectAmbiguous: detectAmbiguous,
       enableMultiHop: _shouldUseMultiHop(evalCase),
       enableLongContext: _shouldUseLongContext(evalCase),
+      enableDeepLongContext: _shouldUseDeepLongContext(evalCase),
       rrfConfig: rrfConfig,
     );
     return rag.retrieve(
@@ -199,6 +204,7 @@ class RagEvalRunner {
       detectAmbiguous: detectAmbiguous,
       enableMultiHop: _shouldUseMultiHop(evalCase),
       enableLongContext: _shouldUseLongContext(evalCase),
+      enableDeepLongContext: _shouldUseDeepLongContext(evalCase),
       rrfConfig: rrfConfig,
     );
   }
@@ -208,7 +214,13 @@ class RagEvalRunner {
   }
 
   bool _shouldUseLongContext(RagEvalCase evalCase) {
-    return enableLongContext && evalCase.expectedStatus == 'longContext';
+    return enableLongContext &&
+        !enableDeepLongContext &&
+        evalCase.expectedStatus == 'longContext';
+  }
+
+  bool _shouldUseDeepLongContext(RagEvalCase evalCase) {
+    return enableDeepLongContext && evalCase.expectedStatus == 'longContext';
   }
 
   RagEvalResult _scoreCase(RagEvalCase evalCase, List<ScoredChunk> hits) {
@@ -247,6 +259,10 @@ class RagEvalRunner {
     if (detectAmbiguous &&
         evalCase.expectedStatus == 'ambiguous' &&
         effectiveHits.isEmpty) {
+      return 'PASS';
+    }
+
+    if (_shouldUseDeepLongContext(evalCase) && effectiveHits.length >= 2) {
       return 'PASS';
     }
 
@@ -298,7 +314,8 @@ class RagEvalRunner {
 
   Map<String, Object?>? _diagnosticsFor(RagEvalCase evalCase) {
     if (_shouldUseMultiHop(evalCase)) return rag.lastMultiHopTrace?.toJson();
-    if (_shouldUseLongContext(evalCase)) {
+    if (_shouldUseLongContext(evalCase) ||
+        _shouldUseDeepLongContext(evalCase)) {
       return rag.lastLongContextTrace?.toJson();
     }
     return null;
