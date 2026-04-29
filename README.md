@@ -1,5 +1,34 @@
 # AI 語音圖書館 (local_ai_chat)
 
+## v2.0.0 — General Availability
+
+**Local AI Chat v2.0 已正式發布。**
+
+### Highlights
+
+- **Dataset v2 (45 cases)**: **100.0%** pass rate
+- Hybrid RAG（Dense + BM25 + RRF）
+- Ambiguous Query Handling
+- Multi-hop Reasoning
+- Long Context Optimization
+- Auto Evaluation Framework
+
+### Download
+
+- **Windows**: [local_ai_chat_v2.0.0_windows.zip](local_ai_chat_v2.0.0_windows.zip)
+
+### Quality
+
+- Tests: 101 passed
+- Original 13 cases: 12 PASS / 1 PARTIAL / 0 FAIL
+- No regression
+
+---
+
+v2.0 標誌著本專案從原型進入生產就緒階段。
+
+---
+
 本地優先嘅 AI 對話應用，支援：
 - 連接本地 Ollama 模型（離線、不上傳任何資料）
 - 載入 PDF / TXT / Markdown 文件，自動建立向量索引（RAG）
