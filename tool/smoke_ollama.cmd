@@ -1,0 +1,76 @@
+@echo off
+REM tool/smoke_ollama.cmd
+REM
+REM End-to-end smoke test against a real Ollama server. Optional - only run
+REM this when you want to validate the full RAG -> LLM pipeline. The unit
+REM tests in test/api_server_test.dart cover everything except the actual
+REM LLM call.
+REM
+REM This file is pure ASCII on purpose: cmd.exe routinely mangles non-ASCII
+REM bytes through the active codepage. The /query payload below is English
+REM so the LLM gets readable input no matter what codepage cmd uses.
+REM
+REM Prerequisites:
+REM   1. Ollama is running:           ollama serve
+REM   2. Model is pulled:             ollama pull llama3.1:8b
+REM   3. Dependencies are installed:  flutter pub get
+REM
+REM What this does:
+REM   1. Starts dart run bin/server.dart in a new window (server lives there)
+REM   2. Polls /health until it answers
+REM   3. Runs three curl probes: /health, /docs, /query
+REM   4. You must close the server window manually (Ctrl+C) when done
+
+setlocal
+
+set "ROOT=%~dp0.."
+cd /d "%ROOT%"
+
+where ollama >nul 2>&1
+if %errorlevel% neq 0 (
+  echo Ollama CLI was not found on PATH. Install Ollama and run:
+  echo   ollama serve
+  echo   ollama pull llama3.1:8b
+  exit /b 127
+)
+
+where curl >nul 2>&1
+if %errorlevel% neq 0 (
+  echo curl was not found on PATH.
+  exit /b 127
+)
+
+echo ==^> Launching server in a new window
+start "AI Library Server" cmd /k "dart run bin/server.dart"
+
+echo ==^> Waiting for /health (up to 30s)
+set /a TRIES=0
+:wait_loop
+curl -sf -o NUL http://localhost:8080/health
+if %errorlevel% equ 0 goto ready
+set /a TRIES+=1
+if %TRIES% geq 30 (
+  echo Server did not become healthy. Check the server window for errors.
+  exit /b 1
+)
+timeout /t 1 /nobreak > NUL
+goto wait_loop
+
+:ready
+echo ==^> Server is up.
+echo.
+echo ==^> GET /health
+curl -s http://localhost:8080/health
+echo.
+echo.
+echo ==^> GET /docs
+curl -s http://localhost:8080/docs
+echo.
+echo.
+echo ==^> POST /query (this calls Ollama; first run takes 10-30s)
+curl -s -X POST http://localhost:8080/query ^
+  -H "Content-Type: application/json" ^
+  -d "{\"query\":\"What is sample_book_1.epub about?\"}"
+echo.
+echo.
+echo ==^> Done. Manually close the "AI Library Server" window when finished.

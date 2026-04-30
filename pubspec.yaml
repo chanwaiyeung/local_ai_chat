@@ -1,44 +1,46 @@
-name: local_ai_chat
-description: "AI 語音圖書館（本地 Ollama AI + Windows 語音 + PDF 文件問答）"
+# pubspec.yaml — 智讀館 Phase 1 + Phase 2 (mobile + local server in one project).
+#
+# Bootstrap on a fresh machine:
+#
+#   flutter create --org com.example --project-name ai_library_server .
+#   flutter pub get
+#
+# To run only the analyzer / tests (no need for android/ios scaffolding):
+#
+#   flutter pub get
+#   flutter analyze
+#   flutter test
+
+name: ai_library_server
+description: 智讀館 — Local AI library reader + server.
 publish_to: 'none'
-version: 2.0.0+1
+version: 2.0.0
 
 environment:
-  sdk: ">=3.2.0 <4.0.0"
-  flutter: ">=3.16.0"
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.22.0"
 
 dependencies:
+  archive: ^3.6.1   # ZIP / CBZ unpacking
+  # Document loaders for the indexer.
+  epubx: ^4.0.0     # pure-Dart EPUB parser
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
-
-  # 本地 AI (Ollama) HTTP 通訊
+  flutter_tts: ^4.2.5
+  html: ^0.15.4     # HTML → text for EPUB chapter content
+  # HTTP client (mobile + LLM client).
   http: ^1.2.2
-
-  # 檔案選擇 / 儲存（PDF / TXT / MD）
-  file_picker: ^8.1.2
-
-  # PDF 文字抽取（pdf_text 已停維護，改用 Syncfusion 社群授權）
-  syncfusion_flutter_pdf: ^27.1.48
-
-  # 語音輸入（內部已處理麥克風權限，毋須額外 permission_handler）
-  speech_to_text: ^7.0.0
-
-  # 取存儲路徑（向量庫持久化、匯出 fallback）
-  path_provider: ^2.1.5
-
-  # Markdown 回覆與安全開啟外部連結
-  flutter_markdown: ^0.7.7+1
-  flutter_highlight: ^0.7.0
-  markdown: ^7.3.1
-  url_launcher: ^6.3.1
+  # Path manipulation (basename, join) for the indexing CLI / RAG.
+  path: ^1.9.1
+  # HTTP server stack.
+  shelf: ^1.4.2
+  shelf_cors_headers: ^0.1.5
+  shelf_router: ^1.1.4
 
 dev_dependencies:
+  flutter_lints: ^5.0.0
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
-  path_provider_platform_interface: ^2.1.2
-  plugin_platform_interface: ^2.1.8
 
 flutter:
   uses-material-design: true

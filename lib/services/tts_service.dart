@@ -1,0 +1,41 @@
+import 'package:flutter/services.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+
+class TTSService {
+  final FlutterTts _tts = FlutterTts();
+  bool _isSpeaking = false;
+
+  Future<void> init() async {
+    try {
+      await _tts.setLanguage('zh-CN');
+      await _tts.setSpeechRate(0.95);
+      await _tts.setPitch(1.0);
+    } on MissingPluginException {
+      // Widget tests and some desktop environments do not register the native
+      // TTS plugin. The app can still render and exercise the reader flow.
+    }
+  }
+
+  Future<void> speak(String text) async {
+    if (text.trim().isEmpty) return;
+    if (_isSpeaking) await stop();
+    _isSpeaking = true;
+    try {
+      await _tts.speak(text);
+    } on MissingPluginException {
+      _isSpeaking = false;
+    }
+  }
+
+  Future<void> stop() async {
+    try {
+      await _tts.stop();
+    } on MissingPluginException {
+      // No native plugin registered in the current runtime.
+    } finally {
+      _isSpeaking = false;
+    }
+  }
+
+  bool get isSpeaking => _isSpeaking;
+}

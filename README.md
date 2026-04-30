@@ -1,273 +1,201 @@
-# AI 語音圖書館 (local_ai_chat)
+# 智讀館 (AI Library)
 
-## v2.0.0 — General Availability
+## v2.0.0 GA Highlights
 
-**Local AI Chat v2.0 已正式發布。**
+- Production-ready local-first RAG reader with streaming answers and citations.
+- Safe server defaults: loopback bind, explicit LAN mode, required token for LAN.
+- Reader state hardened: `answer` stays pure LLM output; status uses `statusBanner`.
+- Multi-format library: TXT / Markdown / EPUB / PDF plus experimental OCR / CBZ.
+- Verified release target: 0 analyze issues and 138+ passing tests.
 
-### Highlights
+A local-first reading companion. Drop your books into a folder, run one
+command, and a small Flutter app on your phone or browser can answer
+questions about them — grounded in the actual text, with citations,
+without sending anything to the cloud.
 
-- **Dataset v2 (45 cases)**: **100.0%** pass rate
-- Hybrid RAG（Dense + BM25 + RRF）
-- Ambiguous Query Handling
-- Multi-hop Reasoning
-- Long Context Optimization
-- Auto Evaluation Framework
-
-### Download
-
-- **Windows**: [local_ai_chat_v2.0.0_windows.zip](local_ai_chat_v2.0.0_windows.zip)
-
-### Quality
-
-- Tests: 101 passed
-- Original 13 cases: 12 PASS / 1 PARTIAL / 0 FAIL
-- No regression
-
----
-
-v2.0 標誌著本專案從原型進入生產就緒階段。
-
----
-
-本地優先嘅 AI 對話應用，支援：
-- 連接本地 Ollama 模型（離線、不上傳任何資料）
-- 載入 PDF / TXT / Markdown 文件，自動建立向量索引（RAG）
-- Windows 語音輸入
-- 對話匯出為 Markdown
-- 文件片段預覽 / 搜尋 / 揀選
-
-## v2.0 RC1 狀態
-
-v2.0 RC1 已完成 Production Readiness Lock。RAG 評測 Dataset v2（45 題）
-達到 100.0% pass rate，原有 13 cases 維持 12 PASS / 1 PARTIAL / 0 FAIL，
-目前無 release blocker。RC1 推薦的 production default 候選包括 persisted
-BM25 schema v3、自動評測 runner、ambiguous query handling、multi-hop
-reasoning，以及 long context optimization；Query Expansion 與 RRF Grid
-Tuning 保留為實驗封存。
-
----
-
-## 一、前置安裝
-
-### 1. Flutter SDK
-
-到官方網站下載並安裝 Flutter（建議 3.16 或以上）：
-<https://docs.flutter.dev/get-started/install/windows>
-
-安裝完成後執行：
-
-```powershell
-flutter --version
-flutter doctor
+```
+┌──────────────┐    LAN     ┌──────────────┐         ┌──────────────┐
+│ Mobile / Web │  ───────►  │ Local Server │  ────►  │   Ollama     │
+│   Flutter    │            │   shelf+SSE  │         │  bge-m3 +    │
+│   ApiClient  │  ◄───────  │   ApiServer  │  ◄────  │ llama3.1:8b  │
+└──────────────┘   stream   └──────────────┘         └──────────────┘
+                                  │
+                                  ▼
+                         data/vectors.ndjson
+                         (RAG vector index)
 ```
 
-確保 `Windows`、`Visual Studio` 兩項冇 X（語音輸入需要 Windows 桌面 build chain）。
+## Features
 
-### 2. Visual Studio (Desktop development with C++)
+- **Multi-format**: `.txt`, `.md`, `.epub`, `.pdf` (via `pdftotext`), and
+  `.cbz` / `.png` / `.jpg` / `.webp` (via `tesseract` OCR for manga).
+- **Real RAG**: bge-m3 embeddings + cosine retrieval + grounded LLM with
+  numeric citations `[1]` `[2]`.
+- **Streaming**: Server-Sent Events; the answer types out as the model
+  generates.
+- **Citations panel**: tap to expand, see which chunks the LLM used,
+  similarity score per chunk.
+- **Language helper**: tap any term in the answer for a Traditional
+  Chinese explanation with example sentence.
+- **TTS**: Mandarin text-to-speech via `flutter_tts`.
+- **Local-only**: no cloud calls. The whole pipeline runs on your laptop.
 
-執行 `flutter run -d windows` 一定要有 Visual Studio 2022 + 「Desktop development with C++」工作負載。`flutter doctor` 會提示。
+## Quick start (Windows)
 
-### 3. Ollama
+```cmd
+REM 1. Install Flutter SDK + Ollama + Tesseract (each is idempotent)
+tool\install_flutter.cmd
+tool\install_ollama.cmd
+tool\install_tesseract.cmd
 
-到 <https://ollama.com> 下載 Windows 版安裝。安裝後 Ollama 會自動以背景服務方式啟動。
-
-確認服務啟動：
-
-```powershell
-ollama list
-```
-
-如果無回應，手動啟動：
-
-```powershell
-ollama serve
-```
-
----
-
-## 二、下載模型
-
-最少要兩個：一個對話模型 + 一個 embedding 模型（俾 RAG 用）。
-
-### 對話模型（揀其中一個）
-
-```powershell
-# 細小快速，2GB RAM 可跑（推薦低配機）
-ollama pull gemma2:2b
-
-# 中文較佳，需要 ~5GB RAM
-ollama pull qwen2.5:7b
-
-# 細小但中文唔錯，~3GB RAM
-ollama pull llama3.2:3b
-```
-
-> 程式碼預設 `qwen2.5:7b`。如果未下載，App 會自動切換到第一個已下載嘅模型，亦可以喺 App AppBar 嘅下拉選單即時切換。
-
-### Embedding 模型（必須）
-
-```powershell
-ollama pull nomic-embed-text
-```
-
-如果想中文檢索更準（但體積較大）：
-
-```powershell
+REM 2. Pull the LLM and embedding models (~6 GB total)
+ollama pull llama3.1:8b
 ollama pull bge-m3
-```
 
-要切換 embedding 模型，改 `lib/screens/chat_screen.dart` 入面 `_embedModel` 預設值。
+REM 3. Sanity-check: 60+ tests, all green
+tool\verify.cmd
 
----
+REM 4. Drop your books into books\ then index them
+copy "%USERPROFILE%\Downloads\some_book.epub" books\
+dart run bin\index.dart books\
 
-## 三、執行 App
-
-```powershell
-cd local_ai_chat
-flutter pub get
+REM 5. Run the app (server starts automatically on desktop)
 flutter run -d windows
+REM   or:  flutter run -d chrome
 ```
 
-第一次 build 可能要 1-3 分鐘（編譯原生 plugin）。之後 hot reload 會快好多。
+By default the embedded server binds to `127.0.0.1` only, so nothing on
+your LAN can reach it. To let a phone connect, opt in explicitly:
 
----
-
-## 四、使用流程
-
-1. 啟動 App，AppBar 右上下拉應該見到已下載嘅模型
-2. 按 📎 載入一份 PDF / TXT / MD（建議先試細份）
-3. 等「索引完成」提示出現
-4. 喺底下輸入問題，或按 🎙 用語音輸入
-5. 答案會串流顯示，末尾自動列出引用片段
-6. 工具列：
-   - ✨ 開關 RAG（純聊天 vs 文件問答）
-   - 📚 文件庫（預覽切塊、設定 Top-K、揀文件）
-   - ⋮ → 匯出對話為 Markdown / 清除對話
-
----
-
-## 五、常見問題
-
-### Q1：跑起 App 後話「連接 Ollama 失敗」
-
-**原因：** Ollama 服務未啟動。
-
-**解決：**
-
-```powershell
-ollama serve
+```cmd
+flutter run -d windows ^
+  --dart-define=AI_LIB_LAN=true ^
+  --dart-define=AI_LIB_TOKEN=your-secret
 ```
 
-如果仍然失敗，確認 `http://localhost:11434` 喺瀏覽器打得開（會見到 `Ollama is running`）。
+Without `AI_LIB_TOKEN`, `AI_LIB_LAN=true` refuses to start — by design.
+Loopback-only is the safe default; LAN exposure is always paired with
+auth.
 
-### Q2：模型下拉選單係空、或者答唔到嘢
+The app opens, lists your indexed books, and lets you ask questions
+about each one. The first `/query` takes 10–30 seconds (model warm-up);
+subsequent queries are immediate.
 
-**原因：** 未下載任何模型。
+## HTTP API
 
-**解決：**
+| Endpoint                         | Method | Notes                              |
+|----------------------------------|--------|------------------------------------|
+| `/health`                        | GET    | No auth                            |
+| `/docs`                          | GET    | List indexed doc names             |
+| `/docs/<docName>/chunks`         | GET    | All chunks of one doc, in order    |
+| `/query`                         | POST   | Retrieve + LLM answer, single shot |
+| `/query/stream`                  | POST   | Same as `/query` but SSE-streamed  |
+| `/rag/retrieve`                  | POST   | Pure retrieval, no LLM call        |
 
-```powershell
-ollama pull gemma2:2b
-ollama pull nomic-embed-text
+All endpoints except `/health` require `Authorization: Bearer <token>`
+when `AI_LIB_TOKEN` is set.
+
+## Adding more books
+
+```cmd
+copy "%USERPROFILE%\Downloads\new_book.epub" books\
+dart run bin\index.dart books\new_book.epub
 ```
 
-下載完返到 App 按 AppBar 嘅 🔄（或者重開）就會見到。
+`bin\index.dart` is idempotent: running it again on the same file
+re-chunks and re-embeds in place.
 
-### Q3：PDF 載入後抽唔到文字 / 答案提到「文件似乎係空白」
+## Configuration (env vars)
 
-**原因：** 該 PDF 係**掃瞄版**（即每一頁都係圖片，唔係真嘅文字），需要 OCR 先可以讀。
+| Variable        | Default                       | What it controls                        |
+|-----------------|-------------------------------|-----------------------------------------|
+| `AI_LIB_TOKEN`  | _(unset → server is open)_    | Bearer token required by HTTP API       |
+| `AI_LIB_INDEX`  | `data/vectors.ndjson`         | Where the vector index is persisted     |
+| `OLLAMA_URL`    | `http://localhost:11434`      | Ollama daemon URL                       |
+| `OLLAMA_MODEL`  | `llama3.1:8b`                 | Generation model                        |
+| `EMBED_MODEL`   | `bge-m3`                      | Embedding model                         |
+| `OCR_LANGS`     | `chi_tra+eng`                 | Tesseract language packs (e.g. `+jpn`)  |
+| `PORT`          | `8080`                        | HTTP server port                        |
 
-**目前限制：** 本 App **唔支援 OCR**。可以做嘅解決方法：
-
-- 用其他工具（例如 Adobe Acrobat、ABBYY FineReader、或 macOS 預覽程式）將 PDF 做 OCR 後再上載
-- 或者自己用 Python `pytesseract` / `paddleocr` 預先抽出文字，存成 `.txt` 再上載
-
-如未來會內建 OCR，會用 Tesseract 或 PaddleOCR，但目前唔在 v1.0 範圍內。
-
-### Q4：建立索引好慢
-
-**原因：** Embedding 模型逐個片段算向量，CPU-only 機器一份 100 頁 PDF 可能要 1-3 分鐘。
-
-**解決：**
-
-- 確認 Ollama 用緊 GPU：`ollama ps` 應該見到 `processor` 顯示 `100% GPU`
-- 用更細嘅 embedding 模型：`nomic-embed-text` 已經係細模型；如再嫌慢，可以自己改 `chunk maxChars` 到 1500 減少片段數量
-- 第一次索引完之後會持久化到 `%APPDATA%/local_ai_chat/vector_store.json`，重啟 App 會自動載入毋須重做
-
-### Q5：終端機出現 `file_picker` warning（例如 `MissingPluginException` 或 dart pad 相關訊息）
-
-**原因：** `file_picker` 8.x 喺 Flutter desktop 啟動時偶有警告訊息（特別係第一次選檔案前），但實際功能正常。
-
-**處理：** 可以忽略。實測：選檔案、儲存對話 dialog 都運作正常。如果擔心，可以喺發布前 `flutter clean && flutter pub get` 重 build。
-
-### Q6：對話愈嚟愈多之後，AI 開始「失憶」或者答非所問
-
-**原因：** v1.0 未啟用對話記憶壓縮（避免本地模型 RAM 唔夠時做雙重推理而 timeout）。當對話歷史接近模型 context window（通常 4K-8K tokens），早期訊息會被截斷。
-
-**解決：**
-
-- 工具列 ⋮ → 清除對話，重新開始一輪
-- 或者用更大 context window 嘅模型（例如 `qwen2.5:7b` 預設 32K）
-- v1.x 之後可能再加返自動壓縮，但需要更穩定嘅本地推理基建
-
-### Q7：語音輸入按咗冇反應
-
-**原因：**
-
-- Windows 設定未開啟線上語音辨識
-- 麥克風被其他 App 佔用
-- 系統語音語言唔啱（預設 `zh-HK`，如系統只裝咗 `zh-CN` 會失敗）
-
-**解決：**
-
-1. 設定 → 時間和語言 → 語音 → 開啟「線上語音辨識」
-2. 確保已下載中文語音套件
-3. 必要時改 `lib/services/speech_service.dart` 嘅 `localeId` 預設值（`zh-CN` / `en-US`）
-
----
-
-## 六、專案結構
+## Project layout
 
 ```
-local_ai_chat/
-├── pubspec.yaml
-├── README.md
-└── lib/
-    ├── main.dart
-    ├── models/
-    │   └── message.dart
-    ├── services/
-    │   ├── ollama_service.dart       # Ollama HTTP 客戶端（聊天 / 串流）
-    │   ├── embedding_service.dart    # Ollama embedding API
-    │   ├── vector_store.dart         # In-memory 向量庫 + JSON 持久化
-    │   ├── rag_service.dart          # 智能切塊 / 檢索
-    │   ├── pdf_service.dart          # PDF 文字抽取（Syncfusion）
-    │   ├── speech_service.dart       # Windows 語音輸入
-    │   └── export_service.dart       # 對話匯出 Markdown
-    └── screens/
-        ├── chat_screen.dart          # 主聊天介面
-        └── doc_viewer_screen.dart    # 文件預覽 / 搜尋 / 揀片段
+bin/
+  index.dart            CLI: walks files/dirs, builds vector index
+  server.dart           CLI: headless server entry (no Flutter UI)
+
+lib/
+  main.dart             Flutter app entry; auto-starts server on desktop
+  server/
+    api_server.dart     /health, /docs, /query, /query/stream (SSE)
+    ollama_client.dart  Streaming client for Ollama /api/generate
+  services/
+    document_loader.dart   Format dispatch (txt/md/epub/pdf/image/cbz)
+    text_chunker.dart      Paragraph + sentence + hard split, CJK-aware
+    embedding_service.dart Ollama /api/embeddings client (test-injectable)
+    vector_store.dart      NDJSON-backed cosine similarity store
+    rag_service.dart       Indexing + retrieval glue
+    api_client.dart        Mobile-side ReaderApi (HTTP + SSE)
+    tts_service.dart       flutter_tts wrapper (test-friendly)
+    ocr_service.dart       Mobile-side OCR (tesseract on desktop)
+    language_learning_service.dart  Vocab explainer
+
+  screens/
+    library_screen.dart   Book list + LAN IP override dialog
+    reader_screen.dart    Q&A + streaming + citations + TTS
+
+test/                   60+ tests (unit, widget, integration)
+tool/                   .cmd / .ps1 / .sh installers and verifiers
+books/                  Drop your documents here
+data/vectors.ndjson     Persisted RAG index (created by bin/index.dart)
 ```
 
----
+## Verification
 
-## 七、版本
+```cmd
+tool\verify.cmd          REM flutter pub get + analyze + test
+tool\smoke_test.cmd      REM full E2E: starts server, hits /health /docs /query
+```
 
-**v1.0** — 穩定基線
-- 本地 Ollama 對話（串流回覆）
-- PDF / TXT / MD 文件 RAG
-- 文件預覽同片段揀選
-- Windows 語音輸入
-- 對話匯出 Markdown
+`smoke_test.cmd` requires `ollama serve` already running with the LLM
+model pulled. See `VERIFICATION.md` for the full operational guide.
 
-**已知限制：**
-- 唔支援掃瞄版 PDF（無 OCR）
-- 對話記憶不會自動壓縮
-- 對話歷史不持久化（重啟即清）
-- 只測試過 Windows 桌面，未測 macOS / Linux
+## Stack
 
----
+- **Frontend**: Flutter (Material 3, runs on Windows / macOS / Linux /
+  Android / iOS / Web).
+- **Server**: Pure Dart `shelf` + `shelf_router` + `shelf_cors_headers`.
+  No Flutter dependency in the server path — it can run via
+  `dart run bin/server.dart`.
+- **LLM**: Ollama (default `llama3.1:8b`). Swap by setting
+  `OLLAMA_MODEL`. `OllamaClient` uses `dart:io HttpClient` with
+  `autoUncompress=false` to avoid streaming buffering.
+- **Embeddings**: bge-m3 via Ollama `/api/embeddings`. 1024-dim.
+- **Vector store**: NDJSON file + in-memory cosine search. Atomic
+  rewrites via tmp+rename. Tested at ~10K chunks.
+- **OCR**: shells out to `tesseract` (Tesseract OCR Engine). PDF text
+  extraction shells out to `pdftotext` (Poppler).
+- **Auth**: optional Bearer token (`AI_LIB_TOKEN`); CORS open by design
+  so the mobile webview can connect.
 
-## 八、隱私
+## Compatibility note
 
-所有對話、文件、向量都只係儲存喺**本機**（`%APPDATA%/local_ai_chat/`），唔會上傳任何雲端。Ollama 亦係完全離線運行。
+This repository is the new `ai_library_server` implementation. Its
+`VectorStore` persists embeddings as a simple NDJSON file
+(`data/vectors.ndjson`) and does cosine/MMR search in memory. It is **not**
+the older `local_ai_chat` v2.0 schema-v3 persisted BM25 store. Treat migration
+from v2.0 as a separate import/export task.
+
+## Roadmap
+
+| Phase | Status | Description                                         |
+|-------|:------:|-----------------------------------------------------|
+| 1     | ✅     | Local AI Server + RAG + mobile UI                   |
+| 2     | ✅     | Streaming + citations + TTS + multi-format          |
+| 3     | ✅     | Language learning helper (vocab + example)          |
+| 4     | 🟡     | OCR (server batch ✅, mobile photo 🟡)              |
+| 5     | ⏸     | AI Glasses (immersive reading)                      |
+
+## License
+
+Private project — not yet licensed for redistribution.
