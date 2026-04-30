@@ -23,7 +23,8 @@ screenshots/
 .vscode/
 .idea/
 *.swp
-.metadata
+*.iml
+.flutter-plugins-dependencies
 
 # ==================== Large / Regeneratable Data ====================
 data/vectors.ndjson
@@ -32,6 +33,9 @@ books/
 # ==================== Temporary Test Files ====================
 main_integration_example.dart
 rag_citation_test*.pdf
+PHASE1_PLAN.md
+api_server.dart
+ollama_client.dart
 
 # ==================== Others ====================
 *.bak
