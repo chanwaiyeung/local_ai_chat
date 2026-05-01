@@ -4,11 +4,11 @@
 // from LibraryScreen. The screen pulls full-text via /docs/<doc>/chunks
 // and runs in-book search via /rag/retrieve.
 
-import 'package:ai_library_server/screens/library_screen.dart';
-import 'package:ai_library_server/screens/reading_mode_screen.dart';
-import 'package:ai_library_server/services/api_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:local_ai_chat/screens/library_screen.dart';
+import 'package:local_ai_chat/screens/reading_mode_screen.dart';
+import 'package:local_ai_chat/services/api_client.dart';
 
 class _FakeApi extends Fake implements ReaderApi {
   _FakeApi({

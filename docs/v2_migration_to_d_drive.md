@@ -1,0 +1,162 @@
+# 智讀館 — C: → D: SSD Migration Runbook
+
+| Field | Value |
+|---|---|
+| Status | Pending execution |
+| Source | `C:\dev\local_ai_chat` |
+| Target | `D:\dev\local_ai_chat` |
+| Trigger | 雙硬碟戰術部署：SSD 放熱資料、HDD 歸檔冷資料 |
+| Last verified | 2026-04-30 (after namespace alignment + Schema v3 spec) |
+
+## 1. 動機與成本
+
+`local_ai_chat` 專案的編譯/分析工作高度依賴隨機 IO（Flutter Windows release 約幾分鐘）。SSD 對 build cache 與 dart pub get 的解析速度有顯著加成。同時 `handoff_exports/` 在 v2.0 promotion 完成後已經吸完養分，可以歸檔到 HDD。
+
+執行成本：robocopy 約 1-3 分鐘（不含 build/、ephemeral/、dart_tool/ 等暫存）+ Claude Desktop remount 約 30 秒 + flutter clean/pub get 約 1-2 分鐘。**總停機時間預估 5 分鐘以內**。
+
+## 2. 搬家前置檢查 (pre-flight)
+
+執行 robocopy 前確認：
+
+| 檢查項 | 做法 |
+|---|---|
+| Git working tree 乾淨（無未 commit 變更） | `cd C:\dev\local_ai_chat && git status` 應該回 `nothing to commit` |
+| A2 整合測試已通過 | `flutter test test/integration_v3_persistence_test.dart -r expanded` 顯示 `+5: All tests passed!` |
+| Claude Desktop 該 mount 已關閉 | Claude Desktop → Settings → Folders → 確認 `C:\dev\local_ai_chat` 不在使用中 |
+| 任何 IDE 已關閉 | VS Code / IntelliJ / Android Studio 可能持有 file lock 阻止 robocopy |
+| D: 槽空間檢查 | 至少需要 1.5 GB（不含 build/）。目前 source 約 881 MB，扣掉 build 約 412 MB |
+
+## 3. robocopy 指令
+
+```powershell
+# Run from PowerShell (not WSL)
+robocopy `
+  C:\dev\local_ai_chat `
+  D:\dev\local_ai_chat `
+  /E /Z /R:1 /W:1 /MT:8 /TEE `
+  /XD build .dart_tool .git\objects\pack `
+  /XD windows\flutter\ephemeral `
+  /XF .DS_Store Thumbs.db `
+  /LOG:C:\Users\Albert\Documents\local_ai_chat_robocopy.log
+```
+
+### 旗標說明
+
+| Flag | 用途 |
+|---|---|
+| `/E` | 遞迴複製含空目錄 |
+| `/Z` | 可重啟模式（網路斷線可續傳，本地 SSD 用不到但保險） |
+| `/R:1 /W:1` | 失敗只重試 1 次、間隔 1 秒（避免卡死） |
+| `/MT:8` | 8 個 thread 並行 |
+| `/TEE` | console + log file 雙寫 |
+| `/XD build` | **跳過 build 產物**（469 MB），搬完用 `flutter clean` 重建 |
+| `/XD .dart_tool` | **跳過 pub cache**（74 MB），搬完用 `flutter pub get` 重建 |
+| `/XD .git\objects\pack` | git packfile 較大且可從 origin 重新 pack 出來（**如果你的 repo 沒有 origin，移除這條**） |
+| `/XD windows\flutter\ephemeral` | Flutter Windows 暫存（258 MB），會在 build 時重新產生 |
+| `/XF` | 跳過系統垃圾檔 |
+
+### 重要提醒：**不要**搬下面這些
+
+| 項目 | 為什麼 |
+|---|---|
+| `vector_store.json`（在 `%APPDATA%\<bundle>\local_ai_chat\`） | **不在專案資料夾內**，是使用者 AppData。搬家不影響它。如果想從零開始測試，請手動刪除 |
+| `pubspec.lock` | **要搬**——保留 lock 才能重現相同依賴版本。如果不確定，搬就對了 |
+
+## 4. 搬家後驗證 checklist
+
+依序執行，每步綠燈才進下一步：
+
+```powershell
+# Step 1: 切換到新位置
+cd D:\dev\local_ai_chat
+
+# Step 2: 結構完整性 — 應看到 lib/, test/, bin/, docs/, pubspec.yaml
+dir | Select-Object -First 20
+
+# Step 3: 重要檔案存在
+Test-Path lib\services\vector_store.dart       # → True
+Test-Path test\integration_v3_persistence_test.dart  # → True
+Test-Path docs\v2_schema_v3_spec.md            # → True
+Test-Path pubspec.yaml                         # → True
+
+# Step 4: pubspec name 正確
+Select-String -Path pubspec.yaml -Pattern "^name:"
+# 預期: name: local_ai_chat
+
+# Step 5: 重建依賴 + 編譯產物
+flutter clean
+flutter pub get
+
+# Step 6: 跑 A2 確認搬家沒搬壞
+flutter test test\integration_v3_persistence_test.dart -r expanded
+# 預期: +5: All tests passed!
+
+# Step 7: 跑 analyze 確認整體沒紅燈
+flutter analyze
+# 預期: No issues found! (或最多 test/ 目錄的 13 個已知封存項紅燈)
+```
+
+任何一步紅燈：**停下來**，貼錯誤訊息給 Claude。**不要**手動修——可能是 robocopy 的 `/XD` 排除過多或 file ACL 在新槽不對。
+
+## 5. Claude Desktop remount 程序
+
+搬家完且本機驗證綠燈後：
+
+1. **打開 Claude Desktop**（注意：不是瀏覽器版）
+2. **Settings → Connectors / Folders**（或介面顯示的「資料夾」管理頁）
+3. **Remove**：找到 `C:\dev\local_ai_chat`，點 remove / unmount
+4. **Add**：選 `D:\dev\local_ai_chat`，加入 mount
+5. **新開一個 conversation**（**不是繼續舊對話**——舊 mount 已失效，session 記憶會因 mount 路徑變更而需要重新 hydrate）
+
+## 6. 新 Session 的 Context 注入（4 行）
+
+開新 conversation 後，**第一句**貼這段，避免 Claude 從零猜：
+
+```
+專案：Flutter Dart RAG 閱讀 app，已從 C:\dev\local_ai_chat 搬至 D:\dev\local_ai_chat。
+進度：v2.0 整合衝刺已完成。Schema v3 持久化、namespace 對齊（pubspec name=local_ai_chat、
+path_provider 顯式宣告、12 檔 import 重寫）皆已落地，docs/v2_schema_v3_spec.md +
+docs/v2_namespace_alignment.md + docs/v2_test_rename_sprint.md 三份規格存檔可查。
+A2 整合測試（test/integration_v3_persistence_test.dart）已通過。
+下一步：v2.1-A 多文件 Collection API 規劃，或先處理封存的 test rename sprint。
+```
+
+## 7. handoff_exports 歸檔（同步動作，可選）
+
+搬家完後，如果你決定把 `handoff_exports/` 移到 G: 槽 HDD 歸檔：
+
+```powershell
+# 搬到 HDD 歸檔（保留歷史快照）
+robocopy `
+  D:\dev\local_ai_chat\handoff_exports `
+  G:\archive\local_ai_chat_handoff_v2.0_2026-04-30 `
+  /E /MOVE /R:1 /W:1 /TEE `
+  /LOG:C:\Users\Albert\Documents\handoff_archive.log
+```
+
+`/MOVE` 旗標會在複製完成後**從原位刪除**——只有確認 D: 槽搬家成功才執行這步。
+
+歸檔後 D: 槽會少 2.2 MB（這個資料夾本身不大，但概念上是「冷資料」）。
+
+## 8. 回滾計畫（如果搬家後嚴重出問題）
+
+C: 槽原檔案在 robocopy 完成後**沒被刪除**（除非你執行了 `/MOVE`，但本 runbook 沒用）。所以：
+
+```powershell
+# 回滾 = 切回 C: 槽繼續工作
+cd C:\dev\local_ai_chat
+flutter clean
+flutter pub get
+flutter test test\integration_v3_persistence_test.dart -r expanded
+
+# Claude Desktop remount 回 C:\dev\local_ai_chat
+```
+
+確認 C: 槽仍 work 後再決定 D: 槽出了什麼問題（IDE 配置、ACL、antivirus quarantine 等）。
+
+## 9. References
+
+- 搬家方向決策：`(此 session 對話, 2026-04-30)`
+- A2 測試：`test/integration_v3_persistence_test.dart`
+- Schema v3 規格：`docs/v2_schema_v3_spec.md`
+- Namespace 對齊規格：`docs/v2_namespace_alignment.md`

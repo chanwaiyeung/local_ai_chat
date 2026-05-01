@@ -1,251 +1,509 @@
 // lib/services/vector_store.dart
-//
-// File-backed vector store with in-memory cosine search.
-//
-//   final store = VectorStore(storagePath: 'data/vectors.ndjson');
-//   await store.load();                 // reads existing index, if any
-//   await store.add(chunk, embedding);  // appends to disk + memory
-//   final hits = store.search(qVec, topK: 6);
-//
-// Tests can pass storagePath: null for an in-memory-only store.
-//
-// Persistence format: NDJSON, one chunk + embedding per line:
-//   {"docName":"a.txt","chunkIndex":0,"text":"...","embedding":[0.1,0.2,...]}
-//
-// Adding the same chunk multiple times duplicates it; call clear(docName)
-// before re-indexing a file to avoid that.
-
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
+import 'package:path_provider/path_provider.dart';
 
-class Chunk {
-  Chunk({
-    required this.docName,
-    required this.chunkIndex,
-    required this.text,
-  });
+import 'debug_log_service.dart';
 
+/// 一段被切碎並向量化嘅文字片段
+class DocChunk {
+  final String id;
   final String docName;
   final int chunkIndex;
   final String text;
-}
-
-class _StoredVector {
-  _StoredVector({required this.chunk, required this.embedding});
-  final Chunk chunk;
   final List<double> embedding;
+  final String collectionName;
+  final Map<String, dynamic> metadata;
+
+  DocChunk({
+    String? id,
+    required this.docName,
+    required this.chunkIndex,
+    required this.text,
+    this.embedding = const [],
+    this.collectionName = 'default',
+    Map<String, dynamic>? metadata,
+  })  : id = id ?? '$collectionName:$docName#$chunkIndex',
+        metadata = Map.unmodifiable(metadata ?? const {});
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'docName': docName,
+        'chunkIndex': chunkIndex,
+        'text': text,
+        'embedding': embedding,
+        'collectionName': collectionName,
+        'metadata': metadata,
+      };
+
+  factory DocChunk.fromJson(Map<String, dynamic> j) => DocChunk(
+        id: j['id'] as String?,
+        docName: j['docName'] as String? ?? '',
+        chunkIndex: (j['chunkIndex'] as num?)?.toInt() ?? 0,
+        text: j['text'] as String? ?? '',
+        embedding: (j['embedding'] as List? ?? const [])
+            .cast<num>()
+            .map((e) => e.toDouble())
+            .toList(),
+        collectionName: j['collectionName'] as String? ?? 'default',
+        metadata: Map<String, dynamic>.from(j['metadata'] as Map? ?? const {}),
+      );
 }
 
-class VectorStore {
-  VectorStore({this.storagePath});
+typedef Chunk = DocChunk;
 
-  /// NDJSON path. null = in-memory only (no persistence).
-  final String? storagePath;
-  final List<_StoredVector> _vectors = [];
+class ScoredChunk {
+  final DocChunk chunk;
+  final double score; // cosine similarity, 1.0 = 完全相同
+  ScoredChunk(this.chunk, this.score);
+}
 
-  int get totalChunks => _vectors.length;
+class SparseIndexSnapshot {
+  const SparseIndexSnapshot({
+    required this.docCount,
+    required this.avgDocLength,
+    required this.chunkLengths,
+    required this.documentFrequency,
+    required this.termFrequency,
+  });
 
-  /// Sorted, deduplicated list of doc names currently indexed.
-  List<String> get docNames {
-    final s = <String>{for (final v in _vectors) v.chunk.docName};
-    final l = s.toList()..sort();
-    return l;
-  }
+  final int docCount;
+  final double avgDocLength;
+  final Map<String, int> chunkLengths;
+  final Map<String, int> documentFrequency;
+  final Map<String, Map<String, int>> termFrequency;
 
-  /// Returns every chunk belonging to [docName], sorted by chunkIndex.
-  /// Useful for read-mode UI and the `/docs/<docName>/chunks` endpoint
-  /// (so the mobile client can show the source text without re-running
-  /// retrieval). Empty list if the doc isn't indexed.
-  List<Chunk> chunksOf(String docName) {
-    return _vectors
-        .where((v) => v.chunk.docName == docName)
-        .map((v) => v.chunk)
-        .toList()
-      ..sort((a, b) => a.chunkIndex.compareTo(b.chunkIndex));
-  }
+  Map<String, dynamic> toJson() => {
+        'docCount': docCount,
+        'avgDocLength': avgDocLength,
+        'chunkLengths': chunkLengths,
+        'documentFrequency': documentFrequency,
+        'termFrequency': termFrequency,
+      };
 
-  Future<void> load() async {
-    if (storagePath == null) return;
-    final file = File(storagePath!);
-    if (!await file.exists()) return;
-
-    final lines = await file.readAsLines();
-    for (var i = 0; i < lines.length; i++) {
-      final line = lines[i].trim();
-      if (line.isEmpty) continue;
-      try {
-        final j = jsonDecode(line) as Map<String, dynamic>;
-        _vectors.add(_StoredVector(
-          chunk: Chunk(
-            docName: j['docName'] as String,
-            chunkIndex: j['chunkIndex'] as int,
-            text: j['text'] as String,
-          ),
-          embedding: (j['embedding'] as List)
-              .cast<num>()
-              .map((n) => n.toDouble())
-              .toList(),
-        ));
-      } catch (e) {
-        stderr.writeln('VectorStore: skipping bad line $i: $e');
-      }
-    }
-  }
-
-  Future<void> add(Chunk chunk, List<double> embedding) async {
-    _vectors.add(_StoredVector(chunk: chunk, embedding: embedding));
-    if (storagePath == null) return;
-
-    final file = File(storagePath!);
-    await file.parent.create(recursive: true);
-    await file.writeAsString(
-      '${jsonEncode({
-        'docName': chunk.docName,
-        'chunkIndex': chunk.chunkIndex,
-        'text': chunk.text,
-        'embedding': embedding,
-      })}\n',
-      mode: FileMode.append,
+  factory SparseIndexSnapshot.fromJson(Map<String, dynamic> json) {
+    return SparseIndexSnapshot(
+      docCount: (json['docCount'] as num?)?.toInt() ?? 0,
+      avgDocLength: (json['avgDocLength'] as num?)?.toDouble() ?? 0.0,
+      chunkLengths: _intMap(json['chunkLengths']),
+      documentFrequency: _intMap(json['documentFrequency']),
+      termFrequency: (json['termFrequency'] as Map? ?? {}).map(
+        (key, value) => MapEntry(
+          key.toString(),
+          _intMap(value),
+        ),
+      ),
     );
   }
 
-  /// Removes all chunks belonging to [docName] from memory and disk.
-  /// Call this before re-indexing a file to avoid duplicate entries.
-  Future<void> clear(String docName) async {
-    _vectors.removeWhere((v) => v.chunk.docName == docName);
-    if (storagePath == null) return;
-
-    final dst = File(storagePath!);
-    if (!await dst.exists()) return;
-    final tmp = File('${storagePath!}.tmp');
-    final sink = tmp.openWrite();
-    try {
-      for (final v in _vectors) {
-        sink.writeln(jsonEncode({
-          'docName': v.chunk.docName,
-          'chunkIndex': v.chunk.chunkIndex,
-          'text': v.chunk.text,
-          'embedding': v.embedding,
-        }));
-      }
-    } finally {
-      await sink.close();
-    }
-    await tmp.rename(storagePath!);
-  }
-
-  /// Top-K cosine similarity search. Optionally restrict to a single doc.
-  List<({Chunk chunk, double score})> search(
-    List<double> query, {
-    int topK = 6,
-    String? docName,
-  }) {
-    final candidates = docName == null
-        ? _vectors
-        : _vectors.where((v) => v.chunk.docName == docName);
-    final scored = candidates
-        .map((v) =>
-            (chunk: v.chunk, score: _cosine(query, v.embedding)))
-        .toList();
-    scored.sort((a, b) => b.score.compareTo(a.score));
-    if (scored.length <= topK) return scored;
-    return scored.sublist(0, topK);
-  }
-
-  /// Top-K with Maximal Marginal Relevance re-ranking. Pulls a wider
-  /// [candidatePool] by cosine, then iteratively picks the chunk that
-  /// maximises:
-  ///
-  ///     lambda * relevance(query, chunk)
-  ///       - (1 - lambda) * max_redundancy(chunk, already-selected)
-  ///
-  /// `lambda = 1.0` is identical to [search]. `lambda = 0.0` is pure
-  /// diversity (always picks the chunk most different from what's already
-  /// been chosen). Default 0.7 leans toward relevance but cuts redundancy.
-  ///
-  /// The returned `score` is the original cosine relevance, not the MMR
-  /// objective — what callers usually want to display.
-  List<({Chunk chunk, double score})> searchMmr(
-    List<double> query, {
-    int topK = 6,
-    int candidatePool = 30,
-    double lambda = 0.7,
-    String? docName,
-  }) {
-    if (lambda < 0 || lambda > 1) {
-      throw ArgumentError.value(lambda, 'lambda', 'must be in [0, 1]');
-    }
-    if (topK <= 0) return const [];
-
-    // 1. Build the candidate pool, keeping embeddings around for redundancy.
-    final filtered = docName == null
-        ? _vectors
-        : _vectors.where((v) => v.chunk.docName == docName);
-    final pool = filtered
-        .map((v) => (
-              chunk: v.chunk,
-              score: _cosine(query, v.embedding),
-              embedding: v.embedding,
-            ))
-        .toList();
-    pool.sort((a, b) => b.score.compareTo(a.score));
-    final trimmed = pool.length <= candidatePool
-        ? pool
-        : pool.sublist(0, candidatePool);
-
-    if (trimmed.length <= topK || lambda >= 0.999) {
-      return trimmed
-          .take(topK)
-          .map((p) => (chunk: p.chunk, score: p.score))
-          .toList();
-    }
-
-    // 2. Iteratively pick the candidate that maximises the MMR objective.
-    final selected =
-        <({Chunk chunk, double score, List<double> embedding})>[];
-    final remaining = List.of(trimmed);
-
-    while (selected.length < topK && remaining.isNotEmpty) {
-      var bestObjective = double.negativeInfinity;
-      var bestIdx = 0;
-      for (var i = 0; i < remaining.length; i++) {
-        final cand = remaining[i];
-        var maxRedundancy = 0.0;
-        for (final s in selected) {
-          final sim = _cosine(cand.embedding, s.embedding);
-          if (sim > maxRedundancy) maxRedundancy = sim;
-        }
-        final objective =
-            lambda * cand.score - (1 - lambda) * maxRedundancy;
-        if (objective > bestObjective) {
-          bestObjective = objective;
-          bestIdx = i;
-        }
-      }
-      selected.add(remaining.removeAt(bestIdx));
-    }
-
-    return selected
-        .map((s) => (chunk: s.chunk, score: s.score))
-        .toList();
+  static Map<String, int> _intMap(Object? raw) {
+    return (raw as Map? ?? {}).map(
+      (key, value) => MapEntry(
+        key.toString(),
+        (value as num?)?.toInt() ?? 0,
+      ),
+    );
   }
 }
 
-double _cosine(List<double> a, List<double> b) {
-  if (a.length != b.length) {
-    throw ArgumentError(
-        'Vector dimension mismatch: ${a.length} vs ${b.length}');
+typedef SparseIndexBuilder = SparseIndexSnapshot Function(
+    List<DocChunk> chunks);
+
+class VectorStoreSnapshot {
+  const VectorStoreSnapshot({
+    required this.embeddingModel,
+    required this.chunks,
+    this.sparseIndex,
+    this.needsSparseIndexMigration = false,
+    this.migratedFromLegacy = false,
+  });
+
+  final String? embeddingModel;
+  final List<DocChunk> chunks;
+  final SparseIndexSnapshot? sparseIndex;
+  final bool needsSparseIndexMigration;
+  final bool migratedFromLegacy;
+}
+
+/// 簡單嘅 in-memory 向量庫，支援 JSON 持久化
+class VectorStore {
+  VectorStore({String? storagePath}) : _storagePath = storagePath;
+
+  final List<DocChunk> _chunks = [];
+  final String? _storagePath;
+  String? _embeddingModel;
+  SparseIndexSnapshot? _sparseIndex;
+
+  int get length => _chunks.length;
+  String? get embeddingModel => _embeddingModel;
+  SparseIndexSnapshot? get sparseIndex => _sparseIndex;
+  List<String> get docNames {
+    final names = _chunks.map((c) => c.docName).toSet().toList()..sort();
+    return names;
   }
-  var dot = 0.0;
-  var normA = 0.0;
-  var normB = 0.0;
-  for (var i = 0; i < a.length; i++) {
-    dot += a[i] * b[i];
-    normA += a[i] * a[i];
-    normB += b[i] * b[i];
+
+  int get totalChunks => _chunks.length;
+
+  List<DocChunk> get chunks => List.unmodifiable(_chunks);
+
+  Future<void> add(DocChunk c, [List<double>? embedding]) async {
+    await addToCollection(c.collectionName, c, embedding);
   }
-  if (normA == 0 || normB == 0) return 0;
-  return dot / (math.sqrt(normA) * math.sqrt(normB));
+
+  Future<void> addToCollection(
+    String collectionName,
+    DocChunk c, [
+    List<double>? embedding,
+  ]) async {
+    _chunks.add(
+      DocChunk(
+        id: c.id,
+        docName: c.docName,
+        chunkIndex: c.chunkIndex,
+        text: c.text,
+        embedding: embedding ?? c.embedding,
+        collectionName: collectionName,
+        metadata: c.metadata,
+      ),
+    );
+    _sparseIndex = null;
+    if (_storagePath != null) await save();
+  }
+
+  void addAll(Iterable<DocChunk> cs) {
+    _chunks.addAll(cs);
+    _sparseIndex = null;
+  }
+
+  Future<void> clear(
+      [String? docName, String collectionName = 'default']) async {
+    if (docName == null) {
+      _chunks.removeWhere((c) => c.collectionName == collectionName);
+      _embeddingModel = null;
+    } else {
+      _chunks.removeWhere(
+        (c) => c.collectionName == collectionName && c.docName == docName,
+      );
+    }
+    _sparseIndex = null;
+    if (_storagePath != null) await save();
+  }
+
+  void setEmbeddingModel(String model) {
+    _embeddingModel = model;
+  }
+
+  void setSparseIndex(SparseIndexSnapshot? index) {
+    _sparseIndex = index;
+  }
+
+  void removeDoc(String docName) {
+    _chunks.removeWhere((c) => c.docName == docName);
+    _sparseIndex = null;
+  }
+
+  Future<void> deleteById(String id) async {
+    _chunks.removeWhere((c) => c.id == id);
+    _sparseIndex = null;
+    if (_storagePath != null) await save();
+  }
+
+  List<ScoredChunk> search(
+    List<double> query, {
+    int topK = 4,
+    String? docName,
+    String collectionName = 'default',
+  }) {
+    return this.topK(
+      query,
+      k: topK,
+      docName: docName,
+      collectionName: collectionName,
+    );
+  }
+
+  List<ScoredChunk> searchInCollection(
+    String collectionName,
+    List<double> query, {
+    int topK = 4,
+    String? docName,
+  }) {
+    return search(
+      query,
+      topK: topK,
+      docName: docName,
+      collectionName: collectionName,
+    );
+  }
+
+  List<ScoredChunk> searchMmr(
+    List<double> query, {
+    int topK = 4,
+    String? docName,
+    int? candidatePool,
+    double lambda = 0.7,
+    String collectionName = 'default',
+  }) {
+    if (lambda < 0 || lambda > 1) {
+      throw ArgumentError.value(lambda, 'lambda', 'must be between 0 and 1');
+    }
+
+    final candidates = search(
+      query,
+      topK: candidatePool ?? math.max(topK * 4, topK),
+      docName: docName,
+      collectionName: collectionName,
+    );
+    if (candidates.length <= topK || lambda == 1.0) {
+      return candidates.take(topK).toList();
+    }
+
+    final selected = <ScoredChunk>[];
+    final remaining = candidates.toList();
+    selected.add(remaining.removeAt(0));
+
+    while (selected.length < topK && remaining.isNotEmpty) {
+      var bestIndex = 0;
+      var bestScore = double.negativeInfinity;
+      for (var i = 0; i < remaining.length; i++) {
+        final candidate = remaining[i];
+        final maxSimilarity = selected
+            .map((hit) =>
+                _cosine(candidate.chunk.embedding, hit.chunk.embedding))
+            .fold<double>(0, math.max);
+        final mmrScore =
+            lambda * candidate.score - (1 - lambda) * maxSimilarity;
+        if (mmrScore > bestScore) {
+          bestScore = mmrScore;
+          bestIndex = i;
+        }
+      }
+      selected.add(remaining.removeAt(bestIndex));
+    }
+
+    return selected;
+  }
+
+  Future<void> replaceDoc(
+    String docName,
+    Iterable<DocChunk> chunks, {
+    SparseIndexSnapshot? sparseIndex,
+  }) async {
+    final previousChunks = List<DocChunk>.of(_chunks);
+    final previousSparseIndex = _sparseIndex;
+    try {
+      _chunks
+        ..removeWhere((c) => c.docName == docName)
+        ..addAll(chunks);
+      _sparseIndex = sparseIndex;
+      await save();
+    } catch (_) {
+      _chunks
+        ..clear()
+        ..addAll(previousChunks);
+      _sparseIndex = previousSparseIndex;
+      rethrow;
+    }
+  }
+
+  /// 取某份文件嘅所有片段（按 chunkIndex 排序）— 文件預覽會用到
+  List<DocChunk> chunksOf(String? docName,
+      {String collectionName = 'default'}) {
+    final list = _chunks
+        .where((c) =>
+            c.collectionName == collectionName &&
+            (docName == null || c.docName == docName))
+        .toList()
+      ..sort((a, b) => a.chunkIndex.compareTo(b.chunkIndex));
+    return list;
+  }
+
+  List<DocChunk> chunksInCollection(String collectionName) {
+    return chunksOf(null, collectionName: collectionName);
+  }
+
+  List<String> listCollections() {
+    final names = _chunks.map((c) => c.collectionName).toSet().toList();
+    if (!names.contains('default')) names.add('default');
+    names.sort();
+    return names;
+  }
+
+  Future<void> deleteCollection(String collectionName) async {
+    if (collectionName == 'default') {
+      throw ArgumentError.value(
+        collectionName,
+        'collectionName',
+        'default collection cannot be deleted',
+      );
+    }
+    _chunks.removeWhere((c) => c.collectionName == collectionName);
+    _sparseIndex = null;
+    if (_storagePath != null) await save();
+  }
+
+  /// 取最相近嘅 k 個片段
+  List<ScoredChunk> topK(
+    List<double> query, {
+    int k = 4,
+    String? docName,
+    String collectionName = 'default',
+  }) {
+    final pool = _chunks
+        .where((c) =>
+            c.collectionName == collectionName &&
+            (docName == null || c.docName == docName))
+        .toList();
+    final scored = pool
+        .map((c) => ScoredChunk(c, _cosine(query, c.embedding)))
+        .toList()
+      ..sort((a, b) => b.score.compareTo(a.score));
+    return scored.take(k).toList();
+  }
+
+  static double _cosine(List<double> a, List<double> b) {
+    if (a.length != b.length) {
+      throw ArgumentError('Vector dimensions must match.');
+    }
+    if (a.isEmpty) return 0.0;
+    double dot = 0, na = 0, nb = 0;
+    for (var i = 0; i < a.length; i++) {
+      dot += a[i] * b[i];
+      na += a[i] * a[i];
+      nb += b[i] * b[i];
+    }
+    final denom = math.sqrt(na) * math.sqrt(nb);
+    return denom == 0 ? 0.0 : dot / denom;
+  }
+
+  // -------- 持久化 --------
+  Future<File> _file() async {
+    if (_storagePath != null) {
+      final file = File(_storagePath);
+      final parent = file.parent;
+      if (!await parent.exists()) await parent.create(recursive: true);
+      return file;
+    }
+    final dir = await getApplicationSupportDirectory();
+    final out = Directory('${dir.path}${Platform.pathSeparator}local_ai_chat');
+    if (!await out.exists()) await out.create(recursive: true);
+    return File('${out.path}${Platform.pathSeparator}vector_store.json');
+  }
+
+  Future<void> save() async {
+    final f = await _file();
+    final tmp = File('${f.path}.tmp');
+    final payload = {
+      'schemaVersion': 3,
+      'embeddingModel': _embeddingModel,
+      'chunks': _chunks.map((c) => c.toJson()).toList(),
+      if (_sparseIndex != null) 'sparseIndex': _sparseIndex!.toJson(),
+    };
+    final data = jsonEncode(payload);
+    await tmp.writeAsString(data, flush: true);
+    if (await f.exists()) {
+      await f.delete();
+    }
+    await tmp.rename(f.path);
+  }
+
+  Future<void> load({SparseIndexBuilder? sparseIndexBuilder}) async {
+    final f = await _file();
+    if (!await f.exists()) return;
+    try {
+      final raw = await f.readAsString();
+      final snapshot = decodeSnapshot(jsonDecode(raw));
+      _embeddingModel = snapshot.embeddingModel;
+      _chunks
+        ..clear()
+        ..addAll(snapshot.chunks);
+      _sparseIndex = snapshot.sparseIndex;
+      if (snapshot.needsSparseIndexMigration &&
+          _chunks.isNotEmpty &&
+          sparseIndexBuilder != null) {
+        _sparseIndex = sparseIndexBuilder(chunks);
+      }
+      if (snapshot.migratedFromLegacy || snapshot.needsSparseIndexMigration) {
+        await DebugLogService.append(
+          'VectorStore: migrated vector_store.json to schemaVersion=3 '
+          'chunks=${_chunks.length} '
+          'sparseIndex=${_sparseIndex == null ? 'missing' : 'present'}',
+        );
+        await save();
+      }
+    } catch (_) {
+      // 檔案損壞就當冇
+    }
+  }
+
+  static VectorStoreSnapshot decodeSnapshot(Object? decoded) {
+    final List list;
+    final String? embeddingModel;
+    SparseIndexSnapshot? sparseIndex;
+    var needsSparseIndexMigration = false;
+
+    if (decoded is List) {
+      embeddingModel = null;
+      list = decoded;
+      return VectorStoreSnapshot(
+        embeddingModel: embeddingModel,
+        chunks: _decodeChunks(list),
+        needsSparseIndexMigration: true,
+        migratedFromLegacy: true,
+      );
+    } else if (decoded is Map<String, dynamic>) {
+      embeddingModel = decoded['embeddingModel'] as String?;
+      final schemaVersion = (decoded['schemaVersion'] as num?)?.toInt() ?? 1;
+      final rawSparseIndex = decoded['sparseIndex'];
+      if (rawSparseIndex is Map<String, dynamic>) {
+        sparseIndex = SparseIndexSnapshot.fromJson(rawSparseIndex);
+      }
+      needsSparseIndexMigration = schemaVersion < 3 || sparseIndex == null;
+      final rawChunks = decoded['chunks'];
+      if (rawChunks is List) {
+        list = rawChunks;
+      } else if (rawChunks is Map<String, dynamic> &&
+          rawChunks['value'] is List) {
+        list = rawChunks['value'] as List;
+        return VectorStoreSnapshot(
+          embeddingModel: embeddingModel,
+          chunks: _decodeChunks(list),
+          sparseIndex: sparseIndex,
+          needsSparseIndexMigration: true,
+          migratedFromLegacy: true,
+        );
+      } else {
+        list = const [];
+      }
+    } else {
+      return const VectorStoreSnapshot(
+        embeddingModel: null,
+        chunks: [],
+      );
+    }
+
+    return VectorStoreSnapshot(
+      embeddingModel: embeddingModel,
+      chunks: _decodeChunks(list),
+      sparseIndex: sparseIndex,
+      needsSparseIndexMigration: needsSparseIndexMigration,
+    );
+  }
+
+  static List<DocChunk> _decodeChunks(List list) {
+    final chunks = <DocChunk>[];
+
+    for (final item in list) {
+      if (item is! Map) continue;
+
+      try {
+        chunks.add(DocChunk.fromJson(Map<String, dynamic>.from(item)));
+      } catch (_) {
+        // Skip malformed chunk instead of failing whole vector store load.
+      }
+    }
+
+    return chunks;
+  }
 }

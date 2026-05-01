@@ -7,8 +7,8 @@
 
 import 'dart:io';
 
-import 'package:ai_library_server/services/document_loader.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:local_ai_chat/services/document_loader.dart';
 
 void main() {
   group('isSupportedDocument', () {

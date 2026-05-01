@@ -18,11 +18,11 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:ai_library_server/server/api_server.dart';
-import 'package:ai_library_server/server/ollama_client.dart';
-import 'package:ai_library_server/services/embedding_service.dart';
-import 'package:ai_library_server/services/rag_service.dart';
-import 'package:ai_library_server/services/vector_store.dart';
+import 'package:local_ai_chat/server/api_server.dart';
+import 'package:local_ai_chat/server/ollama_client.dart';
+import 'package:local_ai_chat/services/embedding_service.dart';
+import 'package:local_ai_chat/services/rag_service.dart';
+import 'package:local_ai_chat/services/vector_store.dart';
 
 Future<void> main(List<String> args) async {
   final port = int.tryParse(Platform.environment['PORT'] ?? '') ?? 8080;
@@ -37,14 +37,13 @@ Future<void> main(List<String> args) async {
   final lanMode = const {'1', 'true', 'yes', 'on'}
       .contains((Platform.environment['AI_LIB_LAN'] ?? '').toLowerCase());
 
-  final store = VectorStore(storagePath: indexPath);
+  final store = VectorStore();
   await store.load();
   stdout.writeln(
-      'Loaded ${store.totalChunks} chunks across ${store.docNames.length} docs from $indexPath');
+      'Loaded ${store.length} chunks across ${store.docNames.length} docs from $indexPath');
 
   final rag = RagService(
-    embedder:
-        EmbeddingService(baseUrl: ollamaUrl, model: embedModel),
+    embedder: EmbeddingService(baseUrl: ollamaUrl, model: embedModel),
     store: store,
   );
 

@@ -1,5 +1,5 @@
-import 'package:ai_library_server/main.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:local_ai_chat/main.dart';
 
 void main() {
   testWidgets('app starts at library screen', (tester) async {

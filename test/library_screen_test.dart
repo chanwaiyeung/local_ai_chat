@@ -5,11 +5,11 @@
 //   2. Tapping a list item navigates to ReaderScreen with the right title
 //   3. Empty list shows the placeholder
 
-import 'package:ai_library_server/screens/library_screen.dart';
-import 'package:ai_library_server/screens/reader_screen.dart';
-import 'package:ai_library_server/services/api_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:local_ai_chat/screens/library_screen.dart';
+import 'package:local_ai_chat/screens/reader_screen.dart';
+import 'package:local_ai_chat/services/api_client.dart';
 
 class _FakeApiClient extends Fake implements ReaderApi {
   _FakeApiClient(this._docs, {this.delay = Duration.zero});

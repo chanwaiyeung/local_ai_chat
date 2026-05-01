@@ -8,8 +8,8 @@
 
 import 'dart:io';
 
-import 'package:ai_library_server/services/vector_store.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:local_ai_chat/services/vector_store.dart';
 
 Chunk _c(String doc, int idx, String text) =>
     Chunk(docName: doc, chunkIndex: idx, text: text);

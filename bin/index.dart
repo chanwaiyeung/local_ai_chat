@@ -14,10 +14,10 @@
 
 import 'dart:io';
 
-import 'package:ai_library_server/services/document_loader.dart';
-import 'package:ai_library_server/services/embedding_service.dart';
-import 'package:ai_library_server/services/rag_service.dart';
-import 'package:ai_library_server/services/vector_store.dart';
+import 'package:local_ai_chat/services/document_loader.dart';
+import 'package:local_ai_chat/services/embedding_service.dart';
+import 'package:local_ai_chat/services/rag_service.dart';
+import 'package:local_ai_chat/services/vector_store.dart';
 import 'package:path/path.dart' as p;
 
 Future<void> main(List<String> args) async {
@@ -37,10 +37,10 @@ Future<void> main(List<String> args) async {
   stdout.writeln('Ollama URL:   $ollamaUrl');
   stdout.writeln('');
 
-  final store = VectorStore(storagePath: indexPath);
+  final store = VectorStore();
   await store.load();
   stdout.writeln(
-      'Loaded ${store.totalChunks} existing chunks across ${store.docNames.length} docs.');
+      'Loaded ${store.length} existing chunks across ${store.docNames.length} docs.');
 
   final embedder = EmbeddingService(baseUrl: ollamaUrl, model: embedModel);
   final rag = RagService(embedder: embedder, store: store);
@@ -86,6 +86,6 @@ Future<void> main(List<String> args) async {
 
   stdout.writeln('');
   stdout.writeln(
-      'Done. Index now has ${store.totalChunks} chunks across ${store.docNames.length} docs.');
+      'Done. Index now has ${store.length} chunks across ${store.docNames.length} docs.');
   embedder.close();
 }

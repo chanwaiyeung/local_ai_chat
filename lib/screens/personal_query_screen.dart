@@ -1,0 +1,415 @@
+// lib/screens/personal_query_screen.dart
+//
+// Phase 6.5 — Personal Hub AI query screen.
+// Single-turn streaming Q&A over Personal Hub data (Expenses + Contacts).
+//
+// Flow on submit:
+//   1. retrieveAcross(query) → display top-k source chunks immediately
+//   2. answerStream(query) → append streamed tokens above the sources
+//   3. on dispose / new query, cancel any in-flight stream subscription
+//
+// Note: this UI calls retrieveAcross AND answerStream, which means two
+// embedding round-trips per submit (the second is internal to answerStream).
+// On localhost Ollama with nomic-embed-text this is sub-second; if it
+// becomes a bottleneck, switch to PersonalRagService.answer() (single round
+// trip, non-streaming) — the API surface is already there.
+
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+
+import '../services/personal_rag_service.dart';
+import '../services/vector_store.dart';
+
+class PersonalQueryScreen extends StatefulWidget {
+  const PersonalQueryScreen({super.key, required this.ragService});
+  final PersonalRagService ragService;
+
+  @override
+  State<PersonalQueryScreen> createState() => _PersonalQueryScreenState();
+}
+
+class _PersonalQueryScreenState extends State<PersonalQueryScreen> {
+  final TextEditingController _queryCtrl = TextEditingController();
+  final FocusNode _queryFocus = FocusNode();
+  final ScrollController _scrollCtrl = ScrollController();
+
+  String? _currentQuery;
+  String _streamingAnswer = '';
+  List<ScoredChunk> _hits = [];
+  bool _loading = false;
+  String? _error;
+  StreamSubscription<String>? _sub;
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    _queryCtrl.dispose();
+    _queryFocus.dispose();
+    _scrollCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final query = _queryCtrl.text.trim();
+    if (query.isEmpty || _loading) return;
+
+    // Cancel any prior stream before starting a new one.
+    await _sub?.cancel();
+    _sub = null;
+
+    setState(() {
+      _currentQuery = query;
+      _streamingAnswer = '';
+      _hits = [];
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      final hits = await widget.ragService.retrieveAcross(
+        query: query,
+        k: 4,
+      );
+      if (!mounted) return;
+      setState(() => _hits = hits);
+
+      if (hits.isEmpty) {
+        setState(() {
+          _streamingAnswer = '抱歉，找不到相關資料。';
+          _loading = false;
+        });
+        return;
+      }
+
+      _sub = widget.ragService.answerStream(query: query, k: 4).listen(
+        (token) {
+          if (!mounted) return;
+          setState(() => _streamingAnswer += token);
+        },
+        onError: (Object err) {
+          if (!mounted) return;
+          setState(() {
+            _error = '查詢失敗：$err';
+            _loading = false;
+          });
+        },
+        onDone: () {
+          if (!mounted) return;
+          setState(() => _loading = false);
+        },
+      );
+    } catch (err) {
+      if (!mounted) return;
+      setState(() {
+        _error = '查詢失敗：$err';
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Personal Hub AI 查詢'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: _currentQuery == null
+                ? const _PlaceholderHints()
+                : SingleChildScrollView(
+                    controller: _scrollCtrl,
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _QueryBubble(text: _currentQuery!),
+                        const SizedBox(height: 12),
+                        if (_loading && _streamingAnswer.isEmpty)
+                          const _ThinkingIndicator(),
+                        if (_streamingAnswer.isNotEmpty)
+                          _AnswerBubble(
+                            text: _streamingAnswer,
+                            stillStreaming: _loading,
+                          ),
+                        if (_error != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Text(
+                              _error!,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                            ),
+                          ),
+                        if (_hits.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          const Text(
+                            '參考資料',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          for (var i = 0; i < _hits.length; i++)
+                            _SourceTile(index: i + 1, hit: _hits[i]),
+                        ],
+                      ],
+                    ),
+                  ),
+          ),
+          _Composer(
+            controller: _queryCtrl,
+            focusNode: _queryFocus,
+            onSubmit: _submit,
+            disabled: _loading,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// Sub-widgets
+// ============================================================================
+
+class _PlaceholderHints extends StatelessWidget {
+  const _PlaceholderHints();
+
+  @override
+  Widget build(BuildContext context) {
+    final hint = Theme.of(context).hintColor;
+    return ListView(
+      padding: const EdgeInsets.all(24),
+      children: [
+        Icon(Icons.auto_awesome, size: 48, color: hint),
+        const SizedBox(height: 12),
+        Text(
+          '問問你的 Personal Hub',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '可以同時搜尋你的開支與名片紀錄。',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: hint),
+        ),
+        const SizedBox(height: 24),
+        for (final s in const [
+          '上次跟王經理吃飯花了多少？',
+          '我這個月在 7-11 花了多少？',
+          'Acme Corp 有哪些聯絡人？',
+        ])
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Text(
+              '• $s',
+              style: TextStyle(color: hint),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _QueryBubble extends StatelessWidget {
+  const _QueryBubble({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Align(
+      alignment: Alignment.centerRight,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.85,
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: scheme.primaryContainer,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            text,
+            style: TextStyle(color: scheme.onPrimaryContainer),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AnswerBubble extends StatelessWidget {
+  const _AnswerBubble({
+    required this.text,
+    required this.stillStreaming,
+  });
+  final String text;
+  final bool stillStreaming;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.95,
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(text),
+              if (stillStreaming)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Text(
+                    '...',
+                    style: TextStyle(color: Theme.of(context).hintColor),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ThinkingIndicator extends StatelessWidget {
+  const _ThinkingIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        children: [
+          const SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            '查詢中...',
+            style: TextStyle(color: Theme.of(context).hintColor),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SourceTile extends StatelessWidget {
+  const _SourceTile({required this.index, required this.hit});
+  final int index;
+  final ScoredChunk hit;
+
+  @override
+  Widget build(BuildContext context) {
+    final hint = Theme.of(context).hintColor;
+    final preview = hit.chunk.text.length > 120
+        ? '${hit.chunk.text.substring(0, 120)}…'
+        : hit.chunk.text;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '[$index]',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: hint,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${hit.chunk.collectionName} · score=${hit.score.toStringAsFixed(3)}',
+                  style: TextStyle(fontSize: 11, color: hint),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  preview,
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Composer extends StatelessWidget {
+  const _Composer({
+    required this.controller,
+    required this.focusNode,
+    required this.onSubmit,
+    required this.disabled,
+  });
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final VoidCallback onSubmit;
+  final bool disabled;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: Theme.of(context).dividerColor,
+            ),
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: controller,
+                focusNode: focusNode,
+                enabled: !disabled,
+                decoration: const InputDecoration(
+                  hintText: '輸入問題...',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+                onSubmitted: (_) => onSubmit(),
+                textInputAction: TextInputAction.send,
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: const Icon(Icons.send),
+              onPressed: disabled ? null : onSubmit,
+              tooltip: '送出',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

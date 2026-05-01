@@ -18,12 +18,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:ai_library_server/server/api_server.dart';
-import 'package:ai_library_server/services/api_client.dart';
-import 'package:ai_library_server/services/embedding_service.dart';
-import 'package:ai_library_server/services/rag_service.dart';
-import 'package:ai_library_server/services/vector_store.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:local_ai_chat/server/api_server.dart';
+import 'package:local_ai_chat/services/api_client.dart';
+import 'package:local_ai_chat/services/embedding_service.dart';
+import 'package:local_ai_chat/services/rag_service.dart';
+import 'package:local_ai_chat/services/vector_store.dart';
 
 /// Deterministic streaming generator: yields two tokens, then ends.
 Stream<String> _fakeGen(String prompt) async* {
@@ -189,8 +189,8 @@ void main() {
       final chunks = (body['chunks'] as List).cast<Map<String, dynamic>>();
       expect(chunks, isNotEmpty);
       expect(chunks.first['docName'], 'sample_book_1.epub');
-      expect(chunks.first['text'],
-          'This is fixture content from sample_book_1.');
+      expect(
+          chunks.first['text'], 'This is fixture content from sample_book_1.');
       expect(chunks.first.keys, containsAll(['docName', 'chunkIndex', 'text']));
     });
 

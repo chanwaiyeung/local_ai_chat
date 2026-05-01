@@ -7,10 +7,10 @@
 
 import 'dart:async';
 
-import 'package:ai_library_server/controllers/reader_controller.dart';
-import 'package:ai_library_server/services/api_client.dart';
-import 'package:ai_library_server/services/ocr_service.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:local_ai_chat/controllers/reader_controller.dart';
+import 'package:local_ai_chat/services/api_client.dart';
+import 'package:local_ai_chat/services/ocr_service.dart';
 
 class _FakeReaderApi extends Fake implements ReaderApi {
   _FakeReaderApi({

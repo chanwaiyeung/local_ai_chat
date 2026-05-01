@@ -29,8 +29,7 @@ import 'services/vector_store.dart';
 //       (LAN-exposed, phone can connect; auth required)
 //
 const _aiLibLan = bool.fromEnvironment('AI_LIB_LAN', defaultValue: false);
-const _aiLibToken =
-    String.fromEnvironment('AI_LIB_TOKEN', defaultValue: '');
+const _aiLibToken = String.fromEnvironment('AI_LIB_TOKEN', defaultValue: '');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,15 +47,13 @@ Future<void> _startServerForDesktop() async {
 
   // These remain Platform.environment (runtime override, no rebuild needed):
   // they are operational tunables, not security-critical settings.
-  final indexPath =
-      Platform.environment['AI_LIB_INDEX'] ?? 'data/vectors.ndjson';
   final embedModel = Platform.environment['EMBED_MODEL'] ?? 'bge-m3';
   final ollamaModel = Platform.environment['OLLAMA_MODEL'] ?? 'llama3.1:8b';
   final ollamaUrl =
       Platform.environment['OLLAMA_URL'] ?? 'http://localhost:11434';
   final port = int.tryParse(Platform.environment['PORT'] ?? '') ?? 8080;
 
-  final store = VectorStore(storagePath: indexPath);
+  final store = VectorStore();
   await store.load();
 
   final rag = RagService(

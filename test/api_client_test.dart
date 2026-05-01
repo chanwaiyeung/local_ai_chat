@@ -8,10 +8,10 @@
 
 import 'dart:convert';
 
-import 'package:ai_library_server/services/api_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:local_ai_chat/services/api_client.dart';
 
 void main() {
   group('ApiClient.getDocs', () {

@@ -2,8 +2,8 @@
 //
 // Pure-logic tests for TextChunker. No I/O, runs in milliseconds.
 
-import 'package:ai_library_server/services/text_chunker.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:local_ai_chat/services/text_chunker.dart';
 
 void main() {
   group('TextChunker.split', () {
@@ -125,8 +125,8 @@ void main() {
 
     test('overlap >= maxChars throws', () {
       expect(
-        () => TextChunker.split('x', docName: 'a.txt',
-            maxChars: 50, overlap: 50),
+        () =>
+            TextChunker.split('x', docName: 'a.txt', maxChars: 50, overlap: 50),
         throwsArgumentError,
       );
     });

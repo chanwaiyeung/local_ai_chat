@@ -8,11 +8,11 @@
 //   5. TTS-ready speak control is present
 //   6. Tapping a term in the answer fetches a language explanation
 
-import 'package:ai_library_server/screens/reader_screen.dart';
-import 'package:ai_library_server/services/api_client.dart';
-import 'package:ai_library_server/services/ocr_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:local_ai_chat/screens/reader_screen.dart';
+import 'package:local_ai_chat/services/api_client.dart';
+import 'package:local_ai_chat/services/ocr_service.dart';
 
 class _FakeApiClient extends Fake implements ReaderApi {
   _FakeApiClient({
