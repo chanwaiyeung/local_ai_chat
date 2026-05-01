@@ -34,7 +34,7 @@ void main() {
       double amount = 42,
       String currency = 'CAD',
       String category = 'Books',
-      String description = 'Flutter handbook',
+      String notes = 'Flutter handbook',
       DateTime? date,
     }) {
       return Expense(
@@ -42,7 +42,7 @@ void main() {
         amount: amount,
         currency: currency,
         category: category,
-        description: description,
+        notes: notes,
         date: date ?? DateTime(2026, 5, 1),
       );
     }
@@ -169,7 +169,7 @@ void main() {
     });
 
     test('search finds expenses by description', () async {
-      await controller.saveExpense(expense(description: 'Weekly market run'));
+      await controller.saveExpense(expense(notes: 'Weekly market run'));
 
       final results = await controller.search('market');
 
@@ -178,7 +178,7 @@ void main() {
 
     test('search all can return mixed result types', () async {
       await controller.saveContact(contact(name: 'Market Partner'));
-      await controller.saveExpense(expense(description: 'Market lunch'));
+      await controller.saveExpense(expense(notes: 'Market lunch'));
 
       final results = await controller.search('market');
 
@@ -189,7 +189,7 @@ void main() {
 
     test('search can be scoped to contacts only', () async {
       await controller.saveContact(contact(name: 'Market Partner'));
-      await controller.saveExpense(expense(description: 'Market lunch'));
+      await controller.saveExpense(expense(notes: 'Market lunch'));
 
       final results = await controller.search(
         'market',
@@ -202,7 +202,7 @@ void main() {
 
     test('search can be scoped to expenses only', () async {
       await controller.saveContact(contact(name: 'Market Partner'));
-      await controller.saveExpense(expense(description: 'Market lunch'));
+      await controller.saveExpense(expense(notes: 'Market lunch'));
 
       final results = await controller.search(
         'market',

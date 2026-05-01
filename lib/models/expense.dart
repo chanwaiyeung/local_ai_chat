@@ -5,26 +5,56 @@ class Expense {
   final double amount;
   final String currency;
   final String category;
-  final String description;
+  final String merchant;
+  final String notes;
+  final String paymentMethod;
   final DateTime date;
   final List<String> tags;
 
   const Expense({
-    required this.id,
+    this.id = '',
     required this.amount,
-    this.currency = 'CAD',
-    this.category = '',
-    this.description = '',
+    this.currency = 'TWD',
+    this.category = '餐飲',
+    this.merchant = '',
+    this.notes = '',
+    this.paymentMethod = 'cash',
     required this.date,
     this.tags = const [],
   });
+
+  Expense copyWith({
+    String? id,
+    double? amount,
+    String? currency,
+    String? category,
+    String? merchant,
+    String? notes,
+    String? paymentMethod,
+    DateTime? date,
+    List<String>? tags,
+  }) {
+    return Expense(
+      id: id ?? this.id,
+      amount: amount ?? this.amount,
+      currency: currency ?? this.currency,
+      category: category ?? this.category,
+      merchant: merchant ?? this.merchant,
+      notes: notes ?? this.notes,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      date: date ?? this.date,
+      tags: tags ?? this.tags,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'amount': amount,
         'currency': currency,
         'category': category,
-        'description': description,
+        'merchant': merchant,
+        'notes': notes,
+        'paymentMethod': paymentMethod,
         'date': date.toIso8601String(),
         'tags': tags,
       };
@@ -33,9 +63,11 @@ class Expense {
     return Expense(
       id: json['id'] as String? ?? '',
       amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
-      currency: json['currency'] as String? ?? 'CAD',
+      currency: json['currency'] as String? ?? 'TWD',
       category: json['category'] as String? ?? '',
-      description: json['description'] as String? ?? '',
+      merchant: json['merchant'] as String? ?? '',
+      notes: json['notes'] as String? ?? '',
+      paymentMethod: json['paymentMethod'] as String? ?? 'cash',
       date: json['date'] != null
           ? DateTime.tryParse(json['date'] as String) ?? DateTime.now()
           : DateTime.now(),
@@ -45,7 +77,7 @@ class Expense {
 
   String toSearchText() {
     final buffer = StringBuffer();
-    buffer.write('$category $description $amount $currency');
+    buffer.write('$category $merchant $notes $amount $currency $paymentMethod');
     if (tags.isNotEmpty) {
       buffer.write(' ${tags.join(' ')}');
     }
@@ -68,7 +100,9 @@ class Expense {
         amount == other.amount &&
         currency == other.currency &&
         category == other.category &&
-        description == other.description &&
+        merchant == other.merchant &&
+        notes == other.notes &&
+        paymentMethod == other.paymentMethod &&
         date.isAtSameMomentAs(other.date) &&
         _listEquals(tags, other.tags);
   }
@@ -79,7 +113,9 @@ class Expense {
         amount,
         currency,
         category,
-        description,
+        merchant,
+        notes,
+        paymentMethod,
         date,
         Object.hashAll(tags),
       );

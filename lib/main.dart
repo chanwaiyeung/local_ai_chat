@@ -4,12 +4,16 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'screens/library_screen.dart';
+
 import 'server/api_server.dart';
 import 'server/ollama_client.dart';
 import 'services/embedding_service.dart';
 import 'services/rag_service.dart';
 import 'services/vector_store.dart';
+import 'services/personal_rag_service.dart';
+import 'controllers/expense_controller.dart';
+import 'controllers/contact_controller.dart';
+import 'screens/personal_hub_screen.dart';
 
 // ----------------------------- dart-define config -----------------------------
 //
@@ -31,8 +35,37 @@ import 'services/vector_store.dart';
 const _aiLibLan = bool.fromEnvironment('AI_LIB_LAN', defaultValue: false);
 const _aiLibToken = String.fromEnvironment('AI_LIB_TOKEN', defaultValue: '');
 
+late final VectorStore globalStore;
+late final ExpenseController globalExpenseController;
+late final ContactController globalContactController;
+late final PersonalRagService globalPersonalRagService;
+late final OllamaClient globalOllama;
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  final embedModel = Platform.environment['EMBED_MODEL'] ?? 'bge-m3';
+  final ollamaModel = Platform.environment['OLLAMA_MODEL'] ?? 'llama3.1:8b';
+  final ollamaUrl = Platform.environment['OLLAMA_URL'] ?? 'http://localhost:11434';
+
+  globalStore = VectorStore();
+  await globalStore.load();
+
+  globalExpenseController = ExpenseController(globalStore);
+  globalContactController = ContactController(store: globalStore);
+  await globalExpenseController.getAllExpenses();
+  await globalContactController.getAllContacts();
+
+  globalOllama = OllamaClient(baseUrl: ollamaUrl, model: ollamaModel);
+
+  globalPersonalRagService = PersonalRagService(
+    embedder: EmbeddingService(baseUrl: ollamaUrl, model: embedModel),
+    store: globalStore,
+    llmCompleteStream: ({required systemPrompt, required userPrompt}) {
+      return globalOllama.generate('$systemPrompt\n\n$userPrompt');
+    },
+  );
+
   await _startServerForDesktop();
   runApp(const MyApp());
 }
@@ -47,21 +80,16 @@ Future<void> _startServerForDesktop() async {
 
   // These remain Platform.environment (runtime override, no rebuild needed):
   // they are operational tunables, not security-critical settings.
-  final embedModel = Platform.environment['EMBED_MODEL'] ?? 'bge-m3';
-  final ollamaModel = Platform.environment['OLLAMA_MODEL'] ?? 'llama3.1:8b';
-  final ollamaUrl =
-      Platform.environment['OLLAMA_URL'] ?? 'http://localhost:11434';
   final port = int.tryParse(Platform.environment['PORT'] ?? '') ?? 8080;
 
-  final store = VectorStore();
-  await store.load();
+  final embedModel = Platform.environment['EMBED_MODEL'] ?? 'bge-m3';
+  final ollamaUrl = Platform.environment['OLLAMA_URL'] ?? 'http://localhost:11434';
 
   final rag = RagService(
     embedder: EmbeddingService(baseUrl: ollamaUrl, model: embedModel),
-    store: store,
+    store: globalStore,
   );
 
-  final ollama = OllamaClient(baseUrl: ollamaUrl, model: ollamaModel);
   // Trim the token before passing on. Inside ApiServer this is what's
   // compared byte-for-byte against the `Authorization: Bearer …` header,
   // so a leading/trailing space sneaking through dart-define would make
@@ -69,8 +97,8 @@ Future<void> _startServerForDesktop() async {
   final trimmedToken = _aiLibToken.trim();
   final server = ApiServer(
     rag: rag,
-    store: store,
-    generate: ollama.generate,
+    store: globalStore,
+    generate: globalOllama.generate,
     authToken: trimmedToken.isEmpty ? null : trimmedToken,
   );
 
@@ -100,7 +128,11 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
-      home: const LibraryScreen(),
+      home: PersonalHubScreen(
+        expenseController: globalExpenseController,
+        contactController: globalContactController,
+        personalRagService: globalPersonalRagService,
+      ),
     );
   }
 }

@@ -30,15 +30,7 @@ class ExpenseController extends ChangeNotifier {
     _setLoading(true);
     try {
       final finalExpense = expense.id.isEmpty
-          ? Expense(
-              id: DateTime.now().microsecondsSinceEpoch.toString(),
-              amount: expense.amount,
-              currency: expense.currency,
-              category: expense.category,
-              description: expense.description,
-              date: expense.date,
-              tags: expense.tags,
-            )
+          ? expense.copyWith(id: DateTime.now().microsecondsSinceEpoch.toString())
           : expense;
 
       if (expense.id.isNotEmpty) {
@@ -135,8 +127,7 @@ class ExpenseController extends ChangeNotifier {
   }
 
   Map<String, double> getMonthlySummary(int year, int month) {
-    final filtered =
-        _expenses.where((e) => e.date.year == year && e.date.month == month);
+    final filtered = getMonthlyExpenses(year, month);
     final summary = <String, double>{};
 
     for (final expense in filtered) {
@@ -147,6 +138,26 @@ class ExpenseController extends ChangeNotifier {
       );
     }
     return summary;
+  }
+
+  List<Expense> getMonthlyExpenses(int year, int month) {
+    return _expenses.where((e) => e.date.year == year && e.date.month == month).toList();
+  }
+
+  Map<String, double> getMonthlyByCategory(int year, int month) {
+    final filtered = getMonthlyExpenses(year, month);
+    final byCategory = <String, double>{};
+
+    for (final expense in filtered) {
+      // We assume a single primary currency for simplicity in category totals,
+      // or we just sum the raw amounts. Here we sum raw amounts.
+      byCategory.update(
+        expense.category,
+        (value) => value + expense.amount,
+        ifAbsent: () => expense.amount,
+      );
+    }
+    return byCategory;
   }
 
   void _setLoading(bool value) {

@@ -20,7 +20,7 @@ void main() {
         amount: 45.0,
         currency: 'CAD',
         category: 'Books',
-        description: 'Flutter programming guide',
+        notes: 'Flutter programming guide',
         date: DateTime(2025, 4, 15),
         tags: ['study'],
       );
@@ -30,7 +30,7 @@ void main() {
         amount: 300.0,
         currency: 'TWD',
         category: 'Groceries',
-        description: 'Weekly healthy food',
+        notes: 'Weekly healthy food',
         date: DateTime(2025, 4, 18),
         tags: ['daily'],
       );

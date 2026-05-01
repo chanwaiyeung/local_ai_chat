@@ -51,7 +51,7 @@ void main() {
         amount: 250,
         currency: 'TWD',
         category: 'Meals',
-        description: 'lunch with Wang',
+        notes: 'lunch with Wang',
         date: DateTime(2026, 5, 1),
       ),
     );
@@ -61,7 +61,7 @@ void main() {
         amount: 500,
         currency: 'TWD',
         category: 'Meals',
-        description: 'dinner with Albert',
+        notes: 'dinner with Albert',
         date: DateTime(2026, 5, 2),
       ),
     );
@@ -84,7 +84,7 @@ void main() {
           id: 'e1',
           amount: 250,
           date: DateTime(2026, 5, 1),
-          description: 'lunch with Wang',
+          notes: 'lunch with Wang',
         ),
       );
       await expenseController.saveExpense(
@@ -92,7 +92,7 @@ void main() {
           id: 'e2',
           amount: 500,
           date: DateTime(2026, 5, 2),
-          description: 'dinner with Albert',
+          notes: 'dinner with Albert',
         ),
       );
 
@@ -164,7 +164,7 @@ void main() {
               id: 'zero',
               amount: 100,
               date: DateTime(2026, 5, 1),
-              description: 'lunch',
+              notes: 'lunch',
             ).toJson(),
           },
         ),
@@ -198,7 +198,7 @@ void main() {
           id: 'preserve_me',
           amount: 99,
           date: DateTime(2026, 5, 1),
-          description: 'lunch',
+          notes: 'lunch',
         ),
       );
 
@@ -330,7 +330,7 @@ void main() {
           amount: 250,
           currency: 'TWD',
           date: DateTime(2026, 5, 1),
-          description: 'lunch with Wang',
+          notes: 'lunch with Wang',
         ),
       );
       await service.reindexAll();

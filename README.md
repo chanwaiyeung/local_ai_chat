@@ -1,3 +1,23 @@
+## 🚀 v2.2.0 — Personal Hub GA
+
+**智讀館** 從閱讀工具升級為**個人生活管家**！
+
+### 主要功能
+- **名片管理**：鏡頭掃描 + OCR 自動解析 + RAG 搜尋
+- **日常開支**：掃描發票 + 自動分類 + 月統計
+- **跨模組 RAG**：自然語言查詢「上次跟王經理吃飯花多少？」
+- **統一 Dashboard**：總覽 + 快速查詢
+
+### 下載
+- Windows：`local_ai_chat_v2.2.0_windows_x64.zip`
+- Android：`local_ai_chat_v2.2.0.apk`
+
+### 下一步
+- v2.3：健康管理 + 投資理財
+- v2.4：macOS 完整支援
+
+---
+
 # 智讀館 (AI Library)
 
 ## v2.0.0 GA Highlights

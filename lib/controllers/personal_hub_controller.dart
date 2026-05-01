@@ -222,7 +222,7 @@ class PersonalHubController extends ChangeNotifier {
         title: expense.category.trim().isEmpty
             ? 'Uncategorized'
             : expense.category,
-        subtitle: expense.description,
+        subtitle: expense.merchant,
         searchText: text,
         amount: expense.amount,
         date: expense.date,

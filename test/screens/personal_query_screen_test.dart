@@ -39,7 +39,7 @@ void main() {
       amount: 250,
       date: DateTime(2026, 5, 1),
       category: 'Meals',
-      description: 'lunch with Wang',
+      notes: 'lunch with Wang',
     );
     final expenseText = expense.toSearchText();
     await store.add(

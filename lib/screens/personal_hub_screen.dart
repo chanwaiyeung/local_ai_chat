@@ -38,6 +38,7 @@ import 'package:flutter/material.dart';
 import '../controllers/contact_controller.dart';
 import '../controllers/expense_controller.dart';
 import '../services/personal_rag_service.dart';
+import 'expense_screen.dart';
 import 'personal_query_screen.dart';
 
 class PersonalHubScreen extends StatefulWidget {
@@ -81,7 +82,7 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) =>
-            _ExpenseListScreen(controller: widget.expenseController),
+            ExpenseScreen(controller: widget.expenseController),
       ),
     );
   }
@@ -422,37 +423,6 @@ class _ModuleCard extends StatelessWidget {
   }
 }
 
-class _ExpenseListScreen extends StatelessWidget {
-  const _ExpenseListScreen({required this.controller});
-
-  final ExpenseController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final expenses = controller.expenses;
-    return Scaffold(
-      appBar: AppBar(title: const Text('日常開支')),
-      body: expenses.isEmpty
-          ? const Center(child: Text('尚未加入開支紀錄'))
-          : ListView.builder(
-              itemCount: expenses.length,
-              itemBuilder: (context, index) {
-                final expense = expenses[index];
-                return ListTile(
-                  leading: const Icon(Icons.payments_outlined),
-                  title: Text(
-                    expense.category.isEmpty ? '未分類' : expense.category,
-                  ),
-                  subtitle: Text(expense.description),
-                  trailing: Text(
-                    '${expense.amount.toStringAsFixed(2)} ${expense.currency}',
-                  ),
-                );
-              },
-            ),
-    );
-  }
-}
 
 class _ContactListScreen extends StatelessWidget {
   const _ContactListScreen({required this.controller});
