@@ -4,16 +4,16 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-
+import 'controllers/contact_controller.dart';
+import 'controllers/expense_controller.dart';
+import 'controllers/health_controller.dart';
+import 'screens/personal_hub_screen.dart';
 import 'server/api_server.dart';
 import 'server/ollama_client.dart';
 import 'services/embedding_service.dart';
+import 'services/personal_rag_service.dart';
 import 'services/rag_service.dart';
 import 'services/vector_store.dart';
-import 'services/personal_rag_service.dart';
-import 'controllers/expense_controller.dart';
-import 'controllers/contact_controller.dart';
-import 'screens/personal_hub_screen.dart';
 
 // ----------------------------- dart-define config -----------------------------
 //
@@ -38,23 +38,28 @@ const _aiLibToken = String.fromEnvironment('AI_LIB_TOKEN', defaultValue: '');
 late final VectorStore globalStore;
 late final ExpenseController globalExpenseController;
 late final ContactController globalContactController;
+late final HealthController globalHealthController;
 late final PersonalRagService globalPersonalRagService;
 late final OllamaClient globalOllama;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   final embedModel = Platform.environment['EMBED_MODEL'] ?? 'bge-m3';
   final ollamaModel = Platform.environment['OLLAMA_MODEL'] ?? 'llama3.1:8b';
-  final ollamaUrl = Platform.environment['OLLAMA_URL'] ?? 'http://localhost:11434';
+  final ollamaUrl =
+      Platform.environment['OLLAMA_URL'] ?? 'http://localhost:11434';
 
   globalStore = VectorStore();
   await globalStore.load();
 
   globalExpenseController = ExpenseController(globalStore);
   globalContactController = ContactController(store: globalStore);
+  globalHealthController = HealthController(globalStore);
   await globalExpenseController.getAllExpenses();
   await globalContactController.getAllContacts();
+  // HealthController loads synchronously from VectorStore so no await needed here for all records,
+  // but if needed, we can call getAllRecords().
 
   globalOllama = OllamaClient(baseUrl: ollamaUrl, model: ollamaModel);
 
@@ -83,7 +88,8 @@ Future<void> _startServerForDesktop() async {
   final port = int.tryParse(Platform.environment['PORT'] ?? '') ?? 8080;
 
   final embedModel = Platform.environment['EMBED_MODEL'] ?? 'bge-m3';
-  final ollamaUrl = Platform.environment['OLLAMA_URL'] ?? 'http://localhost:11434';
+  final ollamaUrl =
+      Platform.environment['OLLAMA_URL'] ?? 'http://localhost:11434';
 
   final rag = RagService(
     embedder: EmbeddingService(baseUrl: ollamaUrl, model: embedModel),
@@ -131,6 +137,7 @@ class MyApp extends StatelessWidget {
       home: PersonalHubScreen(
         expenseController: globalExpenseController,
         contactController: globalContactController,
+        healthController: globalHealthController,
         personalRagService: globalPersonalRagService,
       ),
     );

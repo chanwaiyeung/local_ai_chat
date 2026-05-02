@@ -37,8 +37,10 @@ import 'package:flutter/material.dart';
 
 import '../controllers/contact_controller.dart';
 import '../controllers/expense_controller.dart';
+import '../controllers/health_controller.dart';
 import '../services/personal_rag_service.dart';
 import 'expense_screen.dart';
+import 'health_screen.dart';
 import 'personal_query_screen.dart';
 
 class PersonalHubScreen extends StatefulWidget {
@@ -46,10 +48,12 @@ class PersonalHubScreen extends StatefulWidget {
     super.key,
     required this.expenseController,
     required this.contactController,
+    required this.healthController,
     this.personalRagService,
   });
   final ExpenseController expenseController;
   final ContactController contactController;
+  final HealthController healthController;
 
   /// Optional. When provided, the AI quick-query button opens
   /// [PersonalQueryScreen]. When null, the button shows a stub snackbar.
@@ -65,12 +69,14 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
     super.initState();
     widget.expenseController.addListener(_onChanged);
     widget.contactController.addListener(_onChanged);
+    widget.healthController.addListener(_onChanged);
   }
 
   @override
   void dispose() {
     widget.expenseController.removeListener(_onChanged);
     widget.contactController.removeListener(_onChanged);
+    widget.healthController.removeListener(_onChanged);
     super.dispose();
   }
 
@@ -120,6 +126,7 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
         widget.expenseController.getMonthlySummary(now.year, now.month);
     final expenseCount = widget.expenseController.expenses.length;
     final contactCount = widget.contactController.contactCount;
+    final healthCount = widget.healthController.count;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Personal Hub')),
@@ -132,6 +139,7 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
               month: now.month,
               monthlySummary: summary,
               contactCount: contactCount,
+              healthCount: healthCount,
               onAiQuery: _onAiQueryPressed,
             ),
             const Padding(
@@ -144,8 +152,10 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
             _ModulesGrid(
               expenseCount: expenseCount,
               contactCount: contactCount,
+              healthCount: healthCount,
               onExpenseTap: _openExpense,
               onContactsTap: _openContacts,
+              healthController: widget.healthController,
             ),
             const SizedBox(height: 16),
           ],
@@ -165,12 +175,14 @@ class _DashboardCard extends StatelessWidget {
     required this.month,
     required this.monthlySummary,
     required this.contactCount,
+    required this.healthCount,
     required this.onAiQuery,
   });
   final int year;
   final int month;
   final Map<String, double> monthlySummary;
   final int contactCount;
+  final int healthCount;
   final VoidCallback onAiQuery;
 
   String get _summaryText {
@@ -216,6 +228,13 @@ class _DashboardCard extends StatelessWidget {
               label: '名片總數',
               value: _contactText,
               muted: contactCount == 0,
+            ),
+            const SizedBox(height: 8),
+            _DashboardRow(
+              icon: Icons.favorite_outline,
+              label: '健康紀錄',
+              value: healthCount == 0 ? '尚未加入紀錄' : '$healthCount 筆',
+              muted: healthCount == 0,
             ),
             const SizedBox(height: 12),
             Align(
@@ -296,13 +315,17 @@ class _ModulesGrid extends StatelessWidget {
   const _ModulesGrid({
     required this.expenseCount,
     required this.contactCount,
+    required this.healthCount,
     required this.onExpenseTap,
     required this.onContactsTap,
+    required this.healthController,
   });
   final int expenseCount;
   final int contactCount;
+  final int healthCount;
   final VoidCallback onExpenseTap;
   final VoidCallback onContactsTap;
+  final HealthController healthController;
 
   @override
   Widget build(BuildContext context) {
@@ -326,12 +349,17 @@ class _ModulesGrid extends StatelessWidget {
         enabled: true,
         onTap: onContactsTap,
       ),
-      const _ModuleData(
+      _ModuleData(
         icon: Icons.favorite_outline,
         label: '健康紀錄',
-        subtitle: '即將推出',
+        subtitle: '$healthCount 筆紀錄',
         color: Colors.red,
-        enabled: false,
+        enabled: true,
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => HealthScreen(controller: healthController),
+          ),
+        ),
       ),
       const _ModuleData(
         icon: Icons.show_chart,

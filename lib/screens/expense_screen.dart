@@ -76,8 +76,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
   }
 
   Future<void> _openForm({Expense? existing}) async {
-    final pastCategories = widget.controller
-        .expenses
+    final pastCategories = widget.controller.expenses
         .map((e) => e.category)
         .where((c) => c.isNotEmpty)
         .toSet()
@@ -106,8 +105,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final monthly =
-        widget.controller.getMonthlyExpenses(_year, _month);
+    final monthly = widget.controller.getMonthlyExpenses(_year, _month);
     final filtered = _query.trim().isEmpty
         ? monthly
         : monthly
@@ -115,8 +113,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
                 e.toSearchText().toLowerCase().contains(_query.toLowerCase()))
             .toList();
     final summary = widget.controller.getMonthlySummary(_year, _month);
-    final byCategory =
-        widget.controller.getMonthlyByCategory(_year, _month);
+    final byCategory = widget.controller.getMonthlyByCategory(_year, _month);
 
     return Scaffold(
       appBar: AppBar(title: const Text('日常開支')),
@@ -149,8 +146,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
                         SizedBox(
-                          height:
-                              MediaQuery.of(context).size.height * 0.4,
+                          height: MediaQuery.of(context).size.height * 0.4,
                           child: const Center(
                             child: Text('沒有符合條件的開支'),
                           ),
@@ -445,8 +441,7 @@ class _ExpenseFormState extends State<_ExpenseForm> {
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
-    final base = widget.existing ??
-        Expense(amount: 0, date: DateTime.now());
+    final base = widget.existing ?? Expense(amount: 0, date: DateTime.now());
     final updated = base.copyWith(
       amount: double.parse(_amountCtrl.text),
       currency: _currency,
@@ -464,8 +459,11 @@ class _ExpenseFormState extends State<_ExpenseForm> {
     final categoryOptions = _categoryOptions;
     // Ensure currently-selected category is in options (defensive — covers
     // the case where existing category was deleted from defaults).
-    final categoryItems = {..._defaultCategories, ...widget.pastCategories, _category}
-        .toList()
+    final categoryItems = {
+      ..._defaultCategories,
+      ...widget.pastCategories,
+      _category
+    }.toList()
       ..sort();
 
     return SingleChildScrollView(
@@ -502,7 +500,7 @@ class _ExpenseFormState extends State<_ExpenseForm> {
                 Expanded(
                   flex: 1,
                   child: DropdownButtonFormField<String>(
-                    value: _currency,
+                    initialValue: _currency,
                     decoration: const InputDecoration(labelText: '幣別'),
                     items: [
                       for (final c in _currencies)
@@ -520,7 +518,8 @@ class _ExpenseFormState extends State<_ExpenseForm> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: categoryItems.contains(_category) ? _category : '其他',
+              initialValue:
+                  categoryItems.contains(_category) ? _category : '其他',
               decoration: InputDecoration(
                 labelText: '分類',
                 helperText: widget.pastCategories.isEmpty
@@ -535,14 +534,13 @@ class _ExpenseFormState extends State<_ExpenseForm> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: _paymentMethod,
+              initialValue: _paymentMethod,
               decoration: const InputDecoration(labelText: '付款方式'),
               items: [
                 for (final p in _payments)
                   DropdownMenuItem(value: p, child: Text(p))
               ],
-              onChanged: (v) =>
-                  setState(() => _paymentMethod = v ?? 'cash'),
+              onChanged: (v) => setState(() => _paymentMethod = v ?? 'cash'),
             ),
             const SizedBox(height: 12),
             ListTile(

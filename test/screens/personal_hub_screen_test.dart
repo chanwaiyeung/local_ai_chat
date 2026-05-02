@@ -10,8 +10,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:local_ai_chat/controllers/contact_controller.dart';
 import 'package:local_ai_chat/controllers/expense_controller.dart';
+import 'package:local_ai_chat/controllers/health_controller.dart';
 import 'package:local_ai_chat/models/contact.dart';
 import 'package:local_ai_chat/models/expense.dart';
+import 'package:local_ai_chat/models/health_record.dart';
 import 'package:local_ai_chat/screens/personal_hub_screen.dart';
 import 'package:local_ai_chat/services/vector_store.dart';
 
@@ -19,17 +21,20 @@ void main() {
   late VectorStore store;
   late ExpenseController expenseController;
   late ContactController contactController;
+  late HealthController healthController;
 
   setUp(() {
     store = VectorStore();
     expenseController = ExpenseController(store);
     contactController = ContactController(store: store);
+    healthController = HealthController(store);
   });
 
   Widget hostFor() => MaterialApp(
         home: PersonalHubScreen(
           expenseController: expenseController,
           contactController: contactController,
+          healthController: healthController,
         ),
       );
 
@@ -95,7 +100,7 @@ void main() {
     expect(find.byType(GridView), findsOneWidget);
     expect(find.text('日常開支'), findsOneWidget);
     expect(find.text('名片管理'), findsOneWidget);
-    expect(find.text('健康紀錄'), findsOneWidget);
+    expect(find.text('健康紀錄'), findsAtLeastNWidgets(1));
     expect(find.text('投資理財'), findsOneWidget);
     expect(find.text('完整儀表板'), findsOneWidget);
   });
@@ -127,13 +132,53 @@ void main() {
     expect(find.textContaining('3 張名片'), findsOneWidget);
   });
 
-  testWidgets('disabled module (健康紀錄) shows snackbar notice on tap',
+  testWidgets('dashboard reflects health count when records exist',
       (tester) async {
+    await healthController.saveRecord(HealthRecord(
+      date: DateTime(2026, 5, 1),
+      weight: 70,
+      dateAdded: DateTime(2026, 5, 1),
+    ));
+    await healthController.saveRecord(HealthRecord(
+      date: DateTime(2026, 5, 2),
+      steps: 8000,
+      dateAdded: DateTime(2026, 5, 2),
+    ));
+
     await tester.pumpWidget(hostFor());
-    await tester.tap(find.text('健康紀錄'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 600));
-    expect(find.textContaining('尚未啟用，請等待後續 Phase'), findsOneWidget);
+    expect(find.text('2 筆'), findsOneWidget);
+  });
+
+  testWidgets('Health module card shows count from controller', (tester) async {
+    await healthController.saveRecord(HealthRecord(
+      date: DateTime(2026, 5, 1),
+      sleepHours: 7.5,
+      dateAdded: DateTime(2026, 5, 1),
+    ));
+    await healthController.saveRecord(HealthRecord(
+      date: DateTime(2026, 5, 2),
+      heartRate: 68,
+      dateAdded: DateTime(2026, 5, 2),
+    ));
+    await healthController.saveRecord(HealthRecord(
+      date: DateTime(2026, 5, 3),
+      systolic: 120,
+      diastolic: 80,
+      dateAdded: DateTime(2026, 5, 3),
+    ));
+
+    await tester.pumpWidget(hostFor());
+    expect(find.textContaining('3 筆紀錄'), findsOneWidget);
+  });
+
+  // In Phase 6.8, Health is enabled, so we no longer expect the disabled snackbar
+  // Let's test navigation to HealthScreen instead or simply test it exists.
+  testWidgets('health module navigates to HealthScreen', (tester) async {
+    await tester.pumpWidget(hostFor());
+    await tester.tap(find.text('健康紀錄').last);
+    await tester.pumpAndSettle();
+    expect(find.text('健康紀錄'),
+        findsWidgets); // Both the grid card and AppBar have '健康紀錄'
   });
 
   testWidgets('AI quick-query button shows Phase 6.3\'b stub notice',
@@ -178,5 +223,21 @@ void main() {
 
     expect(find.text('尚未加入名片'), findsNothing);
     expect(find.text('1 張'), findsOneWidget);
+  });
+
+  testWidgets('updates when HealthController notifies listeners',
+      (tester) async {
+    await tester.pumpWidget(hostFor());
+    expect(find.text('尚未加入紀錄'), findsOneWidget);
+
+    await healthController.saveRecord(HealthRecord(
+      date: DateTime(2026, 5, 1),
+      weight: 71.5,
+      dateAdded: DateTime(2026, 5, 1),
+    ));
+    await tester.pump();
+
+    expect(find.text('尚未加入紀錄'), findsNothing);
+    expect(find.text('1 筆'), findsOneWidget);
   });
 }

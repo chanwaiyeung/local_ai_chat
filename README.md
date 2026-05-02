@@ -1,18 +1,38 @@
-## 🚀 v2.2.0 — Personal Hub GA
+# 智讀館 AI Library — v2.2.0 Personal Hub GA
 
-**智讀館** 從閱讀工具升級為**個人生活管家**！
+> **本地 AI 個人生活管家**：名片管理 + 日常開支 + 跨模組 RAG
 
-### 主要功能
-- **名片管理**：鏡頭掃描 + OCR 自動解析 + RAG 搜尋
-- **日常開支**：掃描發票 + 自動分類 + 月統計
-- **跨模組 RAG**：自然語言查詢「上次跟王經理吃飯花多少？」
+[![Version](https://img.shields.io/badge/version-2.2.0-blue)]()
+[![Tests](https://img.shields.io/badge/tests-327%20passed-brightgreen)]()
+
+---
+
+## v2.2.0 主要功能
+
+- **名片管理**：掃描 + OCR + RAG 搜尋
+- **日常開支**：掃描 + 手動 + 月份切換 + 統計
+- **跨模組 RAG**：自然語言查詢跨資料來源
 - **統一 Dashboard**：總覽 + 快速查詢
 
-### 下載
+---
+
+## 快速開始
+
+1. 啟動本地 Ollama + 你的 AI Server
+2. 執行 App（Windows / Android）
+3. 開始掃描名片或記錄開支
+
+---
+
+## 下載
+
 - Windows：`local_ai_chat_v2.2.0_windows_x64.zip`
 - Android：`local_ai_chat_v2.2.0.apk`
 
-### 下一步
+---
+
+## Roadmap
+
 - v2.3：健康管理 + 投資理財
 - v2.4：macOS 完整支援
 

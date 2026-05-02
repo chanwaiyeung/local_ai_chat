@@ -2,32 +2,34 @@
 
 ## v2.2.0 — Personal Hub GA (2026-05-01)
 
-**正式發布** — 智讀館從閱讀工具升級為個人生活管家。
+**正式發布** — 智讀館從閱讀工具升級為**個人生活管家**。
 
 ### 主要亮點
-- **Personal Hub**：統一入口 + Dashboard
-- **名片管理**：鏡頭掃描 + OCR 解析 + RAG 搜尋
-- **日常開支**：掃描發票 + 自動分類 + 月統計
+- **名片管理**：鏡頭掃描 + OCR 自動解析 + RAG 搜尋
+- **日常開支**：掃描發票 + 手動新增 + 月份切換 + 類別統計
+- **健康管理**：體重、血壓、運動、睡眠記錄 + 統計
+- **統一 Dashboard**：總覽三個模組 + 快速 AI 查詢
 - **跨模組 RAG**：自然語言查詢「上次跟王經理吃飯花多少？」
-- **完整本地化**：所有資料不離裝置，Privacy First
 
 ### 技術里程碑
 - VectorStore v3 + Collection 抽象層
-- Expense + Contact 模組
 - PersonalRagService 跨模組 RAG
-- 統一 Dashboard UI + 快速查詢
+- 完整本地化（所有資料不離裝置）
 
 ### 測試覆蓋
-- 總測試數：327+（全綠）
+- 總測試數：357 個（全綠）
 - 零 regression
 
-### 已知限制
-- 投資理財、健康管理留待 v2.3
-- iOS/macOS 版後續補上
-
 ### 下載
-- Windows：`build\windows\x64\runner\Release\local_ai_chat.exe`
-- Android APK：`build\app\outputs\flutter-apk\app-release.apk`
+- Windows：`local_ai_chat_v2.2.0_windows_x64.zip`
+- Android APK：`local_ai_chat_v2.2.0.apk`（稍後補上）
+
+### 已知限制
+- iOS / macOS 版將在 v2.3 補上
+- 投資理財留待 v2.3
+
+### 下一步
+- v2.3：投資理財 + 健康管理進階功能
 
 ## v2.0.0 GA
 
