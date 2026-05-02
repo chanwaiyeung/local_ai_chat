@@ -1,0 +1,69 @@
+// test/screens/health_screen_test.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:local_ai_chat/controllers/health_controller.dart';
+import 'package:local_ai_chat/models/health_record.dart';
+import 'package:local_ai_chat/screens/health_screen.dart';
+import 'package:local_ai_chat/services/vector_store.dart';
+
+void main() {
+  late VectorStore store;
+  late HealthController controller;
+
+  setUp(() {
+    store = VectorStore();
+    controller = HealthController(store);
+  });
+
+  Widget hostFor() => MaterialApp(
+        home: HealthScreen(controller: controller),
+      );
+
+  testWidgets('renders AppBar title', (tester) async {
+    await tester.pumpWidget(hostFor());
+    expect(find.text('健康紀錄'), findsOneWidget);
+  });
+
+  testWidgets('shows empty state when no records', (tester) async {
+    await tester.pumpWidget(hostFor());
+    expect(find.text('尚無健康紀錄'), findsOneWidget);
+  });
+
+  testWidgets('renders AI Consultant button', (tester) async {
+    await tester.pumpWidget(hostFor());
+    expect(find.text('AI 健康顧問'), findsOneWidget);
+    expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
+  });
+
+  testWidgets('renders trend charts when data exists', (tester) async {
+    await controller.saveRecord(HealthRecord(
+      date: DateTime(2026, 5, 1),
+      weight: 70,
+      steps: 5000,
+      systolic: 120,
+      sleepHours: 8,
+      dateAdded: DateTime(2026, 5, 1),
+    ));
+    await controller.saveRecord(HealthRecord(
+      date: DateTime(2026, 5, 2),
+      weight: 69,
+      steps: 6000,
+      systolic: 118,
+      sleepHours: 7.5,
+      dateAdded: DateTime(2026, 5, 2),
+    ));
+
+    await tester.pumpWidget(hostFor());
+    
+    // Check if the trends card title appears
+    expect(find.text('趨勢圖表'), findsOneWidget);
+    expect(find.text('體重趨勢 (kg)'), findsOneWidget);
+    expect(find.text('收縮壓趨勢 (mmHg)'), findsOneWidget);
+    expect(find.text('步數'), findsWidgets);
+    expect(find.text('睡眠時數'), findsWidgets);
+    
+    // Check if CustomPaint widgets are rendered for charts
+    expect(find.byType(CustomPaint), findsWidgets);
+  });
+}
