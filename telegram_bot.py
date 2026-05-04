@@ -8,7 +8,7 @@ from pathlib import Path
 from datetime import datetime
 
 # ====================== 設定 ======================
-TOKEN = "YOUR_TELEGRAM_BOT_TOKEN_HERE"   # ← 待會要改成真的 Token
+TOKEN = "8638032374:AAFmO_V0JM_nkBbHq16pbWgwIVHmUQtXoBU"   # ← 真實 Token
 
 # 載入 Vision Prompt（重用我們之前做的）
 try:
