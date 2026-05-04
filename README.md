@@ -1,4 +1,23 @@
-# 智讀館 AI Library — v2.2.0 Personal Hub GA
+# 🌟 local_ai_chat - Personal Hub
+
+**雙架構個人 AI 生活管理系統**
+
+- **Flutter 版**：原生行動 App（Android/iOS）
+- **Streamlit 版**：快速 Web 儀表板（推薦開發測試使用）
+
+---
+
+## 🚀 快速開始 - Streamlit 版 (v3.9.0)
+
+```bash
+cd local_ai_chat
+pip install -r requirements.txt
+streamlit run main.py
+```
+
+---
+
+## 📱 Flutter 版 - v2.2.0 Personal Hub GA
 
 > **本地 AI 個人生活管家**：名片管理 + 日常開支 + 跨模組 RAG
 
