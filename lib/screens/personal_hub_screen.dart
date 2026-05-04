@@ -44,6 +44,8 @@ import '../main.dart';
 import '../models/app_settings.dart';
 import '../services/app_settings_service.dart';
 import '../services/personal_rag_service.dart';
+import '../widgets/expense/expense_summary_card.dart';
+import '../widgets/health/health_summary_card.dart';
 import '../widgets/wealth/wealth_monthly_report_card.dart';
 import '../widgets/wealth/wealth_report_card.dart';
 import 'expense_screen.dart';
@@ -232,6 +234,21 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
                 currency: widget.wealthController.getCurrencies().isNotEmpty
                     ? widget.wealthController.getCurrencies().first
                     : 'TWD',
+              ),
+            ),
+            // === Expense & Health Summary Cards ===
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ExpenseSummaryCard(controller: widget.expenseController),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: HealthSummaryCard(controller: widget.healthController),
+                  ),
+                ],
               ),
             ),
             if (widget.personalRagService != null)
