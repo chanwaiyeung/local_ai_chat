@@ -1,0 +1,25 @@
+﻿===== SOURCE FILE: tool\verify.cmd =====
+===== EXPORTED AS TEXT: tool\verify.cmd.txt =====
+===== SIZE: 538 bytes | LAST WRITE: 04/29/2026 10:42:10 =====
+
+@echo off
+REM tool/verify.cmd
+REM
+REM Universal Windows entry point ? works from cmd.exe or PowerShell, no bash
+REM needed. Just dispatches to verify.ps1.
+REM
+REM Usage from anywhere:
+REM   tool\verify.cmd
+REM   "C:\path\to\project\tool\verify.cmd"
+
+setlocal
+set "SCRIPT_DIR=%~dp0"
+
+where pwsh >nul 2>&1
+if %errorlevel% equ 0 (
+  pwsh -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%verify.ps1" %*
+) else (
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%verify.ps1" %*
+)
+exit /b %errorlevel%
+

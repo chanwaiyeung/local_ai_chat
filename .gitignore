@@ -40,3 +40,17 @@ ollama_client.dart
 # ==================== Others ====================
 *.bak
 *.tmp
+
+# ==================== v2.5 housekeeping ====================
+# Diagnostic outputs (re-generated each \lutter analyze\ / \lutter test\ run).
+analyze_output.txt
+test_output.txt
+
+# Architecture review export folders that get dropped on the desktop.
+local_ai_chat_review_*/
+local_ai_chat_full_architecture_review_*/
+local_ai_chat_architecture_review_*/
+
+# Other scratch dumps that have appeared at root over time.
+apis.txt
+

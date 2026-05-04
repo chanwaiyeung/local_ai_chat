@@ -1,0 +1,153 @@
+﻿===== SOURCE FILE: docs\v2_test_rename_sprint.md =====
+===== EXPORTED AS TEXT: docs\v2_test_rename_sprint.md.txt =====
+===== SIZE: 7209 bytes | LAST WRITE: 04/30/2026 18:24:31 =====
+
+# 智讀館 — Test Rename Sprint Plan
+
+| Field | Value |
+|---|---|
+| Status | Planned (not yet executed) |
+| Trigger | v2.0 promotion 改了 `Chunk → DocChunk`、`store.search → topK`、`store.add` arity、`EmbeddingService` constructor、`VectorStore` constructor。`test/` 部分檔案還用舊 API |
+| Scope (corrected) | **2 個檔案需要 surgery + 1 個檔案需要刪除**（不是之前估計的 13 個——原數字是 grep 偽陽性） |
+| Estimated effort | 30-60 分鐘（含本機跑 test 驗證） |
+| Last recon | 2026-04-30 |
+
+## 1. 範圍校正紀錄
+
+之前 sprint 過程中估計過「13 個 test 檔案需要 `Chunk → DocChunk` rename」。實際靜態 sweep 後發現該數字被 grep 誤導：
+
+```
+grep -rl "\bChunk\(" --include='*.dart' test/   # 這個 grep 抓到 13 檔
+```
+
+但 13 個結果裡多數是**偽陽性**：
+- `'Chunk zero: ...'`、`'Chunk one: ...'` 等 string literal（測試 fixture 文字）
+- `nextChunks`、`chunks.add(...)` 等變數名 / 集合操作
+- `DocChunk(...)` 構造子（grep `Chunk\(` 會誤抓 `DocChunk\(` 的 substring）
+
+精確 grep（排除上述模式）後的真實受影響檔案只有：
+
+| 檔案 | 狀態 |
+|---|---|
+| `test/api_server_test.dart` | 需 surgery（Chunk + add arity + embedFn） |
+| `test/vector_store_test.dart` | 需 surgery（Chunk + storagePath + totalChunks + clear arity） |
+| `test/text_chunker_test.dart` | **整檔刪除**（依賴已刪除的 `lib/services/text_chunker.dart`） |
+
+## 2. 詳細變更清單
+
+### 2.1 `test/api_server_test.dart`
+
+API mismatch 5 類，總 ~10 行改動：
+
+| Line | 舊 API | 新 API |
+|---|---|---|
+| 51 | `Chunk(docName: ..., chunkIndex: 0, text: ...)` | `DocChunk(id: 'sample_book_1.epub_0', docName: ..., chunkIndex: 0, text: ..., embedding: [1.0, 0.0, 0.0, 0.0])` |
+| 52-58 | `await store.add(chunk, embedding)` 2-arg form | 改為 1-arg：`store.add(docChunk)`（embedding 已在 DocChunk 內） |
+| 59 | 同 line 51 | 同上（第二個 fixture chunk） |
+| 60-66 | 同 line 52-58 | 同上 |
+| 74, 274, 298, 318, 335 | `EmbeddingService(embedFn: _fakeEmbed)` | 改為 subclass 模式（見下方範本） |
+
+#### embedFn → subclass 範本
+
+舊：
+```dart
+EmbeddingService(embedFn: _fakeEmbed)
+
+Future<List<double>> _fakeEmbed(String text) async {
+  return const [1.0, 0.0, 0.0, 0.0];
+}
+```
+
+新（參考 `test/rag_ingest_atomic_test.dart` 的 `_FakeEmbeddingService` 模式）：
+```dart
+class _FakeEmbeddingService extends EmbeddingService {
+  _FakeEmbeddingService() : super(baseUrl: 'http://unused.invalid');
+
+  @override
+  Future<List<double>> embed(String text) async {
+    return const [1.0, 0.0, 0.0, 0.0];
+  }
+
+  @override
+  Future<List<List<double>>> embedAll(List<String> texts) async {
+    return [for (final _ in texts) const [1.0, 0.0, 0.0, 0.0]];
+  }
+}
+```
+
+然後所有 `EmbeddingService(embedFn: _fakeEmbed)` 改為 `_FakeEmbeddingService()`。
+
+### 2.2 `test/vector_store_test.dart`
+
+API mismatch 4 類，總 ~12 行改動：
+
+| Line | 舊 API | 新 API |
+|---|---|---|
+| 14 | `Chunk _c(String doc, int idx, String text)` | `DocChunk _c(String doc, int idx, String text)` 並補上 `id: '${doc}_$idx'` 與 `embedding: const []` 或合理的 toy vector |
+| 15 | `Chunk(docName: doc, chunkIndex: idx, text: text)` | `DocChunk(id: '${doc}_$idx', docName: doc, chunkIndex: idx, text: text, embedding: [])` |
+| 61, 223 | `await store.clear('a.txt')` | `store.removeDoc('a.txt')`（clear() 現在無參數，意義改成清空全庫） |
+| 63, 212, 228, 234 | `expect(store.totalChunks, N)` | `expect(store.length, N)` |
+| 206, 210, 220, 225, 232 | `VectorStore(storagePath: indexPath)` | 改用 path_provider mocking 模式（參考 `test/integration_v3_persistence_test.dart`） |
+
+⚠️ **storagePath 5 處改動風險最高**——新 VectorStore 完全不接受 storagePath 參數，持久化路徑由 `path_provider.getApplicationSupportDirectory()` 內定。要保留持久化測試的能力，需要：
+
+1. 在檔案頂端加 `_FakePathProviderPlatform` 與 `setUp` / `tearDown`（複製自 A2 整合測試）
+2. 把 `indexPath` 改成 setUp 裡建立的 `tempDir.path`
+3. 不再傳給 constructor，而是讓 path_provider mock 接管
+
+如果這樣改動超出範圍，建議**直接刪除** `test/vector_store_test.dart` 中所有 `storagePath:` 相關的 `test()` blocks（line 200-235 區塊），因為它們的功能已經被 `test/integration_v3_persistence_test.dart` 第 1、2 個 test 取代。
+
+### 2.3 `test/text_chunker_test.dart` — 整檔刪除
+
+`lib/services/text_chunker.dart` 已在 B-tail 階段刪除（dead code，沒有 production 引用）。`test/text_chunker_test.dart` 整檔依賴它的 `TextChunker.split()`，**整個 test 檔已經失去測試對象**。
+
+刪除指令：
+
+```powershell
+cd D:\dev\local_ai_chat   # 或 C: 看當下狀態
+Remove-Item test\text_chunker_test.dart
+```
+
+預期影響：失去 TextChunker 的單元測試覆蓋。但是：
+- TextChunker class 本身已不存在
+- 切塊邏輯已被 `RagService.chunk()` 靜態方法取代（`lib/services/rag_service.dart:87`）
+- 後續若要保留切塊測試，應該寫 `test/rag_service_chunk_test.dart` 直接測 `RagService.chunk()`
+
+## 3. 建議執行波次
+
+### Wave 1：Drop dead test（5 分鐘）
+- 刪除 `test/text_chunker_test.dart`
+- 跑 `flutter test`，確認少了 1 個檔案沒有引發 import error
+
+### Wave 2：vector_store_test.dart 自包含重構（15-20 分鐘）
+- `Chunk → DocChunk` rename（line 14, 15）
+- `totalChunks → length`（4 處）
+- `clear(docName) → removeDoc(docName)`（2 處）
+- `storagePath:` 5 處：選擇 (a) 改成 path_provider mock 模式，或 (b) 整段 test block 刪除（建議 b，因為 A2 已涵蓋）
+- 跑 `flutter test test/vector_store_test.dart`，確認綠燈
+
+### Wave 3：api_server_test.dart 重構（15-20 分鐘）
+- 加入 `_FakeEmbeddingService` subclass（檔尾）
+- `EmbeddingService(embedFn: _fakeEmbed)` → `_FakeEmbeddingService()` 5 處
+- 兩個 `Chunk(...) + add(chunk, embedding)` → `DocChunk(... embedding: [...])` + `add(docChunk)`
+- 跑 `flutter test test/api_server_test.dart`，確認綠燈
+
+### Wave 4：全庫驗證（5 分鐘）
+- `flutter analyze`：預期 No issues found
+- `flutter test`：預期所有 test 綠燈（含原本紅的 3 個）
+
+## 4. 風險與遺留事項
+
+| 議題 | 處置 |
+|---|---|
+| 刪除 text_chunker_test.dart 後，切塊邏輯沒有單元測試 | 列入下個 sprint：寫 `test/rag_service_chunk_test.dart` 補回 |
+| api_server_test.dart 的 5 個 `_FakeEmbed` 函式變數在改造後會 dead code | rename pass 後順手刪 dead code |
+| vector_store_test.dart 的 storagePath 區塊若選擇 (b) 刪除，會降低 VectorStore 的細粒度測試覆蓋 | A2 整合測試已涵蓋 save/load 主要路徑，可接受 |
+
+## 5. References
+
+- A2 整合測試（含 path_provider mocking 範本）：`test/integration_v3_persistence_test.dart`
+- 既有 EmbeddingService subclass 範本：`test/rag_ingest_atomic_test.dart` line 53+
+- Schema v3 spec（DocChunk 欄位定義）：`docs/v2_schema_v3_spec.md` §5
+- Namespace alignment（為什麼 import 用 `package:local_ai_chat/...`）：`docs/v2_namespace_alignment.md`
+

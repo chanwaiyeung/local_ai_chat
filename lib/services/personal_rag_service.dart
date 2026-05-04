@@ -37,9 +37,15 @@
 
 import 'dart:convert';
 
+import '../models/app_settings.dart';
 import '../models/contact.dart';
 import '../models/expense.dart';
+import '../models/skill_card.dart';
+import 'app_settings_service.dart';
 import 'embedding_service.dart';
+import 'query_expansion.dart';
+import 'rag_service.dart';
+import 'skills_service.dart';
 import 'vector_store.dart';
 
 /// System prompt and user prompt → LLM reply. Production wiring builds
@@ -65,6 +71,7 @@ class PersonalRagService {
   PersonalRagService({
     required this.embedder,
     required this.store,
+    this.skillsService,
     this.llmComplete,
     this.llmCompleteStream,
     this.collections = const [kExpensesCollection, kContactsCollection],
@@ -78,6 +85,7 @@ class PersonalRagService {
 
   final EmbeddingService embedder;
   final VectorStore store;
+  final SkillsService? skillsService;
 
   /// Optional: required for [answer] / [answerStream]. Retrieval-only callers
   /// can leave this null.
@@ -243,21 +251,49 @@ class PersonalRagService {
     if (query.trim().isEmpty) return const [];
     final cols = collectionsOverride ?? collections;
 
-    final queryVec = await embedder.embed(query);
+    final settings = await AppSettingsService().load();
+    final mode = settings.retrievalMode;
 
-    final pooled = <ScoredChunk>[];
-    for (final col in cols) {
-      final hits = store.searchInCollection(
-        col,
-        queryVec,
-        topK: perCollectionPool,
-      );
-      pooled.addAll(hits);
+    final semanticHits = <ScoredChunk>[];
+    if (mode != RetrievalMode.sparse) {
+      final queryVec = await embedder.embed(query);
+      for (final col in cols) {
+        final colHits = store.searchInCollection(
+          col,
+          queryVec,
+          topK: perCollectionPool,
+        );
+        semanticHits.addAll(colHits);
+      }
+      semanticHits.sort((a, b) => b.score.compareTo(a.score));
     }
 
-    pooled.sort((a, b) => b.score.compareTo(a.score));
+    final keywordHits = <ScoredChunk>[];
+    if (mode != RetrievalMode.dense) {
+      final sparseQuery = const QueryExpansion().sparseQueryForRetrieval(
+        query,
+        enabled: mode == RetrievalMode.hybrid,
+      );
+      for (final col in cols) {
+        final pool = store.chunksInCollection(col);
+        final colHits = RagService.bm25Rank(sparseQuery, pool, k: perCollectionPool);
+        keywordHits.addAll(colHits);
+      }
+      keywordHits.sort((a, b) => b.score.compareTo(a.score));
+    }
+
+    final finalHits = switch (mode) {
+      RetrievalMode.dense => semanticHits.take(k).toList(),
+      RetrievalMode.sparse => keywordHits.take(k).toList(),
+      RetrievalMode.hybrid => RagService.rrfFuse(
+          semanticHits: semanticHits,
+          keywordHits: keywordHits,
+          k: k,
+        ),
+    };
+
     final filtered =
-        pooled.where((h) => h.score >= minScore).toList(growable: false);
+        finalHits.where((h) => h.score >= minScore).toList(growable: false);
     return filtered.take(k).toList();
   }
 
@@ -295,8 +331,23 @@ class PersonalRagService {
       );
     }
 
+    String finalSystemPrompt = systemPromptOverride ?? defaultSystemPrompt;
+    if (skillsService != null) {
+      final skills = await skillsService!.getRelevantSkills(query);
+      if (skills.isNotEmpty) {
+        final skillsText = skills.map((s) {
+          if (s.reasoningPath.isNotEmpty) {
+            return '- 類似問題: ${s.query}\n  推理: ${s.reasoningPath}\n  回答: ${s.answer}';
+          }
+          return '- 類似問題: ${s.query}\n  回答: ${s.answer}';
+        }).join('\n\n');
+        
+        finalSystemPrompt += '\n\n【技能卡 (過去成功的經驗)】\n你應該參考以下過去你曾經正確回答過的類似問題來保持一致性：\n$skillsText';
+      }
+    }
+
     final reply = await llm(
-      systemPrompt: systemPromptOverride ?? defaultSystemPrompt,
+      systemPrompt: finalSystemPrompt,
       userPrompt: _buildUserPrompt(query, hits),
     );
     return PersonalRagAnswer(text: reply, hits: hits);
@@ -330,9 +381,65 @@ class PersonalRagService {
       return;
     }
 
+    String finalSystemPrompt = systemPromptOverride ?? defaultSystemPrompt;
+    if (skillsService != null) {
+      final skills = await skillsService!.getRelevantSkills(query);
+      if (skills.isNotEmpty) {
+        final skillsText = skills.map((s) {
+          if (s.reasoningPath.isNotEmpty) {
+            return '- 類似問題: ${s.query}\n  推理: ${s.reasoningPath}\n  回答: ${s.answer}';
+          }
+          return '- 類似問題: ${s.query}\n  回答: ${s.answer}';
+        }).join('\n\n');
+        
+        finalSystemPrompt += '\n\n【技能卡 (過去成功的經驗)】\n你應該參考以下過去你曾經正確回答過的類似問題來保持一致性：\n$skillsText';
+      }
+    }
+
     yield* stream(
-      systemPrompt: systemPromptOverride ?? defaultSystemPrompt,
+      systemPrompt: finalSystemPrompt,
       userPrompt: _buildUserPrompt(query, hits),
+    );
+  }
+
+  /// Extracts and saves a skill from a successful interaction.
+  Future<SkillCard> extractAndSaveSkill({
+    required String query,
+    required String answer,
+    String reasoningPath = '',
+    String domain = 'general',
+  }) async {
+    if (skillsService == null) {
+      throw StateError('PersonalRagService.extractAndSaveSkill requires skillsService.');
+    }
+
+    String finalReasoningPath = reasoningPath;
+    if (finalReasoningPath.isEmpty && llmComplete != null) {
+      final prompt = '''
+你是一個專業的知識萃取專家。
+請根據以下使用者的問題與 AI 的回答，萃取出一段「思考路徑 (Reasoning Path)」。
+這段路徑將作為未來回答類似問題時的指導原則。
+請使用繁體中文，格式需結構化，包含：
+1. 關鍵洞見 (Key Insight)
+2. 適用情境 (Context)
+3. 解決策略/步驟 (Strategy)
+保持簡明扼要。
+''';
+      try {
+        finalReasoningPath = await llmComplete!(
+          systemPrompt: prompt,
+          userPrompt: '問題：$query\n回答：$answer',
+        );
+      } catch (e) {
+        // Fallback to empty if reflection fails
+      }
+    }
+
+    return skillsService!.extractAndSaveSkill(
+      query: query,
+      answer: answer,
+      reasoningPath: finalReasoningPath,
+      domain: domain,
     );
   }
 

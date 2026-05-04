@@ -1,0 +1,249 @@
+﻿===== SOURCE FILE: lib\screens\rag_evaluation_screen.dart =====
+===== EXPORTED AS TEXT: lib\screens\rag_evaluation_screen.dart.txt =====
+===== SIZE: 6649 bytes | LAST WRITE: 04/28/2026 08:06:36 =====
+
+import 'package:flutter/material.dart';
+
+import '../models/rag_evaluation_record.dart';
+import '../services/rag_evaluation_service.dart';
+import '../widgets/rag_eval_editor.dart';
+import '../widgets/rag_eval_record_card.dart';
+
+class RagEvaluationScreen extends StatefulWidget {
+  const RagEvaluationScreen({
+    super.key,
+    required this.chatModel,
+    required this.embeddingModel,
+  });
+
+  final String chatModel;
+  final String embeddingModel;
+
+  @override
+  State<RagEvaluationScreen> createState() => _RagEvaluationScreenState();
+}
+
+class _RagEvaluationScreenState extends State<RagEvaluationScreen> {
+  final _service = RagEvaluationService();
+  final _records = <RagEvaluationRecord>[];
+
+  bool _loading = true;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecords();
+  }
+
+  Future<void> _loadRecords() async {
+    final records = await _service.loadRecords();
+    if (!mounted) return;
+    setState(() {
+      _records
+        ..clear()
+        ..addAll(records);
+      _loading = false;
+    });
+  }
+
+  Future<void> _persist() async {
+    setState(() => _saving = true);
+    await _service.saveRecords(_records);
+    if (!mounted) return;
+    setState(() => _saving = false);
+  }
+
+  Future<void> _addRecord(RagEvalEditorResult input) async {
+    final record = createRagEvaluationRecord(
+      id: RagEvaluationRecord.newId(),
+      question: input.question,
+      answer: input.answer,
+      citationText: input.citationText,
+      citationTarget: input.citationTarget,
+      expectedStatus: input.expectedStatus,
+      verdict: input.verdict,
+      notes: input.notes,
+      chatModel: widget.chatModel,
+      embeddingModel: widget.embeddingModel,
+      createdAt: DateTime.now(),
+    );
+
+    debugPrint(
+      'Record created expected=${record.expectedStatus} '
+      'verdict=${record.verdict}',
+    );
+
+    setState(() {
+      _records.insert(0, record);
+    });
+
+    await _persist();
+  }
+
+  Future<void> _deleteRecord(RagEvaluationRecord record) async {
+    setState(() => _records.remove(record));
+    await _persist();
+  }
+
+  Future<void> _clearRecords() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('清空所有記錄？'),
+        content: const Text('此操作無法復原。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('清空'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _records.clear());
+    await _persist();
+  }
+
+  Future<void> _exportJson() async {
+    if (_records.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('沒有可匯出的記錄')),
+      );
+      return;
+    }
+
+    final file = await _service.exportSnapshot(_records);
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('已匯出：${file.path}')),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final summary = summarizeRagEvaluationRecords(_records);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('RAG 評測記錄'),
+        actions: [
+          IconButton(
+            tooltip: '匯出 JSON',
+            onPressed: _exportJson,
+            icon: const Icon(Icons.file_download_outlined),
+          ),
+          IconButton(
+            tooltip: '清空',
+            onPressed: _records.isEmpty ? null : _clearRecords,
+            icon: const Icon(Icons.delete_sweep_outlined),
+          ),
+        ],
+      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                if (_saving) const LinearProgressIndicator(),
+                _StatsCard(
+                  total: summary.total,
+                  pass: summary.pass,
+                  fail: summary.fail,
+                  unsure: summary.unsure,
+                  passRate: summary.passRate,
+                  chatModel: widget.chatModel,
+                  embeddingModel: widget.embeddingModel,
+                ),
+                const SizedBox(height: 12),
+                RagEvalEditor(
+                  chatModel: widget.chatModel,
+                  embeddingModel: widget.embeddingModel,
+                  onSubmit: _addRecord,
+                ),
+                const SizedBox(height: 12),
+                if (_records.isEmpty)
+                  const _EmptyState()
+                else
+                  for (final record in _records)
+                    RagEvalRecordCard(
+                      record: record,
+                      onDelete: () => _deleteRecord(record),
+                    ),
+              ],
+            ),
+    );
+  }
+}
+
+class _StatsCard extends StatelessWidget {
+  const _StatsCard({
+    required this.total,
+    required this.pass,
+    required this.fail,
+    required this.unsure,
+    required this.passRate,
+    required this.chatModel,
+    required this.embeddingModel,
+  });
+
+  final int total;
+  final int pass;
+  final int fail;
+  final int unsure;
+  final double passRate;
+  final String chatModel;
+  final String embeddingModel;
+
+  @override
+  Widget build(BuildContext context) {
+    final rateText = '${(passRate * 100).toStringAsFixed(1)}%';
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Wrap(
+          spacing: 12,
+          runSpacing: 8,
+          children: [
+            Chip(label: Text('Total: $total')),
+            Chip(label: Text('Pass: $pass')),
+            Chip(label: Text('Fail: $fail')),
+            Chip(label: Text('Unsure: $unsure')),
+            Chip(label: Text('Pass rate: $rateText')),
+            Chip(label: Text('Chat: $chatModel')),
+            Chip(label: Text('Embedding: $embeddingModel')),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 48),
+      child: Column(
+        children: [
+          Icon(Icons.fact_check_outlined, size: 48),
+          SizedBox(height: 12),
+          Text('尚未有 RAG 評測記錄'),
+          SizedBox(height: 4),
+          Text('點擊「新增評測記錄」開始保存人工驗收結果。'),
+        ],
+      ),
+    );
+  }
+}
+

@@ -7,12 +7,17 @@ import 'package:flutter/material.dart';
 import 'controllers/contact_controller.dart';
 import 'controllers/expense_controller.dart';
 import 'controllers/health_controller.dart';
+import 'controllers/wealth_controller.dart';
+import 'l10n/app_localizations.dart';
 import 'screens/personal_hub_screen.dart';
 import 'server/api_server.dart';
 import 'server/ollama_client.dart';
+import 'services/app_settings_service.dart';
 import 'services/embedding_service.dart';
 import 'services/personal_rag_service.dart';
 import 'services/rag_service.dart';
+import 'services/skills_service.dart';
+import 'services/telegram_bot_service.dart';
 import 'services/vector_store.dart';
 
 // ----------------------------- dart-define config -----------------------------
@@ -39,8 +44,22 @@ late final VectorStore globalStore;
 late final ExpenseController globalExpenseController;
 late final ContactController globalContactController;
 late final HealthController globalHealthController;
+late final WealthController globalWealthController;
 late final PersonalRagService globalPersonalRagService;
+late final SkillsService globalSkillsService;
 late final OllamaClient globalOllama;
+TelegramBotService? globalTelegramBotService;
+
+Future<void> restartTelegramBot(String? token) async {
+  globalTelegramBotService?.stop();
+  globalTelegramBotService = null;
+  if (token != null && token.isNotEmpty) {
+    globalTelegramBotService = TelegramBotService(
+      token: token,
+      ragService: globalPersonalRagService,
+    )..start();
+  }
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,20 +75,33 @@ Future<void> main() async {
   globalExpenseController = ExpenseController(globalStore);
   globalContactController = ContactController(store: globalStore);
   globalHealthController = HealthController(globalStore);
+  globalWealthController = WealthController(globalStore);
   await globalExpenseController.getAllExpenses();
   await globalContactController.getAllContacts();
+  await globalWealthController.loadAll();
   // HealthController loads synchronously from VectorStore so no await needed here for all records,
   // but if needed, we can call getAllRecords().
 
   globalOllama = OllamaClient(baseUrl: ollamaUrl, model: ollamaModel);
 
-  globalPersonalRagService = PersonalRagService(
-    embedder: EmbeddingService(baseUrl: ollamaUrl, model: embedModel),
+  final embedder = EmbeddingService(baseUrl: ollamaUrl, model: embedModel);
+
+  globalSkillsService = SkillsService(
     store: globalStore,
+    embedder: embedder,
+  );
+
+  globalPersonalRagService = PersonalRagService(
+    embedder: embedder,
+    store: globalStore,
+    skillsService: globalSkillsService,
     llmCompleteStream: ({required systemPrompt, required userPrompt}) {
       return globalOllama.generate('$systemPrompt\n\n$userPrompt');
     },
   );
+
+  final settings = await AppSettingsService().load();
+  await restartTelegramBot(settings.telegramBotToken);
 
   await _startServerForDesktop();
   runApp(const MyApp());
@@ -123,21 +155,59 @@ Future<void> _startServerForDesktop() async {
   }
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  static MyAppState? of(BuildContext c) =>
+      c.findAncestorStateOfType<MyAppState>();
+
+  @override
+  State<MyApp> createState() => MyAppState();
+}
+
+class MyAppState extends State<MyApp> {
+  Locale? _locale;
+  ThemeMode _themeMode = ThemeMode.system;
+
+  ThemeMode get themeMode => _themeMode;
+  Locale? get currentLocale => _locale;
+
+  void setLocale(Locale? l) {
+    setState(() {
+      _locale = l;
+    });
+  }
+
+  void setThemeMode(ThemeMode mode) {
+    setState(() {
+      _themeMode = mode;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '智讀館',
+      onGenerateTitle: (ctx) => AppLocalizations.of(ctx).appTitle,
+      locale: _locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.indigo,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+      ),
+      themeMode: _themeMode,
       home: PersonalHubScreen(
         expenseController: globalExpenseController,
         contactController: globalContactController,
         healthController: globalHealthController,
+        wealthController: globalWealthController,
         personalRagService: globalPersonalRagService,
       ),
     );

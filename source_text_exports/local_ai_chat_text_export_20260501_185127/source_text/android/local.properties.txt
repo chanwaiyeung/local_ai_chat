@@ -1,0 +1,8 @@
+﻿===== SOURCE FILE: android\local.properties =====
+===== EXPORTED AS TEXT: android\local.properties.txt =====
+===== SIZE: 100 bytes | LAST WRITE: 05/01/2026 16:02:44 =====
+
+flutter.sdk=C:\\flutter
+sdk.dir=C:\\Android\\Sdk
+flutter.buildMode=release
+flutter.versionName=2.2.0

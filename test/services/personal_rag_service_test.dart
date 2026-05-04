@@ -8,6 +8,7 @@ import 'package:local_ai_chat/models/contact.dart';
 import 'package:local_ai_chat/models/expense.dart';
 import 'package:local_ai_chat/services/embedding_service.dart';
 import 'package:local_ai_chat/services/personal_rag_service.dart';
+import 'package:local_ai_chat/services/skills_service.dart';
 import 'package:local_ai_chat/services/vector_store.dart';
 
 Future<List<double>> keywordEmbed(String text) async {
@@ -342,6 +343,40 @@ void main() {
       expect(capturedSystem, contains('Personal Hub'));
       expect(capturedUser, contains('lunch with Wang'));
       expect(capturedUser, contains('使用者問題'));
+    });
+
+    test('injects skills into system prompt when skillsService is provided', () async {
+      String? capturedSystem;
+      final skillsService = SkillsService(store: store, embedder: embedder);
+      await skillsService.extractAndSaveSkill(
+        query: 'What is 1+1?',
+        reasoningPath: 'Basic math',
+        answer: '2',
+      );
+
+      final service = PersonalRagService(
+        embedder: embedder,
+        store: store,
+        skillsService: skillsService,
+        llmComplete: ({
+          required String systemPrompt,
+          required String userPrompt,
+        }) async {
+          capturedSystem = systemPrompt;
+          return '2';
+        },
+      );
+      await expenseController.saveExpense(
+        Expense(id: 'e1', amount: 1, date: DateTime(2026, 5, 1)),
+      );
+      await service.reindexAll();
+
+      await service.answer(query: 'What is 1+1?');
+
+      expect(capturedSystem, contains('【技能卡 (過去成功的經驗)】'));
+      expect(capturedSystem, contains('What is 1+1?'));
+      expect(capturedSystem, contains('Basic math'));
+      expect(capturedSystem, contains('2'));
     });
 
     test('answerStream throws when llmCompleteStream is not wired', () async {

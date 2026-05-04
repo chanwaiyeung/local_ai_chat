@@ -1,0 +1,7 @@
+﻿===== SOURCE FILE: android\.gradle\buildOutputCleanup\cache.properties =====
+===== EXPORTED AS TEXT: android\.gradle\buildOutputCleanup\cache.properties.txt =====
+===== SIZE: 52 bytes | LAST WRITE: 04/30/2026 08:11:44 =====
+
+#Thu Apr 30 08:11:44 PDT 2026
+gradle.version=8.14
+

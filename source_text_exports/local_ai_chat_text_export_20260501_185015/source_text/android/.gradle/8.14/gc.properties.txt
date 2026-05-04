@@ -1,0 +1,5 @@
+﻿===== SOURCE FILE: android\.gradle\8.14\gc.properties =====
+===== EXPORTED AS TEXT: android\.gradle\8.14\gc.properties.txt =====
+===== SIZE: 0 bytes | LAST WRITE: 05/01/2026 17:47:47 =====
+
+

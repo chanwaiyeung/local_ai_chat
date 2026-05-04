@@ -12,6 +12,7 @@ import 'package:local_ai_chat/models/expense.dart';
 import 'package:local_ai_chat/screens/personal_query_screen.dart';
 import 'package:local_ai_chat/services/embedding_service.dart';
 import 'package:local_ai_chat/services/personal_rag_service.dart';
+import 'package:local_ai_chat/services/skills_service.dart';
 import 'package:local_ai_chat/services/vector_store.dart';
 
 Future<List<double>> keywordEmbed(String text) async {
@@ -223,5 +224,37 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('查詢失敗'), findsOneWidget);
+  });
+
+  testWidgets('shows Save as Skill button after streaming and saves successfully', (tester) async {
+    final skillsService = SkillsService(store: store, embedder: embedder);
+    final svc = PersonalRagService(
+      embedder: embedder,
+      store: store,
+      skillsService: skillsService,
+      llmCompleteStream: ({
+        required String systemPrompt,
+        required String userPrompt,
+      }) async* {
+        yield 'Here is a good answer';
+      },
+    );
+    await seed();
+
+    await tester.pumpWidget(hostFor(svc));
+    await tester.enterText(find.byType(TextField), 'Wang lunch');
+    await tester.tap(find.byIcon(Icons.send));
+    await tester.pumpAndSettle();
+
+    // Verify button appears
+    final saveButton = find.text('儲存為技能');
+    expect(saveButton, findsOneWidget);
+
+    // Tap button
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    // Verify snackbar
+    expect(find.text('已手動儲存為技能！'), findsOneWidget);
   });
 }

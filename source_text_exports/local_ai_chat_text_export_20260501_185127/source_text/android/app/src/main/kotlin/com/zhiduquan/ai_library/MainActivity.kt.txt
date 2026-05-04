@@ -1,0 +1,10 @@
+﻿===== SOURCE FILE: android\app\src\main\kotlin\com\zhiduquan\ai_library\MainActivity.kt =====
+===== EXPORTED AS TEXT: android\app\src\main\kotlin\com\zhiduquan\ai_library\MainActivity.kt.txt =====
+===== SIZE: 126 bytes | LAST WRITE: 04/29/2026 15:54:53 =====
+
+package com.zhiduquan.ai_library
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity : FlutterActivity()
+

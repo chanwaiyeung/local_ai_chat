@@ -18,12 +18,19 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../models/skill_card.dart';
 import '../services/personal_rag_service.dart';
 import '../services/vector_store.dart';
 
 class PersonalQueryScreen extends StatefulWidget {
-  const PersonalQueryScreen({super.key, required this.ragService});
+  const PersonalQueryScreen({
+    super.key,
+    required this.ragService,
+    this.initialQuery,
+  });
+  
   final PersonalRagService ragService;
+  final String? initialQuery;
 
   @override
   State<PersonalQueryScreen> createState() => _PersonalQueryScreenState();
@@ -38,8 +45,23 @@ class _PersonalQueryScreenState extends State<PersonalQueryScreen> {
   String _streamingAnswer = '';
   List<ScoredChunk> _hits = [];
   bool _loading = false;
+  bool _savingSkill = false;
   String? _error;
+
+  SkillCard? _extractedSkill;
+  int? _feedbackGiven;
   StreamSubscription<String>? _sub;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialQuery != null && widget.initialQuery!.trim().isNotEmpty) {
+      _queryCtrl.text = widget.initialQuery!;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _submit();
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -64,6 +86,8 @@ class _PersonalQueryScreenState extends State<PersonalQueryScreen> {
       _hits = [];
       _loading = true;
       _error = null;
+      _extractedSkill = null;
+      _feedbackGiven = null;
     });
 
     try {
@@ -97,6 +121,24 @@ class _PersonalQueryScreenState extends State<PersonalQueryScreen> {
         onDone: () {
           if (!mounted) return;
           setState(() => _loading = false);
+
+          // 自動萃取機制：如果回答內容超過 200 字，且成功完成，就自動在背景儲存
+          if (_streamingAnswer.length >= 200) {
+            () async {
+              try {
+                final skill = await widget.ragService.extractAndSaveSkill(
+                  query: query,
+                  answer: _streamingAnswer,
+                );
+                if (mounted) {
+                  setState(() => _extractedSkill = skill);
+                }
+              } catch (e) {
+                // 背景儲存失敗直接忽略，不打斷 UI
+                debugPrint('Auto-extract failed: $e');
+              }
+            }();
+          }
         },
       );
     } catch (err) {
@@ -105,6 +147,31 @@ class _PersonalQueryScreenState extends State<PersonalQueryScreen> {
         _error = '查詢失敗：$err';
         _loading = false;
       });
+    }
+  }
+
+  Future<void> _saveSkill() async {
+    if (_currentQuery == null || _streamingAnswer.isEmpty) return;
+    setState(() => _savingSkill = true);
+    try {
+      final skill = await widget.ragService.extractAndSaveSkill(
+        query: _currentQuery!,
+        answer: _streamingAnswer,
+      );
+      if (mounted) {
+        setState(() => _extractedSkill = skill);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('已手動儲存為技能！')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('儲存技能失敗：$e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _savingSkill = false);
     }
   }
 
@@ -133,6 +200,54 @@ class _PersonalQueryScreenState extends State<PersonalQueryScreen> {
                           _AnswerBubble(
                             text: _streamingAnswer,
                             stillStreaming: _loading,
+                          ),
+                        if (_streamingAnswer.isNotEmpty && !_loading)
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 8, bottom: 8),
+                              child: _extractedSkill != null
+                                  ? Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Text('這回答有幫助嗎？', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                                        const SizedBox(width: 8),
+                                        IconButton(
+                                          icon: Icon(Icons.thumb_up_alt_outlined, color: _feedbackGiven == 1 ? Colors.green : null),
+                                          iconSize: 20,
+                                          onPressed: _feedbackGiven != null ? null : () {
+                                            setState(() => _feedbackGiven = 1);
+                                            widget.ragService.skillsService!.updateSuccessCount(_extractedSkill!.id, 1);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text('感謝回饋！此技能權重已提升。')),
+                                            );
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: Icon(Icons.thumb_down_alt_outlined, color: _feedbackGiven == -1 ? Colors.red : null),
+                                          iconSize: 20,
+                                          onPressed: _feedbackGiven != null ? null : () {
+                                            setState(() => _feedbackGiven = -1);
+                                            widget.ragService.skillsService!.updateSuccessCount(_extractedSkill!.id, -1);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text('感謝回饋！此技能權重已降低。')),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    )
+                                  : TextButton.icon(
+                                      onPressed: _savingSkill ? null : _saveSkill,
+                                      icon: _savingSkill
+                                          ? const SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child: CircularProgressIndicator(strokeWidth: 2),
+                                            )
+                                          : const Icon(Icons.star, size: 16),
+                                      label: const Text('儲存為技能'),
+                                    ),
+                            ),
                           ),
                         if (_error != null)
                           Padding(

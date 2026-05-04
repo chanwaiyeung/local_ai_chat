@@ -1,0 +1,10 @@
+path = 'lib/services/vector_store.dart'
+text = open(path, 'r', encoding='utf-8').read()
+text = text.replace('Future<File> _file() async {', 'Future<File> _file() async { print("f1");')
+text = text.replace('if (_storagePath != null) {', 'print("f2"); if (_storagePath != null) {')
+text = text.replace('final file = File(_storagePath!);', 'print("f3"); final file = File(_storagePath!);')
+text = text.replace('final parent = file.parent;', 'print("f4"); final parent = file.parent;')
+text = text.replace('if (!await parent.exists()) await parent.create(recursive: true);', 'print("f5"); if (!await parent.exists()) { print("f5.1"); await parent.create(recursive: true); } print("f6");')
+text = text.replace('return file;', 'print("f7"); return file;')
+open(path, 'w', encoding='utf-8').write(text)
+print('Injected _file')

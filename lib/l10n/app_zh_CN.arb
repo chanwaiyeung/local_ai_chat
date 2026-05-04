@@ -1,0 +1,220 @@
+{
+  "@@locale": "zh_CN",
+  "appTitle": "智读馆",
+  "@appTitle": { "description": "App title shown in OS task switcher" },
+
+  "tabRecords": "记录",
+  "tabAllocation": "配置",
+
+  "investmentFinance": "投资理财",
+  "noInvestmentRecords": "尚无投资记录",
+  "aiFinancialAdvisor": "AI 理财顾问",
+  "totalAssets": "总资产",
+  "currencyLabel": "币别：",
+
+  "moduleExpense": "日常开支",
+  "moduleContacts": "名片管理",
+  "moduleHealth": "健康记录",
+  "moduleWealth": "投资理财",
+  "moduleDashboardSoon": "完整仪表板",
+  "comingSoon": "即将推出",
+
+  "expenseCount": "{count, plural, =0{尚未加入记录} other{{count} 笔记录}}",
+  "@expenseCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "saveButton": "保存",
+  "cancelButton": "取消",
+  "deleteButton": "删除",
+
+  "settings": "设置",
+  "language": "语言",
+  "languageZhTw": "繁体中文",
+  "languageZhCn": "简体中文",
+  "languageEn": "English",
+
+  "personalHubTitle": "Personal Hub",
+  "modules": "模块",
+  "dashboardTitle": "{year} 年 {month} 月总览",
+  "@dashboardTitle": {
+    "placeholders": {
+      "year": { "type": "int" },
+      "month": { "type": "int" }
+    }
+  },
+  "totalExpensesThisMonth": "本月总开支",
+  "noExpensesThisMonth": "本月暂无开支",
+  "totalContacts": "名片总数",
+  "healthRecords": "健康记录",
+  "investmentNetWorth": "投资净值",
+  "quickAiQuery": "快速 AI 查询",
+  "featureNotEnabled": "{feature}：尚未启用，请等待后续 Phase",
+  "@featureNotEnabled": {
+    "placeholders": { "feature": { "type": "String" } }
+  },
+  "aiQueryFeatureComingSoon": "AI 跨模块查询将于 Phase 6.3'b 推出",
+  "noRecordsYet": "尚未加入记录",
+  "noContactsYet": "尚未加入名片",
+  "recordCountPlural": "{count, plural, =0{尚未加入记录} other{{count} 笔记录}}",
+  "@recordCountPlural": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "contactCountPlural": "{count, plural, =0{尚未加入名片} other{{count} 张名片}}",
+  "@contactCountPlural": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "wealth": "投资理财",
+  "assetAllocation": "资产配置",
+  "addRecord": "新增记录",
+  "netWorth": "投资净值",
+  "totalLiabilities": "总负债",
+  "searchAssetHint": "搜索资产 / 备注 / 标签...",
+  "noDataToChart": "没有可绘制的投资数据",
+  "addFirstRecordHint": "从“记录”分页加入第一笔吧",
+  "netWorthOverview": "净值总览",
+  "assetCountLabel": "{count} 项资产",
+  "@assetCountLabel": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "valuationNote": "依最新一笔估值合计（不跨币别换算）",
+  "noData": "暂无数据",
+  "netWorthTrend": "净值趋势",
+  "needTwoDatesForChart": "需要至少两个不同日期才能绘制趋势",
+  "addInvestmentRecord": "新增投资记录",
+  "editInvestmentRecord": "编辑投资记录",
+  "valuationDate": "估值日期",
+  "assetClass": "资产类别",
+  "assetNameHint": "资产名称（选填，例如 AAPL / 0050.TW）",
+  "amount": "金额",
+  "invalidAmountError": "请输入有效金额",
+  "currency": "币别",
+  "notes": "备注",
+  "tagsCommaSeparated": "标签（逗号分隔）",
+
+  "aiHealthAdvisor": "AI 健康顾问",
+  "searchHealthHint": "搜索备注 / 标签...",
+  "noHealthRecords": "尚无健康记录",
+  "noRecordsLast30Days": "最近 30 天暂无记录",
+  "last30DaysOverview": "最近 30 天概况",
+  "recordCountUnit": "{count} 笔",
+  "@recordCountUnit": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "weight": "体重",
+  "avgWeightStat": "平均 {val} kg ({count} 次)",
+  "@avgWeightStat": {
+    "placeholders": {
+      "val": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "bloodPressure": "血压",
+  "avgBpStat": "平均 {sys} / {dia} mmHg ({count} 次)",
+  "@avgBpStat": {
+    "placeholders": {
+      "sys": { "type": "String" },
+      "dia": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "heartRate": "心率",
+  "avgHeartRateStat": "平均 {val} bpm ({count} 次)",
+  "@avgHeartRateStat": {
+    "placeholders": {
+      "val": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "steps": "步数",
+  "totalStepsStat": "总计 {val} 步 ({count} 天)",
+  "@totalStepsStat": {
+    "placeholders": {
+      "val": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "sleep": "睡眠",
+  "avgSleepStat": "平均 {val} 小时 ({count} 次)",
+  "@avgSleepStat": {
+    "placeholders": {
+      "val": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "noDataLabel": "(无数据)",
+  "addHealthRecord": "新增健康记录",
+  "editHealthRecord": "编辑健康记录",
+  "measurementDate": "测量日期",
+  "weightKg": "体重 (kg)",
+  "systolicMmHg": "收缩压 (mmHg)",
+  "diastolicMmHg": "舒张压 (mmHg)",
+  "heartRateBpm": "心率 (bpm)",
+  "sleepHours": "睡眠时数 (小时)",
+  "fillAtLeastOneMeasurement": "请至少填写一项测量值或备注",
+  "trendCharts": "趋势图表",
+  "weightTrend": "体重趋势 (kg)",
+  "systolicTrend": "收缩压趋势 (mmHg)",
+  "sleepHoursLabel": "睡眠时数",
+
+  "searchExpenseHint": "搜索商家 / 分类 / 备注...",
+  "noMatchingExpenses": "没有符合条件的开支",
+  "previousMonth": "上个月",
+  "nextMonth": "下个月",
+  "yearMonthTitle": "{year} 年 {month} 月",
+  "@yearMonthTitle": {
+    "placeholders": {
+      "year": { "type": "int" },
+      "month": { "type": "int" }
+    }
+  },
+  "noExpensesThisMonth": "本月暂无开支",
+  "monthlyTotal": "本月合计：{totalText}",
+  "@monthlyTotal": {
+    "placeholders": { "totalText": { "type": "String" } }
+  },
+  "categoryAmountChip": "{label} · {amount}",
+  "@categoryAmountChip": {
+    "placeholders": {
+      "label": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "noMerchant": "(未填商家)",
+  "addExpense": "新增开支",
+  "editExpense": "编辑开支",
+  "merchant": "商家",
+  "category": "分类",
+  "defaultCategoriesLabel": "默认类别",
+  "customCategoriesCount": "已有 {count} 个自定义类别",
+  "@customCategoriesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "paymentMethod": "付款方式",
+  "date": "日期",
+
+  "appearance": "外观",
+  "theme": "主题",
+  "darkMode": "深色模式",
+  "lightMode": "浅色模式",
+  "systemDefault": "跟随系统",
+  "mySkills": "我的技能库",
+  
+  "embeddingSettings": "Embedding 设置",
+  "enterEmbeddingModelName": "请输入 embedding model 名称",
+  "modelInstalled": "已安装",
+  "modelNotInstalled": "未安装，请先用 Ollama pull 此 model",
+  "useCustomEmbeddingModel": "使用自定义 embedding model",
+  "customModelHint": "例如：mxbai-embed-large",
+  "currentSelection": "目前选择：{model}",
+  "@currentSelection": {
+    "placeholders": { "model": { "type": "String" } }
+  },
+  "changeModelWarning": "注意：更换 embedding model 会清空目前 vector store，请重新导入文件。",
+  "retrievalMode": "检索模式",
+  "denseMode": "Dense：向量语义搜索",
+  "sparseMode": "Sparse：BM25 关键字搜索",
+  "hybridMode": "Hybrid：Dense + BM25 + RRF",
+  "applySettings": "应用设置"
+}

@@ -38,10 +38,18 @@ import 'package:flutter/material.dart';
 import '../controllers/contact_controller.dart';
 import '../controllers/expense_controller.dart';
 import '../controllers/health_controller.dart';
+import '../controllers/wealth_controller.dart';
+import '../l10n/app_localizations.dart';
+import '../main.dart';
+import '../models/app_settings.dart';
+import '../services/app_settings_service.dart';
 import '../services/personal_rag_service.dart';
 import 'expense_screen.dart';
 import 'health_screen.dart';
+import 'my_skills_screen.dart';
 import 'personal_query_screen.dart';
+import 'settings_screen.dart';
+import 'wealth_screen.dart';
 
 class PersonalHubScreen extends StatefulWidget {
   const PersonalHubScreen({
@@ -49,11 +57,13 @@ class PersonalHubScreen extends StatefulWidget {
     required this.expenseController,
     required this.contactController,
     required this.healthController,
+    required this.wealthController,
     this.personalRagService,
   });
   final ExpenseController expenseController;
   final ContactController contactController;
   final HealthController healthController;
+  final WealthController wealthController;
 
   /// Optional. When provided, the AI quick-query button opens
   /// [PersonalQueryScreen]. When null, the button shows a stub snackbar.
@@ -70,6 +80,7 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
     widget.expenseController.addListener(_onChanged);
     widget.contactController.addListener(_onChanged);
     widget.healthController.addListener(_onChanged);
+    widget.wealthController.addListener(_onChanged);
   }
 
   @override
@@ -77,6 +88,7 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
     widget.expenseController.removeListener(_onChanged);
     widget.contactController.removeListener(_onChanged);
     widget.healthController.removeListener(_onChanged);
+    widget.wealthController.removeListener(_onChanged);
     super.dispose();
   }
 
@@ -106,8 +118,8 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
     final svc = widget.personalRagService;
     if (svc == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("AI 跨模組查詢將於 Phase 6.3'b 推出"),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).aiQueryFeatureComingSoon),
         ),
       );
       return;
@@ -115,6 +127,47 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => PersonalQueryScreen(ragService: svc),
+      ),
+    );
+  }
+
+  void _openLifeInsights() {
+    final svc = widget.personalRagService;
+    if (svc == null) return;
+    
+    final hStats = widget.healthController.getStats(lastNDays: 30);
+    
+    String ccy = 'TWD';
+    final totals = widget.wealthController.getCurrentTotalByCurrency();
+    if (totals.isNotEmpty) {
+      ccy = totals.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+    }
+    final wStats = widget.wealthController.getStats(currency: ccy);
+
+    String prompt = '請根據我近期的健康與財務狀況，給我一份「生活與財務總分析」：\n\n';
+    prompt += '[健康狀態 (近30天)]\n';
+    if (hStats.avgWeight != null) prompt += '- 平均體重：${hStats.avgWeight!.toStringAsFixed(1)} kg\n';
+    if (hStats.avgSystolic != null) prompt += '- 平均血壓：${hStats.avgSystolic!.toStringAsFixed(0)}/${hStats.avgDiastolic?.toStringAsFixed(0) ?? '?'} mmHg\n';
+    if (hStats.totalSteps != null && hStats.totalSteps! > 0) prompt += '- 近期總步數：${hStats.totalSteps} 步\n';
+    if (hStats.avgSleepHours != null) prompt += '- 平均睡眠：${hStats.avgSleepHours!.toStringAsFixed(1)} 小時\n';
+    
+    prompt += '\n[財務狀態 ($ccy)]\n';
+    prompt += '- 總淨值：${wStats.totalNetWorth.toStringAsFixed(0)} $ccy\n';
+    if (wStats.allocationByType.isNotEmpty) {
+      prompt += '- 資產分佈：\n';
+      for (final e in wStats.allocationByType.entries) {
+        prompt += '  * ${e.key}: ${e.value.toStringAsFixed(0)}\n';
+      }
+    }
+    
+    prompt += '\n請綜合以上數據，評估我目前的生活品質與財務健康，並給出 3 點具體建議。';
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => PersonalQueryScreen(
+          ragService: svc,
+          initialQuery: prompt,
+        ),
       ),
     );
   }
@@ -127,9 +180,34 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
     final expenseCount = widget.expenseController.expenses.length;
     final contactCount = widget.contactController.contactCount;
     final healthCount = widget.healthController.count;
+    final wealthCount = widget.wealthController.count;
+    final wealthTotalsByCcy =
+        widget.wealthController.getCurrentTotalByCurrency();
+
+    final loc = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Personal Hub')),
+      appBar: AppBar(
+        title: Text(loc.personalHubTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () async {
+              final current = await AppSettingsService().load();
+              if (!context.mounted) return;
+              final updated = await Navigator.of(context).push<AppSettings>(
+                MaterialPageRoute(
+                  builder: (_) => SettingsScreen(currentSettings: current),
+                ),
+              );
+              if (updated != null) {
+                await AppSettingsService().save(updated);
+                restartTelegramBot(updated.telegramBotToken);
+              }
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -140,22 +218,29 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
               monthlySummary: summary,
               contactCount: contactCount,
               healthCount: healthCount,
+              wealthCount: wealthCount,
+              wealthTotalsByCcy: wealthTotalsByCcy,
               onAiQuery: _onAiQueryPressed,
             ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+            if (widget.personalRagService != null)
+              _LifeInsightsCard(onTap: _openLifeInsights),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Text(
-                '模組',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                loc.modules,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
             _ModulesGrid(
               expenseCount: expenseCount,
               contactCount: contactCount,
               healthCount: healthCount,
+              wealthCount: wealthCount,
               onExpenseTap: _openExpense,
               onContactsTap: _openContacts,
               healthController: widget.healthController,
+              wealthController: widget.wealthController,
+              ragService: widget.personalRagService,
             ),
             const SizedBox(height: 16),
           ],
@@ -176,6 +261,8 @@ class _DashboardCard extends StatelessWidget {
     required this.monthlySummary,
     required this.contactCount,
     required this.healthCount,
+    required this.wealthCount,
+    required this.wealthTotalsByCcy,
     required this.onAiQuery,
   });
   final int year;
@@ -183,22 +270,39 @@ class _DashboardCard extends StatelessWidget {
   final Map<String, double> monthlySummary;
   final int contactCount;
   final int healthCount;
+  final int wealthCount;
+  final Map<String, double> wealthTotalsByCcy;
   final VoidCallback onAiQuery;
 
-  String get _summaryText {
-    if (monthlySummary.isEmpty) return '本月暫無開支';
+  String _wealthText(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+    if (wealthCount == 0) return loc.noRecordsYet;
+    if (wealthTotalsByCcy.isEmpty) return loc.recordCountPlural(wealthCount);
+    final parts = wealthTotalsByCcy.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    return parts
+        .take(2)
+        .map((e) => '${e.value.toStringAsFixed(0)} ${e.key}')
+        .join(' / ');
+  }
+
+  String _summaryText(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+    if (monthlySummary.isEmpty) return loc.noExpensesThisMonth;
     return monthlySummary.entries
         .map((e) => '${e.value.toStringAsFixed(2)} ${e.key}')
         .join(' / ');
   }
 
-  String get _contactText {
-    if (contactCount == 0) return '尚未加入名片';
-    return '$contactCount 張';
+  String _contactText(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+    if (contactCount == 0) return loc.noContactsYet;
+    return loc.contactCountPlural(contactCount);
   }
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Card(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Padding(
@@ -211,7 +315,7 @@ class _DashboardCard extends StatelessWidget {
                 const Icon(Icons.dashboard_outlined),
                 const SizedBox(width: 8),
                 Text(
-                  '$year 年 $month 月總覽',
+                  loc.dashboardTitle(year, month),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ],
@@ -219,22 +323,29 @@ class _DashboardCard extends StatelessWidget {
             const Divider(height: 24),
             _DashboardRow(
               icon: Icons.payments_outlined,
-              label: '本月總開支',
-              value: _summaryText,
+              label: loc.totalExpensesThisMonth,
+              value: _summaryText(context),
             ),
             const SizedBox(height: 8),
             _DashboardRow(
               icon: Icons.contacts_outlined,
-              label: '名片總數',
-              value: _contactText,
+              label: loc.totalContacts,
+              value: _contactText(context),
               muted: contactCount == 0,
             ),
             const SizedBox(height: 8),
             _DashboardRow(
               icon: Icons.favorite_outline,
-              label: '健康紀錄',
-              value: healthCount == 0 ? '尚未加入紀錄' : '$healthCount 筆',
+              label: loc.healthRecords,
+              value: healthCount == 0 ? loc.noRecordsYet : loc.recordCountPlural(healthCount),
               muted: healthCount == 0,
+            ),
+            const SizedBox(height: 8),
+            _DashboardRow(
+              icon: Icons.account_balance_outlined,
+              label: loc.investmentNetWorth,
+              value: _wealthText(context),
+              muted: wealthCount == 0,
             ),
             const SizedBox(height: 12),
             Align(
@@ -242,10 +353,80 @@ class _DashboardCard extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: onAiQuery,
                 icon: const Icon(Icons.auto_awesome, size: 18),
-                label: const Text('快速 AI 查詢'),
+                label: Text(loc.quickAiQuery),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LifeInsightsCard extends StatelessWidget {
+  const _LifeInsightsCard({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.deepPurple.shade400, Colors.blue.shade600],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                const CircleAvatar(
+                  backgroundColor: Colors.white24,
+                  child: Icon(Icons.psychology, color: Colors.white),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '🧠 一鍵生活洞察',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '結合 Health 與 Wealth 雙核分析，打造您的專屬生活指南。',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 16),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -316,43 +497,50 @@ class _ModulesGrid extends StatelessWidget {
     required this.expenseCount,
     required this.contactCount,
     required this.healthCount,
+    required this.wealthCount,
     required this.onExpenseTap,
     required this.onContactsTap,
     required this.healthController,
+    required this.wealthController,
+    this.ragService,
   });
   final int expenseCount;
   final int contactCount;
   final int healthCount;
+  final int wealthCount;
   final VoidCallback onExpenseTap;
   final VoidCallback onContactsTap;
   final HealthController healthController;
+  final WealthController wealthController;
+  final PersonalRagService? ragService;
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final width = MediaQuery.of(context).size.width;
     final crossAxisCount = width > 600 ? 3 : 2;
 
     final modules = <_ModuleData>[
       _ModuleData(
         icon: Icons.payments_outlined,
-        label: '日常開支',
-        subtitle: '$expenseCount 筆紀錄',
+        label: loc.moduleExpense,
+        subtitle: loc.recordCountPlural(expenseCount),
         color: Colors.green,
         enabled: true,
         onTap: onExpenseTap,
       ),
       _ModuleData(
         icon: Icons.contacts_outlined,
-        label: '名片管理',
-        subtitle: '$contactCount 張名片',
+        label: loc.moduleContacts,
+        subtitle: loc.contactCountPlural(contactCount),
         color: Colors.blue,
         enabled: true,
         onTap: onContactsTap,
       ),
       _ModuleData(
         icon: Icons.favorite_outline,
-        label: '健康紀錄',
-        subtitle: '$healthCount 筆紀錄',
+        label: loc.healthRecords,
+        subtitle: loc.recordCountPlural(healthCount),
         color: Colors.red,
         enabled: true,
         onTap: () => Navigator.of(context).push(
@@ -361,19 +549,47 @@ class _ModulesGrid extends StatelessWidget {
           ),
         ),
       ),
-      const _ModuleData(
-        icon: Icons.show_chart,
-        label: '投資理財',
-        subtitle: '即將推出',
+      _ModuleData(
+        icon: Icons.account_balance_outlined,
+        label: loc.investmentFinance,
+        subtitle: wealthCount == 0
+            ? loc.noRecordsYet
+            : loc.recordCountPlural(wealthCount),
         color: Colors.purple,
-        enabled: false,
+        enabled: true,
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => WealthScreen(
+              controller: wealthController,
+              ragService: ragService,
+            ),
+          ),
+        ),
       ),
-      const _ModuleData(
+      _ModuleData(
         icon: Icons.dashboard_customize_outlined,
-        label: '完整儀表板',
-        subtitle: '即將推出',
+        label: loc.moduleDashboardSoon,
+        subtitle: loc.comingSoon,
         color: Colors.orange,
         enabled: false,
+      ),
+      _ModuleData(
+        icon: Icons.psychology_outlined,
+        label: loc.mySkills,
+        subtitle: 'AI 學習記憶庫',
+        color: Colors.teal,
+        enabled: ragService?.skillsService != null,
+        onTap: () {
+          if (ragService?.skillsService != null) {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => MySkillsScreen(
+                  ragService: ragService!,
+                ),
+              ),
+            );
+          }
+        },
       ),
     ];
 
@@ -399,9 +615,10 @@ class _ModuleCard extends StatelessWidget {
   final _ModuleData data;
 
   void _showDisabledNotice(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${data.label}：尚未啟用，請等待後續 Phase'),
+        content: Text(loc.featureNotEnabled(data.label)),
       ),
     );
   }
@@ -459,11 +676,12 @@ class _ContactListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final contacts = controller.contacts;
     return Scaffold(
-      appBar: AppBar(title: const Text('名片管理')),
+      appBar: AppBar(title: Text(loc.moduleContacts)),
       body: contacts.isEmpty
-          ? const Center(child: Text('尚未加入名片'))
+          ? Center(child: Text(loc.noContactsYet))
           : ListView.builder(
               itemCount: contacts.length,
               itemBuilder: (context, index) {

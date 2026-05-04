@@ -1,0 +1,111 @@
+﻿===== SOURCE FILE: test\controllers\expense_controller_test.dart =====
+===== EXPORTED AS TEXT: test\controllers\expense_controller_test.dart.txt =====
+===== SIZE: 2895 bytes | LAST WRITE: 05/01/2026 16:19:01 =====
+
+// test/controllers/expense_controller_test.dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:local_ai_chat/controllers/expense_controller.dart';
+import 'package:local_ai_chat/models/expense.dart';
+import 'package:local_ai_chat/services/vector_store.dart';
+
+void main() {
+  group('ExpenseController Tests', () {
+    late VectorStore store;
+    late ExpenseController controller;
+
+    setUp(() {
+      store = VectorStore();
+      controller = ExpenseController(store);
+    });
+
+    test('Save and retrieve expenses', () async {
+      final expense1 = Expense(
+        id: '',
+        amount: 45.0,
+        currency: 'CAD',
+        category: 'Books',
+        notes: 'Flutter programming guide',
+        date: DateTime(2025, 4, 15),
+        tags: ['study'],
+      );
+
+      final expense2 = Expense(
+        id: '',
+        amount: 300.0,
+        currency: 'TWD',
+        category: 'Groceries',
+        notes: 'Weekly healthy food',
+        date: DateTime(2025, 4, 18),
+        tags: ['daily'],
+      );
+
+      await controller.saveExpense(expense1);
+      await controller.saveExpense(expense2);
+
+      await controller.getAllExpenses();
+      expect(controller.expenses.length, 2);
+
+      expect(controller.expenses.first.category, 'Groceries');
+      expect(controller.expenses.last.currency, 'CAD');
+    });
+
+    test('Collection isolation and type tag filtering', () async {
+      final expense = Expense(
+        id: '',
+        amount: 50.0,
+        date: DateTime.now(),
+      );
+      await controller.saveExpense(expense);
+
+      await store.add(
+        DocChunk(
+          docName: 'contact_1',
+          chunkIndex: 0,
+          text: 'John Doe',
+          collectionName: 'Contacts',
+          metadata: {'type': 'personal_hub_contact'},
+        ),
+      );
+
+      expect(store.totalChunks, 2);
+
+      await controller.getAllExpenses();
+      expect(controller.expenses.length, 1);
+      expect(controller.expenses.first.amount, 50.0);
+    });
+
+    test('Monthly summary aggregates by currency correctly', () async {
+      await controller.saveExpense(
+        Expense(
+          id: '',
+          amount: 100.0,
+          currency: 'CAD',
+          date: DateTime(2026, 2, 10),
+        ),
+      );
+      await controller.saveExpense(
+        Expense(
+          id: '',
+          amount: 50.0,
+          currency: 'CAD',
+          date: DateTime(2026, 2, 12),
+        ),
+      );
+      await controller.saveExpense(
+        Expense(
+          id: '',
+          amount: 1500.0,
+          currency: 'JPY',
+          date: DateTime(2026, 2, 5),
+        ),
+      );
+
+      await controller.getAllExpenses();
+      final summary = controller.getMonthlySummary(2026, 2);
+
+      expect(summary['CAD'], 150.0);
+      expect(summary['JPY'], 1500.0);
+    });
+  });
+}
+

@@ -1,0 +1,181 @@
+﻿===== SOURCE FILE: PHASE1_PLAN.md =====
+===== EXPORTED AS TEXT: PHASE1_PLAN.md.txt =====
+===== SIZE: 6461 bytes | LAST WRITE: 04/29/2026 08:40:54 =====
+
+# Phase 1 行動方案 — Local AI Server (7 天)
+
+## 解決了哪些「未修問題」
+
+| 問題 | 修法 |
+|---|---|
+| Markdown 連結化的 paste 殘留導致無法編譯 | 全文重寫，無任何 `[xxx](http://xxx)` 殘跡，可直接 `flutter analyze` 通過 |
+| `/query` 沒呼叫 LLM、只切前 200 字 | 改成注入式 `LlmStreamGenerator`，搭配 `OllamaClient.generate` 真實串流 |
+| 沒有 streaming | 新增 `/query/stream` 用 SSE，事件型別 `citations` / `delta` / `done` / `error` |
+| 沒有認證 | Bearer token middleware，token 從環境變數讀；`/health` 例外免驗 |
+| 沒有錯誤處理 | `_errorMiddleware` 攔 `FormatException` → 400，其餘 → 500，永不洩漏 stack trace |
+| 沒有 CORS / 手機連得到 | CORS middleware 處理 `OPTIONS` 與回應 header |
+| 沒有 logging | `_logMiddleware` 印 `METHOD path -> status (ms)` |
+| 連線方案沒講 | 預設同 WiFi LAN，計畫 Day 6 含實機驗證步驟 |
+
+---
+
+## 我的預設（不符請事後告知）
+
+| 項目 | 預設 | 不同要做什麼 |
+|---|---|---|
+| 語言 | Dart / Flutter | 整套要重寫 |
+| LLM | Ollama @ `localhost:11434`，model `llama3.1:8b` | 改 `OllamaClient` 或自寫一個 `Stream<String> Function(String)` |
+| OS | Windows 開發 | macOS 同樣可跑，shelf 是跨平台 |
+| 連線 | 手機 ↔ 電腦同 WiFi | 外網需 Tailscale / Cloudflare Tunnel |
+| 認證 | Bearer token（單人 / 家庭） | 多用戶 → OAuth/JWT |
+| Streaming | 是 | 不要可只用 `/query` |
+
+## RagService / VectorStore 介面假設
+
+- `store.docNames` → `List<String>`
+- `rag.retrieve(query, {String? docName})` → `List<Hit>`
+- `Hit` 有 `.chunk.docName` (String)、`.chunk.chunkIndex` (int)、`.chunk.text` (String)、`.score` (double)
+
+**若實際欄位不同**，只需改 `api_server.dart` 中 `_buildPrompt` 與 `_citationsJson` 兩處。其餘 server 層不受影響。
+
+---
+
+## 7 天 Daily Checkpoint
+
+### Day 1 — 基線確認與依賴
+- [ ] `flutter pub add shelf shelf_router http`
+- [ ] v2.0 在 Windows 跑得起來，能完成一次 RAG 檢索
+- [ ] `ollama serve` 已啟動，`ollama list` 看得到 `llama3.1:8b`（或你選的模型）
+- [ ] 把三個 dart 檔放進 `lib/server/`
+- **驗收**：`flutter analyze` 零錯誤
+
+### Day 2 — Server 起得來
+- [ ] 把 `main.dart` 改成 `main_integration_example.dart` 的樣子
+- [ ] `flutter run -d windows` 看到「Local AI Server listening on http://0.0.0.0:8080」
+- [ ] `curl /health` 回 200
+- [ ] `curl /docs` 回書名清單
+- **驗收**：下方兩條 curl 都通
+
+### Day 3 — 介面對齊
+- [ ] 暫時在 `_buildPrompt` 開頭加 `print('hits=${hits.length}, first=${hits.isEmpty ? "" : hits.first.chunk.text.substring(0, 100)}');`
+- [ ] 確認 hit 結構與本檔假設一致；不一致就改欄位名
+- [ ] 拿掉 print
+- **驗收**：印出的 prompt 包含真實片段內容
+
+### Day 4 — `/query` 端到端
+- [ ] curl POST /query 拿到真 LLM 回答（不是切片）
+- [ ] citations 欄位有值
+- [ ] 故意傳不存在的 `docName` 看 fallback 行為
+- **驗收**：問「這本書講什麼」，回的是 LLM 摘要，**不是片段子字串**
+
+### Day 5 — `/query/stream` SSE
+- [ ] curl -N POST /query/stream，看到 `data:` 一行行打字機式輸出
+- [ ] 收到 `type: citations` → 多個 `type: delta` → `type: done`
+- [ ] 中途 Ctrl+C 斷線測試，server 不崩
+- [ ] 故意關 Ollama 看 `type: error` 是否正常送出
+- **驗收**：兩種錯誤路徑（無 query / 模型掛掉）都回 JSON 錯誤，不洩漏 stack trace
+
+### Day 6 — 網路 / 手機連通
+- [ ] `ipconfig` 取得電腦 LAN IP（例 `192.168.1.42`）
+- [ ] Windows 防火牆開 8080 inbound（PowerShell 系管：`New-NetFirewallRule -DisplayName "AI Library 8080" -Direction Inbound -LocalPort 8080 -Protocol TCP -Action Allow`）
+- [ ] 手機同 WiFi，瀏覽器打 `http://192.168.1.42:8080/health` 應看到 `{"status":"ok"...}`
+- [ ] 用 Postman / Bruno（手機版有 Bruno、桌面測即可）試 `/docs` 帶 Bearer token
+- **驗收**：手機端能拿到 `/docs` 與 `/query` 的回應
+
+### Day 7 — 整合測試 + API 凍結
+- [ ] 寫 5 個測試：`/health` 200、`/docs` 帶/不帶 token、`/query` 缺欄位 400、`/query` 正常 200、`/query/stream` 收到 done
+- [ ] 寫 `API_CONTRACT.md`：每個端點的 request/response JSON 範例（複製下方 SSE 範例即可）
+- [ ] git tag `phase-1-mvp`
+- **驗收**：API 契約鎖定，Phase 2 手機端可基於它開工
+
+---
+
+## 測試指令（curl）
+
+設變數：
+
+```bash
+TOKEN="dev-token-change-me"
+BASE="http://localhost:8080"
+```
+
+健康檢查（免 token）：
+
+```bash
+curl -s $BASE/health
+```
+
+列書：
+
+```bash
+curl -s $BASE/docs -H "Authorization: Bearer $TOKEN"
+```
+
+問答（一次回）：
+
+```bash
+curl -s $BASE/query \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "這本書的主題是什麼？"}'
+```
+
+串流問答（注意 `-N` 關緩衝）：
+
+```bash
+curl -N $BASE/query/stream \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "請摘要第三章的重點"}'
+```
+
+錯誤路徑（401 / 400）：
+
+```bash
+curl -s -i $BASE/docs
+
+curl -s -i $BASE/query \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+---
+
+## API 契約（給 Phase 2 用）
+
+`POST /query/stream` 回應 SSE 序列：
+
+```
+data: {"type":"citations","citations":[{"doc":"book.epub","chunkIndex":42,"score":0.83,"snippet":"..."}]}
+
+data: {"type":"delta","text":"這"}
+
+data: {"type":"delta","text":"本書"}
+
+...
+
+data: {"type":"done"}
+```
+
+錯誤時最後一筆：
+
+```
+data: {"type":"error","message":"..."}
+```
+
+Phase 2 手機端規則：
+- 收到第一個 `delta` 即清掉 loading
+- 累積 `delta.text` 為當前回答
+- 收到 `done` 收尾，UI 變成可再問狀態
+- 收到 `error` 顯示錯誤、保留已收到的 partial 答案
+
+---
+
+## 風險清單（先記著，別現在處理）
+
+1. **TLS / iOS ATS**：iOS 預設禁明文 HTTP。Phase 2 真機測試時會撞牆。屆時兩條路：(a) Info.plist 加 `NSAllowsLocalNetworking`，(b) 加 self-signed TLS。先記著。
+2. **Ollama 冷啟動慢**：第一次 query 可能 10+ 秒。Phase 2 UI 要有 loading hint。
+3. **SSE 在手機 4G/WiFi 切換時會斷**：Phase 2 客戶端要實作重連。
+4. **記憶體**：bge-m3 + llama3.1:8b 同時跑大概要 12GB+ RAM。確認你的開發機夠。
+

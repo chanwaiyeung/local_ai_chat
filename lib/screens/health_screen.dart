@@ -11,9 +11,13 @@
 //
 // Stats card auto-updates whenever the controller fires notifyListeners.
 
+// Stats card auto-updates whenever the controller fires notifyListeners.
+
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../controllers/health_controller.dart';
+import '../l10n/app_localizations.dart';
 import '../main.dart';
 import '../models/health_record.dart';
 import 'personal_query_screen.dart';
@@ -76,7 +80,7 @@ class _HealthScreenState extends State<HealthScreen> {
         : widget.controller.searchRecords(_query);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('健康紀錄')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).healthRecords)),
       body: Column(
         children: [
           Expanded(
@@ -90,12 +94,20 @@ class _HealthScreenState extends State<HealthScreen> {
                       width: double.infinity,
                       child: FilledButton.icon(
                         icon: const Icon(Icons.auto_awesome),
-                        label: const Text('AI 健康顧問'),
+                        label: Text(AppLocalizations.of(context).aiHealthAdvisor),
                         onPressed: () {
+                          String prompt = '請根據我過去 30 天的健康數據總結，給我一些生活與飲食上的建議：\n';
+                          if (stats.avgWeight != null) prompt += '- 平均體重：${stats.avgWeight!.toStringAsFixed(1)} kg\n';
+                          if (stats.avgSystolic != null) prompt += '- 平均血壓：${stats.avgSystolic!.toStringAsFixed(0)}/${stats.avgDiastolic?.toStringAsFixed(0) ?? '?'} mmHg\n';
+                          if (stats.totalSteps != null && stats.totalSteps! > 0) prompt += '- 近期總步數：${stats.totalSteps} 步\n';
+                          if (stats.avgSleepHours != null) prompt += '- 平均睡眠：${stats.avgSleepHours!.toStringAsFixed(1)} 小時\n';
+                          prompt += '\n請告訴我目前的健康狀態如何，以及需要注意什麼？';
+
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (_) => PersonalQueryScreen(
                                 ragService: globalPersonalRagService,
+                                initialQuery: prompt,
                               ),
                             ),
                           );
@@ -111,11 +123,11 @@ class _HealthScreenState extends State<HealthScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
             child: TextField(
-              decoration: const InputDecoration(
-                hintText: '搜尋備註 / 標籤...',
-                prefixIcon: Icon(Icons.search),
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context).searchHealthHint,
+                prefixIcon: const Icon(Icons.search),
                 isDense: true,
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
               ),
               onChanged: (v) => setState(() => _query = v),
             ),
@@ -129,8 +141,8 @@ class _HealthScreenState extends State<HealthScreen> {
                       children: [
                         SizedBox(
                           height: MediaQuery.of(context).size.height * 0.3,
-                          child: const Center(
-                            child: Text('尚無健康紀錄'),
+                          child: Center(
+                            child: Text(AppLocalizations.of(context).noHealthRecords),
                           ),
                         ),
                       ],
@@ -175,9 +187,9 @@ class HealthStatsCard extends StatelessWidget {
     if (stats.isEmpty) {
       return Card(
         margin: const EdgeInsets.all(16),
-        child: const Padding(
-          padding: EdgeInsets.all(16),
-          child: Text('最近 30 天暫無紀錄'),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text(AppLocalizations.of(context).noRecordsLast30Days),
         ),
       );
     }
@@ -193,12 +205,12 @@ class HealthStatsCard extends StatelessWidget {
                 const Icon(Icons.favorite_outline),
                 const SizedBox(width: 8),
                 Text(
-                  '最近 30 天概況',
+                  AppLocalizations.of(context).last30DaysOverview,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const Spacer(),
                 Text(
-                  '${stats.recordCount} 筆',
+                  AppLocalizations.of(context).recordCountUnit(stats.recordCount),
                   style: TextStyle(color: Theme.of(context).hintColor),
                 ),
               ],
@@ -206,33 +218,28 @@ class HealthStatsCard extends StatelessWidget {
             const Divider(),
             if (stats.avgWeight != null)
               _StatRow(
-                label: '體重',
-                value: '平均 ${stats.avgWeight!.toStringAsFixed(1)} kg '
-                    '(${stats.weightCount} 次)',
+                label: AppLocalizations.of(context).weight,
+                value: AppLocalizations.of(context).avgWeightStat(stats.avgWeight!.toStringAsFixed(1), stats.weightCount),
               ),
             if (stats.avgSystolic != null && stats.avgDiastolic != null)
               _StatRow(
-                label: '血壓',
-                value: '平均 ${stats.avgSystolic!.toStringAsFixed(0)} / '
-                    '${stats.avgDiastolic!.toStringAsFixed(0)} mmHg '
-                    '(${stats.bloodPressureCount} 次)',
+                label: AppLocalizations.of(context).bloodPressure,
+                value: AppLocalizations.of(context).avgBpStat(stats.avgSystolic!.toStringAsFixed(0), stats.avgDiastolic!.toStringAsFixed(0), stats.bloodPressureCount),
               ),
             if (stats.avgHeartRate != null)
               _StatRow(
-                label: '心率',
-                value: '平均 ${stats.avgHeartRate!.toStringAsFixed(0)} bpm '
-                    '(${stats.heartRateCount} 次)',
+                label: AppLocalizations.of(context).heartRate,
+                value: AppLocalizations.of(context).avgHeartRateStat(stats.avgHeartRate!.toStringAsFixed(0), stats.heartRateCount),
               ),
             if (stats.totalSteps > 0)
               _StatRow(
-                label: '步數',
-                value: '總計 ${stats.totalSteps} 步 (${stats.stepsCount} 天)',
+                label: AppLocalizations.of(context).steps,
+                value: AppLocalizations.of(context).totalStepsStat(stats.totalSteps.toString(), stats.stepsCount),
               ),
             if (stats.avgSleepHours != null)
               _StatRow(
-                label: '睡眠',
-                value: '平均 ${stats.avgSleepHours!.toStringAsFixed(1)} 小時 '
-                    '(${stats.sleepCount} 次)',
+                label: AppLocalizations.of(context).sleep,
+                value: AppLocalizations.of(context).avgSleepStat(stats.avgSleepHours!.toStringAsFixed(1), stats.sleepCount),
               ),
           ],
         ),
@@ -314,7 +321,7 @@ class HealthRecordCard extends StatelessWidget {
         title: Text(dateText),
         subtitle: Text(
           summary.isEmpty
-              ? (record.notes.isEmpty ? '(無資料)' : record.notes)
+              ? (record.notes.isEmpty ? AppLocalizations.of(context).noDataLabel : record.notes)
               : summary.join(' · '),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
@@ -431,7 +438,7 @@ class _HealthRecordFormDialogState extends State<HealthRecordFormDialog> {
     );
 
     if (!draft.hasAnyMeasurement && draft.notes.isEmpty) {
-      setState(() => _topError = '請至少填寫一項測量值或備註');
+      setState(() => _topError = AppLocalizations.of(context).fillAtLeastOneMeasurement);
       return;
     }
 
@@ -449,13 +456,13 @@ class _HealthRecordFormDialogState extends State<HealthRecordFormDialog> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              widget.existing == null ? '新增健康紀錄' : '編輯健康紀錄',
+              widget.existing == null ? AppLocalizations.of(context).addHealthRecord : AppLocalizations.of(context).editHealthRecord,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('測量日期'),
+              title: Text(AppLocalizations.of(context).measurementDate),
               subtitle: Text('${_date.year}/${_date.month}/${_date.day}'),
               trailing: const Icon(Icons.calendar_today),
               onTap: _pickDate,
@@ -463,7 +470,7 @@ class _HealthRecordFormDialogState extends State<HealthRecordFormDialog> {
             const SizedBox(height: 8),
             TextFormField(
               controller: _weightCtrl,
-              decoration: const InputDecoration(labelText: '體重 (kg)'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context).weightKg),
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
             ),
@@ -473,7 +480,7 @@ class _HealthRecordFormDialogState extends State<HealthRecordFormDialog> {
                 Expanded(
                   child: TextFormField(
                     controller: _systolicCtrl,
-                    decoration: const InputDecoration(labelText: '收縮壓 (mmHg)'),
+                    decoration: InputDecoration(labelText: AppLocalizations.of(context).systolicMmHg),
                     keyboardType: TextInputType.number,
                   ),
                 ),
@@ -481,7 +488,7 @@ class _HealthRecordFormDialogState extends State<HealthRecordFormDialog> {
                 Expanded(
                   child: TextFormField(
                     controller: _diastolicCtrl,
-                    decoration: const InputDecoration(labelText: '舒張壓 (mmHg)'),
+                    decoration: InputDecoration(labelText: AppLocalizations.of(context).diastolicMmHg),
                     keyboardType: TextInputType.number,
                   ),
                 ),
@@ -490,33 +497,33 @@ class _HealthRecordFormDialogState extends State<HealthRecordFormDialog> {
             const SizedBox(height: 8),
             TextFormField(
               controller: _heartRateCtrl,
-              decoration: const InputDecoration(labelText: '心率 (bpm)'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context).heartRateBpm),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 8),
             TextFormField(
               controller: _stepsCtrl,
-              decoration: const InputDecoration(labelText: '步數'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context).steps),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 8),
             TextFormField(
               controller: _sleepCtrl,
-              decoration: const InputDecoration(labelText: '睡眠時數 (小時)'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context).sleepHours),
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
             ),
             const SizedBox(height: 8),
             TextFormField(
               controller: _notesCtrl,
-              decoration: const InputDecoration(labelText: '備註'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context).notes),
               maxLines: 2,
             ),
             const SizedBox(height: 8),
             TextFormField(
               controller: _tagsCtrl,
-              decoration: const InputDecoration(
-                labelText: '標籤（逗號分隔）',
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context).tagsCommaSeparated,
               ),
             ),
             if (_topError != null) ...[
@@ -531,7 +538,7 @@ class _HealthRecordFormDialogState extends State<HealthRecordFormDialog> {
             const SizedBox(height: 24),
             FilledButton(
               onPressed: _submit,
-              child: const Text('儲存'),
+              child: Text(AppLocalizations.of(context).saveButton),
             ),
             const SizedBox(height: 8),
           ],
@@ -569,65 +576,45 @@ class _HealthTrendsCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('趨勢圖表', style: Theme.of(context).textTheme.titleMedium),
+            Text(AppLocalizations.of(context).trendCharts, style: Theme.of(context).textTheme.titleMedium),
             const Divider(),
             if (weights.isNotEmpty) ...[
-              const Text('體重趨勢 (kg)', style: TextStyle(fontSize: 12)),
+              Text(AppLocalizations.of(context).weightTrend, style: const TextStyle(fontSize: 12)),
               const SizedBox(height: 4),
               SizedBox(
-                height: 40,
+                height: 80,
                 width: double.infinity,
-                child: CustomPaint(
-                  painter: _SparklinePainter(
-                    data: weights,
-                    color: Colors.blue,
-                  ),
-                ),
+                child: _buildLineChart(weights, Colors.blue),
               ),
               const SizedBox(height: 12),
             ],
             if (systolic.isNotEmpty) ...[
-              const Text('收縮壓趨勢 (mmHg)', style: TextStyle(fontSize: 12)),
+              Text(AppLocalizations.of(context).systolicTrend, style: const TextStyle(fontSize: 12)),
               const SizedBox(height: 4),
               SizedBox(
-                height: 40,
+                height: 80,
                 width: double.infinity,
-                child: CustomPaint(
-                  painter: _SparklinePainter(
-                    data: systolic.map((e) => e.toDouble()).toList(),
-                    color: Colors.redAccent,
-                  ),
-                ),
+                child: _buildLineChart(systolic.map((e) => e.toDouble()).toList(), Colors.redAccent),
               ),
               const SizedBox(height: 12),
             ],
             if (steps.isNotEmpty) ...[
-              const Text('步數', style: TextStyle(fontSize: 12)),
+              Text(AppLocalizations.of(context).steps, style: const TextStyle(fontSize: 12)),
               const SizedBox(height: 4),
               SizedBox(
-                height: 40,
+                height: 80,
                 width: double.infinity,
-                child: CustomPaint(
-                  painter: _BarChartPainter(
-                    data: steps.map((e) => e.toDouble()).toList(),
-                    color: Colors.green,
-                  ),
-                ),
+                child: _buildBarChart(steps.map((e) => e.toDouble()).toList(), Colors.green),
               ),
               const SizedBox(height: 12),
             ],
             if (sleep.isNotEmpty) ...[
-              const Text('睡眠時數', style: TextStyle(fontSize: 12)),
+              Text(AppLocalizations.of(context).sleepHoursLabel, style: const TextStyle(fontSize: 12)),
               const SizedBox(height: 4),
               SizedBox(
-                height: 40,
+                height: 80,
                 width: double.infinity,
-                child: CustomPaint(
-                  painter: _BarChartPainter(
-                    data: sleep,
-                    color: Colors.purpleAccent,
-                  ),
-                ),
+                child: _buildBarChart(sleep, Colors.purpleAccent),
               ),
             ],
           ],
@@ -635,21 +622,9 @@ class _HealthTrendsCard extends StatelessWidget {
       ),
     );
   }
-}
 
-class _SparklinePainter extends CustomPainter {
-  _SparklinePainter({required this.data, required this.color});
-  final List<double> data;
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (data.isEmpty) return;
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke
-      ..strokeJoin = StrokeJoin.round;
+  Widget _buildLineChart(List<double> data, Color color) {
+    if (data.isEmpty) return const SizedBox.shrink();
 
     double minVal = data.reduce((a, b) => a < b ? a : b);
     double maxVal = data.reduce((a, b) => a > b ? a : b);
@@ -658,52 +633,85 @@ class _SparklinePainter extends CustomPainter {
       maxVal += 1;
     }
 
-    final path = Path();
-    final dx = size.width / (data.length <= 1 ? 1 : data.length - 1);
-    for (int i = 0; i < data.length; i++) {
-      final normalized = (data[i] - minVal) / (maxVal - minVal);
-      final x = i * dx;
-      final y = size.height - (normalized * size.height);
-      if (i == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
-      }
-    }
-    canvas.drawPath(path, paint);
+    return LineChart(
+      LineChartData(
+        minX: 0,
+        maxX: (data.length - 1 < 1) ? 1 : (data.length - 1).toDouble(),
+        minY: minVal - (maxVal - minVal) * 0.1,
+        maxY: maxVal + (maxVal - minVal) * 0.1,
+        gridData: FlGridData(show: false),
+        titlesData: FlTitlesData(show: false),
+        borderData: FlBorderData(show: false),
+        lineTouchData: LineTouchData(
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipItems: (touchedSpots) {
+              return touchedSpots.map((spot) => LineTooltipItem(
+                    spot.y.toStringAsFixed(1),
+                    const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  )).toList();
+            },
+          ),
+        ),
+        lineBarsData: [
+          LineChartBarData(
+            spots: List.generate(data.length, (i) => FlSpot(i.toDouble(), data[i])),
+            isCurved: true,
+            color: color,
+            barWidth: 3,
+            isStrokeCapRound: true,
+            dotData: FlDotData(show: data.length == 1),
+            belowBarData: BarAreaData(
+              show: true,
+              color: color.withOpacity(0.2),
+            ),
+          ),
+        ],
+      ),
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+    );
   }
 
-  @override
-  bool shouldRepaint(covariant _SparklinePainter old) => true;
-}
-
-class _BarChartPainter extends CustomPainter {
-  _BarChartPainter({required this.data, required this.color});
-  final List<double> data;
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (data.isEmpty) return;
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
+  Widget _buildBarChart(List<double> data, Color color) {
+    if (data.isEmpty) return const SizedBox.shrink();
 
     double maxVal = data.reduce((a, b) => a > b ? a : b);
     if (maxVal <= 0) maxVal = 1;
 
-    final barWidth = (size.width / data.length) * 0.8;
-    final spacing = (size.width / data.length) * 0.2;
-
-    for (int i = 0; i < data.length; i++) {
-      final normalized = data[i] / maxVal;
-      final height = normalized * size.height;
-      final x = i * (barWidth + spacing) + spacing / 2;
-      final y = size.height - height;
-      canvas.drawRect(Rect.fromLTWH(x, y, barWidth, height), paint);
-    }
+    return BarChart(
+      BarChartData(
+        alignment: BarChartAlignment.spaceAround,
+        maxY: maxVal * 1.1,
+        gridData: FlGridData(show: false),
+        titlesData: FlTitlesData(show: false),
+        borderData: FlBorderData(show: false),
+        barTouchData: BarTouchData(
+          touchTooltipData: BarTouchTooltipData(
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              return BarTooltipItem(
+                rod.toY.toInt().toString(),
+                const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              );
+            },
+          ),
+        ),
+        barGroups: List.generate(
+          data.length,
+          (i) => BarChartGroupData(
+            x: i,
+            barRods: [
+              BarChartRodData(
+                toY: data[i],
+                color: color,
+                width: 12,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+              ),
+            ],
+          ),
+        ),
+      ),
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+    );
   }
-
-  @override
-  bool shouldRepaint(covariant _BarChartPainter old) => true;
 }

@@ -18,6 +18,7 @@
 import 'package:flutter/material.dart';
 
 import '../controllers/expense_controller.dart';
+import '../l10n/app_localizations.dart';
 import '../models/expense.dart';
 
 class ExpenseScreen extends StatefulWidget {
@@ -116,7 +117,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
     final byCategory = widget.controller.getMonthlyByCategory(_year, _month);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('日常開支')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).moduleExpense)),
       body: Column(
         children: [
           _MonthSwitcher(
@@ -129,11 +130,11 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
             child: TextField(
-              decoration: const InputDecoration(
-                hintText: '搜尋商家 / 分類 / 備註...',
-                prefixIcon: Icon(Icons.search),
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context).searchExpenseHint,
+                prefixIcon: const Icon(Icons.search),
                 isDense: true,
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
               ),
               onChanged: (v) => setState(() => _query = v),
             ),
@@ -147,8 +148,8 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
                       children: [
                         SizedBox(
                           height: MediaQuery.of(context).size.height * 0.4,
-                          child: const Center(
-                            child: Text('沒有符合條件的開支'),
+                          child: Center(
+                            child: Text(AppLocalizations.of(context).noMatchingExpenses),
                           ),
                         ),
                       ],
@@ -209,16 +210,16 @@ class _MonthSwitcher extends StatelessWidget {
         IconButton(
           onPressed: onPrev,
           icon: const Icon(Icons.chevron_left),
-          tooltip: '上個月',
+          tooltip: AppLocalizations.of(context).previousMonth,
         ),
         Text(
-          '$year 年 $month 月',
+          AppLocalizations.of(context).yearMonthTitle(year, month),
           style: Theme.of(context).textTheme.titleMedium,
         ),
         IconButton(
           onPressed: onNext,
           icon: const Icon(Icons.chevron_right),
-          tooltip: '下個月',
+          tooltip: AppLocalizations.of(context).nextMonth,
         ),
       ],
     );
@@ -236,11 +237,11 @@ class _MonthSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (summary.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: Align(
           alignment: Alignment.centerLeft,
-          child: Text('本月暫無開支'),
+          child: Text(AppLocalizations.of(context).noExpensesThisMonth),
         ),
       );
     }
@@ -261,7 +262,7 @@ class _MonthSummary extends StatelessWidget {
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              '本月合計：$totalText',
+              AppLocalizations.of(context).monthlyTotal(totalText),
               style: Theme.of(context).textTheme.titleSmall,
             ),
           ),
@@ -299,7 +300,7 @@ class _CategoryChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
-        '$label · ${amount.toStringAsFixed(0)}',
+        AppLocalizations.of(context).categoryAmountChip(label, amount.toStringAsFixed(0)),
         style: TextStyle(
           fontSize: 12,
           color: Theme.of(context).colorScheme.onSecondaryContainer,
@@ -335,7 +336,7 @@ class _ExpenseTile extends StatelessWidget {
       },
       child: ListTile(
         title: Text(
-          expense.merchant.isEmpty ? '(未填商家)' : expense.merchant,
+          expense.merchant.isEmpty ? AppLocalizations.of(context).noMerchant : expense.merchant,
         ),
         subtitle: Text(
           [
@@ -475,7 +476,7 @@ class _ExpenseFormState extends State<_ExpenseForm> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              widget.existing == null ? '新增開支' : '編輯開支',
+              widget.existing == null ? AppLocalizations.of(context).addExpense : AppLocalizations.of(context).editExpense,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
@@ -485,13 +486,13 @@ class _ExpenseFormState extends State<_ExpenseForm> {
                   flex: 3,
                   child: TextFormField(
                     controller: _amountCtrl,
-                    decoration: const InputDecoration(labelText: '金額'),
+                    decoration: InputDecoration(labelText: AppLocalizations.of(context).amount),
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
                     validator: (v) {
                       final n = double.tryParse(v ?? '');
-                      if (n == null || n <= 0) return '請輸入有效金額';
+                      if (n == null || n <= 0) return AppLocalizations.of(context).invalidAmountError;
                       return null;
                     },
                   ),
@@ -501,7 +502,7 @@ class _ExpenseFormState extends State<_ExpenseForm> {
                   flex: 1,
                   child: DropdownButtonFormField<String>(
                     initialValue: _currency,
-                    decoration: const InputDecoration(labelText: '幣別'),
+                    decoration: InputDecoration(labelText: AppLocalizations.of(context).currency),
                     items: [
                       for (final c in _currencies)
                         DropdownMenuItem(value: c, child: Text(c))
@@ -514,17 +515,17 @@ class _ExpenseFormState extends State<_ExpenseForm> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _merchantCtrl,
-              decoration: const InputDecoration(labelText: '商家'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context).merchant),
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue:
                   categoryItems.contains(_category) ? _category : '其他',
               decoration: InputDecoration(
-                labelText: '分類',
+                labelText: AppLocalizations.of(context).category,
                 helperText: widget.pastCategories.isEmpty
-                    ? '預設類別'
-                    : '已有 ${widget.pastCategories.length} 個自訂類別',
+                    ? AppLocalizations.of(context).defaultCategoriesLabel
+                    : AppLocalizations.of(context).customCategoriesCount(widget.pastCategories.length),
               ),
               items: [
                 for (final c in categoryOptions)
@@ -535,7 +536,7 @@ class _ExpenseFormState extends State<_ExpenseForm> {
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue: _paymentMethod,
-              decoration: const InputDecoration(labelText: '付款方式'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context).paymentMethod),
               items: [
                 for (final p in _payments)
                   DropdownMenuItem(value: p, child: Text(p))
@@ -545,7 +546,7 @@ class _ExpenseFormState extends State<_ExpenseForm> {
             const SizedBox(height: 12),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('日期'),
+              title: Text(AppLocalizations.of(context).date),
               subtitle: Text('${_date.year}/${_date.month}/${_date.day}'),
               trailing: const Icon(Icons.calendar_today),
               onTap: _pickDate,
@@ -553,13 +554,13 @@ class _ExpenseFormState extends State<_ExpenseForm> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _notesCtrl,
-              decoration: const InputDecoration(labelText: '備註'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context).notes),
               maxLines: 2,
             ),
             const SizedBox(height: 24),
             FilledButton(
               onPressed: _submit,
-              child: const Text('儲存'),
+              child: Text(AppLocalizations.of(context).saveButton),
             ),
             const SizedBox(height: 8),
           ],

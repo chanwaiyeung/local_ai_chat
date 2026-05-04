@@ -1,0 +1,143 @@
+﻿===== SOURCE FILE: docs\chat_screen_refactor_plan.md =====
+===== EXPORTED AS TEXT: docs\chat_screen_refactor_plan.md.txt =====
+===== SIZE: 3298 bytes | LAST WRITE: 04/28/2026 10:23:25 =====
+
+# ChatScreen Refactor Plan
+
+Goal: reduce `chat_screen.dart` without changing behavior.
+
+This is a v1.10.x / v2.0 preparation plan. Do not mix this refactor with RAG
+pipeline changes.
+
+## Current Pain
+
+`chat_screen.dart` still owns too many responsibilities:
+
+- app bootstrap
+- settings flow
+- embedding model rebuild
+- vector-store mismatch clearing
+- file pick / text extraction / ingest
+- RAG retrieve / LLM send
+- session persistence
+- library bottom sheet wiring
+- DocViewer navigation
+- export / debug path actions
+
+The UI widgets have been partly extracted, but orchestration logic still lives
+in one state class.
+
+## Safe Extraction Order
+
+### 1. `ChatRagController` - Done
+
+Owns only RAG service wiring and settings-sensitive operations.
+
+Moved:
+
+- `_applyEmbeddingModel`
+- RAG service rebuild when embedding model changes
+- vector-store embedding mismatch decision
+- activeDoc validity decision
+
+The screen still owns UI state, logs, SnackBars, and persistence scheduling.
+
+Suggested shape:
+
+```dart
+class ChatRagController {
+  ChatRagController({
+    required this.store,
+    required this.createEmbedder,
+  });
+
+  final VectorStore store;
+  final EmbeddingService Function(String model) createEmbedder;
+
+  late EmbeddingService embedder;
+  late RagService rag;
+  String embeddingModel = AppSettings.defaultEmbeddingModel;
+
+  void applyEmbeddingModel(String model) {
+    embeddingModel = model;
+    embedder = createEmbedder(model);
+    rag = RagService(embedder: embedder, store: store);
+  }
+
+  Future<bool> clearVectorStoreIfEmbeddingMismatch() async {
+    // Return true if cleared, false otherwise.
+  }
+
+  bool isValidActiveDoc(String? docName) {
+    return docName == null || store.docNames.contains(docName);
+  }
+}
+```
+
+### 2. `ChatIngestController` - Next
+
+Owns file ingest orchestration but not final UI message insertion.
+
+Move:
+
+- file picker
+- max file size guard
+- text extraction timeout
+- `_cancelIngest`
+- progress text state
+- call to `rag.ingestDetailed`
+
+Return an outcome:
+
+```dart
+sealed class ChatIngestOutcome {}
+class ChatIngestSuccess extends ChatIngestOutcome {
+  ChatIngestSuccess(this.docName, this.charCount, this.chunkCount);
+}
+class ChatIngestCancelled extends ChatIngestOutcome {}
+class ChatIngestFailed extends ChatIngestOutcome {
+  ChatIngestFailed(this.error, this.stackTrace);
+}
+```
+
+The screen remains responsible for:
+
+- adding `ChatMessage`
+- `setState`
+- `_scheduleSave`
+- SnackBars
+
+### 3. `ChatSendController`
+
+Only after the first two extractions are stable.
+
+Move:
+
+- outgoing message assembly
+- RAG retrieve call
+- diagnostics log formatting
+- final prompt/context construction
+
+Do not move Flutter widget state or navigation here.
+
+## Guardrails
+
+- Keep all extraction behavior-preserving.
+- No Provider/Riverpod migration in this pass.
+- No schema version changes.
+- No retrieval scoring changes.
+- Run full validation after each extraction:
+
+```powershell
+& "C:\src\flutter\flutter\bin\flutter.bat" analyze
+& "C:\src\flutter\flutter\bin\flutter.bat" test -r expanded
+& "C:\src\flutter\flutter\bin\flutter.bat" build windows --release
+```
+
+## Acceptance Criteria
+
+- `chat_screen.dart` below 800 lines.
+- Existing UI behavior unchanged.
+- Existing 76+ tests still pass.
+- New controller tests added only where logic becomes pure and testable.
+

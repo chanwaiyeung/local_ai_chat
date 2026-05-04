@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:local_ai_chat/controllers/health_controller.dart';
+import 'package:local_ai_chat/l10n/app_localizations.dart';
 import 'package:local_ai_chat/models/health_record.dart';
 import 'package:local_ai_chat/screens/health_screen.dart';
 import 'package:local_ai_chat/services/vector_store.dart';
@@ -17,6 +18,9 @@ void main() {
   });
 
   Widget hostFor() => MaterialApp(
+        locale: const Locale('zh', 'TW'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: HealthScreen(controller: controller),
       );
 

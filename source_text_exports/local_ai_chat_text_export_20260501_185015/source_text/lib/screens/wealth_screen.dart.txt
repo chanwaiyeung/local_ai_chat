@@ -1,0 +1,391 @@
+﻿===== SOURCE FILE: lib\screens\wealth_screen.dart =====
+===== EXPORTED AS TEXT: lib\screens\wealth_screen.dart.txt =====
+===== SIZE: 11818 bytes | LAST WRITE: 05/01/2026 18:02:02 =====
+
+import 'dart:math';
+
+import 'package:flutter/material.dart';
+
+import '../controllers/wealth_controller.dart';
+import '../main.dart';
+import '../models/wealth_record.dart';
+import 'personal_query_screen.dart';
+
+class WealthScreen extends StatefulWidget {
+  const WealthScreen({super.key, required this.controller});
+  final WealthController controller;
+
+  @override
+  State<WealthScreen> createState() => _WealthScreenState();
+}
+
+class _WealthScreenState extends State<WealthScreen> {
+  String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_onChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onChanged);
+    super.dispose();
+  }
+
+  void _onChanged() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _openForm({WealthRecord? existing}) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(ctx).viewInsets.bottom,
+        ),
+        child: WealthRecordFormDialog(
+          existing: existing,
+          onSave: (r) async {
+            await widget.controller.saveRecord(r);
+            if (ctx.mounted) Navigator.of(ctx).pop();
+          },
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final records = _query.trim().isEmpty
+        ? widget.controller.getAllRecords()
+        : widget.controller.searchRecords(_query);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('投資理財')),
+      body: Column(
+        children: [
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _WealthStatsCard(
+                    total: widget.controller.getTotalAssets(),
+                    allocation: widget.controller.getAssetAllocation(),
+                    records: widget.controller.getAllRecords(),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        icon: const Icon(Icons.auto_awesome),
+                        label: const Text('AI 理財顧問'),
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => PersonalQueryScreen(
+                                ragService: globalPersonalRagService,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: TextField(
+              decoration: const InputDecoration(
+                hintText: '搜尋資產、備註...',
+                prefixIcon: Icon(Icons.search),
+                isDense: true,
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (v) => setState(() => _query = v),
+            ),
+          ),
+          Expanded(
+            child: records.isEmpty
+                ? const Center(child: Text('尚無理財紀錄'))
+                : ListView.separated(
+                    itemCount: records.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, i) => ListTile(
+                      title: Text('${records[i].assetType} - ${records[i].amount} ${records[i].currency}'),
+                      subtitle: Text(records[i].date.toIso8601String().split('T')[0]),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => widget.controller.deleteRecord(records[i].id),
+                      ),
+                      onTap: () => _openForm(existing: records[i]),
+                    ),
+                  ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _openForm(),
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class _WealthStatsCard extends StatelessWidget {
+  const _WealthStatsCard({
+    required this.total,
+    required this.allocation,
+    required this.records,
+  });
+
+  final double total;
+  final Map<String, double> allocation;
+  final List<WealthRecord> records;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.all(16),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('總資產', style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              '${total.toStringAsFixed(2)} TWD',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const Divider(),
+            if (allocation.isNotEmpty) ...[
+              const Text('資產配置', style: TextStyle(fontSize: 12)),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 120,
+                width: double.infinity,
+                child: CustomPaint(
+                  painter: _PieChartPainter(allocation: allocation),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+            if (records.isNotEmpty) ...[
+              const Text('淨值趨勢', style: TextStyle(fontSize: 12)),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 60,
+                width: double.infinity,
+                child: CustomPaint(
+                  painter: _NetWorthTrendPainter(records: records),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PieChartPainter extends CustomPainter {
+  _PieChartPainter({required this.allocation});
+  final Map<String, double> allocation;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (allocation.isEmpty) return;
+    final total = allocation.values.fold(0.0, (sum, v) => sum + v);
+    if (total == 0) return;
+
+    final colors = [
+      Colors.blue,
+      Colors.green,
+      Colors.orange,
+      Colors.purple,
+      Colors.red,
+      Colors.teal,
+    ];
+
+    double startAngle = -pi / 2;
+    final rect = Rect.fromCenter(
+      center: Offset(size.width / 2, size.height / 2),
+      width: size.height,
+      height: size.height,
+    );
+
+    int colorIdx = 0;
+    for (final entry in allocation.entries) {
+      final sweepAngle = (entry.value / total) * 2 * pi;
+      final paint = Paint()
+        ..color = colors[colorIdx % colors.length]
+        ..style = PaintingStyle.fill;
+
+      canvas.drawArc(rect, startAngle, sweepAngle, true, paint);
+      startAngle += sweepAngle;
+      colorIdx++;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _PieChartPainter old) => true;
+}
+
+class _NetWorthTrendPainter extends CustomPainter {
+  _NetWorthTrendPainter({required this.records});
+  final List<WealthRecord> records;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (records.isEmpty) return;
+    
+    // Calculate cumulative net worth over time
+    final sorted = List<WealthRecord>.from(records)
+      ..sort((a, b) => a.date.compareTo(b.date));
+      
+    final List<double> trend = [];
+    double current = 0;
+    for (final r in sorted) {
+      current += r.amount; // Naive cumulative sum for demo
+      trend.add(current);
+    }
+
+    final paint = Paint()
+      ..color = Colors.blue
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    double minVal = trend.reduce((a, b) => a < b ? a : b);
+    double maxVal = trend.reduce((a, b) => a > b ? a : b);
+    if (maxVal == minVal) {
+      minVal -= 1;
+      maxVal += 1;
+    }
+
+    final path = Path();
+    final dx = size.width / (trend.length <= 1 ? 1 : trend.length - 1);
+    for (int i = 0; i < trend.length; i++) {
+      final normalized = (trend[i] - minVal) / (maxVal - minVal);
+      final x = i * dx;
+      final y = size.height - (normalized * size.height);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _NetWorthTrendPainter old) => true;
+}
+
+class WealthRecordFormDialog extends StatefulWidget {
+  const WealthRecordFormDialog({super.key, this.existing, required this.onSave});
+  final WealthRecord? existing;
+  final ValueChanged<WealthRecord> onSave;
+
+  @override
+  State<WealthRecordFormDialog> createState() => _WealthRecordFormDialogState();
+}
+
+class _WealthRecordFormDialogState extends State<WealthRecordFormDialog> {
+  late DateTime _date;
+  late TextEditingController _assetTypeCtrl;
+  late TextEditingController _amountCtrl;
+  late TextEditingController _currencyCtrl;
+  late TextEditingController _notesCtrl;
+  late TextEditingController _tagsCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    final e = widget.existing;
+    _date = e?.date ?? DateTime.now();
+    _assetTypeCtrl = TextEditingController(text: e?.assetType ?? '');
+    _amountCtrl = TextEditingController(text: e?.amount.toString() ?? '');
+    _currencyCtrl = TextEditingController(text: e?.currency ?? 'TWD');
+    _notesCtrl = TextEditingController(text: e?.notes ?? '');
+    _tagsCtrl = TextEditingController(text: e?.tags.join(', ') ?? '');
+  }
+
+  @override
+  void dispose() {
+    _assetTypeCtrl.dispose();
+    _amountCtrl.dispose();
+    _currencyCtrl.dispose();
+    _notesCtrl.dispose();
+    _tagsCtrl.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final amt = double.tryParse(_amountCtrl.text.trim()) ?? 0.0;
+    final tags = _tagsCtrl.text
+        .split(',')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
+
+    widget.onSave(WealthRecord(
+      id: widget.existing?.id ?? '',
+      date: _date,
+      assetType: _assetTypeCtrl.text.trim(),
+      amount: amt,
+      currency: _currencyCtrl.text.trim(),
+      notes: _notesCtrl.text.trim(),
+      tags: tags,
+      dateAdded: widget.existing?.dateAdded,
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              widget.existing == null ? '新增理財紀錄' : '編輯理財紀錄',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _assetTypeCtrl,
+              decoration: const InputDecoration(labelText: '資產類型 (例如: 股票, 基金)'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _amountCtrl,
+              decoration: const InputDecoration(labelText: '金額'),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _notesCtrl,
+              decoration: const InputDecoration(labelText: '備註'),
+            ),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: _submit,
+              child: const Text('儲存'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

@@ -1,0 +1,53 @@
+﻿===== SOURCE FILE: analysis_options.yaml =====
+===== EXPORTED AS TEXT: analysis_options.yaml.txt =====
+===== SIZE: 1494 bytes | LAST WRITE: 04/30/2026 20:25:34 =====
+
+# analysis_options.yaml
+#
+# Tightened beyond the default flutter_lints package: this is server-side
+# Dart with HTTP / file / streaming code, and the cost of a missed `await`
+# or a leaked subscription is much higher than in a typical UI-only app.
+#
+# If a rule below trips on first introduction, prefer fixing the offending
+# code (or run `dart fix --apply`) before disabling.
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  language:
+    # Forbid implicit `dynamic` downcasts: catches sloppy `as Map` slipping in.
+    strict-casts: true
+    # NOTE: strict-raw-types is intentionally left off because JSON parsing
+    # (`(e as Map).cast<String, dynamic>()`) is ergonomically friendlier
+    # than always writing `Map<dynamic, dynamic>`. Re-enable if you commit
+    # to fully-typed model classes.
+
+  errors:
+    # JSON parsing relies on dynamic-keyed results.
+    invalid_annotation_target: ignore
+
+  exclude:
+    - build/**
+    - .dart_tool/**
+    - handoff_exports/**
+    - lib_backup/**
+    - release_v2.0.0/**
+    - api_server.dart
+    - ollama_client.dart
+    - main_integration_example.dart
+
+linter:
+  rules:
+    # Code health
+    - always_declare_return_types
+    - avoid_unnecessary_containers
+    - directives_ordering
+    - prefer_const_constructors_in_immutables
+    - prefer_final_in_for_each
+    - sort_pub_dependencies
+    - use_super_parameters
+
+    # Resource leaks — particularly important for SSE / file / HTTP paths
+    - cancel_subscriptions
+    - close_sinks
+

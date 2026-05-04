@@ -1,0 +1,47 @@
+﻿===== SOURCE FILE: .gitignore =====
+===== EXPORTED AS TEXT: .gitignore.txt =====
+===== SIZE: 775 bytes | LAST WRITE: 04/30/2026 12:19:35 =====
+
+# ==================== Build & Generated ====================
+build/
+.dart_tool/
+*.apk
+*.zip
+*.dmg
+*.app
+
+# ==================== Release Package ====================
+release_v2.0.0/
+
+# ==================== Temporary / Handoff ====================
+handoff_exports/
+lib_backup/
+screenshots/
+*.log
+*_current.txt
+*.png
+*.jpg
+
+# ==================== IDE & OS ====================
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.iml
+.flutter-plugins-dependencies
+
+# ==================== Large / Regeneratable Data ====================
+data/vectors.ndjson
+books/
+
+# ==================== Temporary Test Files ====================
+main_integration_example.dart
+rag_citation_test*.pdf
+PHASE1_PLAN.md
+api_server.dart
+ollama_client.dart
+
+# ==================== Others ====================
+*.bak
+*.tmp
+

@@ -1,0 +1,464 @@
+﻿===== SOURCE FILE: docs\eval_snapshots\rrf_tuning_report_2026-04-28.json =====
+===== EXPORTED AS TEXT: docs\eval_snapshots\rrf_tuning_report_2026-04-28.json.txt =====
+===== SIZE: 8871 bytes | LAST WRITE: 04/28/2026 15:44:55 =====
+
+{
+  "version": "v2.0-phase3b-rrf-tuning",
+  "date": "2026-04-28T22:44:55.226806Z",
+  "source": "rrf_tuning_runner",
+  "embeddingModel": "bge-m3",
+  "retrievalMode": "hybrid",
+  "topK": 4,
+  "baselineSnapshot": "docs/eval_snapshots/eval_v2_persisted_bm25_auto_2026-04-28.json",
+  "baselinePassRate": 0.962,
+  "best": {
+    "config": {
+      "rankConstant": 60,
+      "semanticWeight": 0.3,
+      "keywordWeight": 0.7
+    },
+    "passRate": 0.962,
+    "score": 12.5,
+    "pass": 12,
+    "partial": 1,
+    "fail": 0
+  },
+  "improvementVsBaseline": 0.0,
+  "recommendProductionDefaultChange": false,
+  "productionDefaultChanged": false,
+  "gridSize": 36,
+  "results": [
+    {
+      "config": {
+        "rankConstant": 5,
+        "semanticWeight": 0.3,
+        "keywordWeight": 0.7
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 5,
+        "semanticWeight": 0.4,
+        "keywordWeight": 0.6
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 5,
+        "semanticWeight": 0.5,
+        "keywordWeight": 0.5
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 5,
+        "semanticWeight": 0.6,
+        "keywordWeight": 0.4
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 5,
+        "semanticWeight": 0.7,
+        "keywordWeight": 0.3
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 5,
+        "semanticWeight": 0.8,
+        "keywordWeight": 0.2
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 10,
+        "semanticWeight": 0.3,
+        "keywordWeight": 0.7
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 10,
+        "semanticWeight": 0.4,
+        "keywordWeight": 0.6
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 10,
+        "semanticWeight": 0.5,
+        "keywordWeight": 0.5
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 10,
+        "semanticWeight": 0.6,
+        "keywordWeight": 0.4
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 10,
+        "semanticWeight": 0.7,
+        "keywordWeight": 0.3
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 10,
+        "semanticWeight": 0.8,
+        "keywordWeight": 0.2
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 15,
+        "semanticWeight": 0.3,
+        "keywordWeight": 0.7
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 15,
+        "semanticWeight": 0.4,
+        "keywordWeight": 0.6
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 15,
+        "semanticWeight": 0.5,
+        "keywordWeight": 0.5
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 15,
+        "semanticWeight": 0.6,
+        "keywordWeight": 0.4
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 15,
+        "semanticWeight": 0.7,
+        "keywordWeight": 0.3
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 15,
+        "semanticWeight": 0.8,
+        "keywordWeight": 0.2
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 20,
+        "semanticWeight": 0.3,
+        "keywordWeight": 0.7
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 20,
+        "semanticWeight": 0.4,
+        "keywordWeight": 0.6
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 20,
+        "semanticWeight": 0.5,
+        "keywordWeight": 0.5
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 20,
+        "semanticWeight": 0.6,
+        "keywordWeight": 0.4
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 20,
+        "semanticWeight": 0.7,
+        "keywordWeight": 0.3
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 20,
+        "semanticWeight": 0.8,
+        "keywordWeight": 0.2
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 30,
+        "semanticWeight": 0.3,
+        "keywordWeight": 0.7
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 30,
+        "semanticWeight": 0.4,
+        "keywordWeight": 0.6
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 30,
+        "semanticWeight": 0.5,
+        "keywordWeight": 0.5
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 30,
+        "semanticWeight": 0.6,
+        "keywordWeight": 0.4
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 30,
+        "semanticWeight": 0.7,
+        "keywordWeight": 0.3
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 30,
+        "semanticWeight": 0.8,
+        "keywordWeight": 0.2
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 60,
+        "semanticWeight": 0.3,
+        "keywordWeight": 0.7
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 60,
+        "semanticWeight": 0.4,
+        "keywordWeight": 0.6
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 60,
+        "semanticWeight": 0.5,
+        "keywordWeight": 0.5
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 60,
+        "semanticWeight": 0.6,
+        "keywordWeight": 0.4
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 60,
+        "semanticWeight": 0.7,
+        "keywordWeight": 0.3
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    },
+    {
+      "config": {
+        "rankConstant": 60,
+        "semanticWeight": 0.8,
+        "keywordWeight": 0.2
+      },
+      "passRate": 0.962,
+      "score": 12.5,
+      "pass": 12,
+      "partial": 1,
+      "fail": 0
+    }
+  ]
+}

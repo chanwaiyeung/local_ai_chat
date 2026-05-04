@@ -1,0 +1,99 @@
+﻿===== SOURCE FILE: lib\controllers\wealth_controller.dart =====
+===== EXPORTED AS TEXT: lib\controllers\wealth_controller.dart.txt =====
+===== SIZE: 2639 bytes | LAST WRITE: 05/01/2026 18:01:32 =====
+
+import 'package:flutter/foundation.dart';
+import '../models/wealth_record.dart';
+import '../services/vector_store.dart';
+
+class WealthController extends ChangeNotifier {
+  WealthController(this.store) {
+    _loadAll();
+  }
+
+  final VectorStore store;
+  static const String kWealthCollection = 'wealth';
+  static const String kWealthTypeTag = 'personal_hub_wealth';
+
+  List<WealthRecord> _records = [];
+  List<WealthRecord> get records => List.unmodifiable(_records);
+
+  List<double> _generateDummyEmbedding(String text) {
+    return List.filled(384, 0.0);
+  }
+
+  Future<void> _loadAll() async {
+    final allChunks = store.chunks
+        .where((c) => c.collectionName == kWealthCollection)
+        .toList();
+
+    _records = allChunks
+        .map((c) {
+          final data = c.metadata['data'] as Map<String, dynamic>?;
+          if (data == null || c.metadata['type'] != kWealthTypeTag) {
+            return null;
+          }
+          return WealthRecord.fromJson(data);
+        })
+        .whereType<WealthRecord>()
+        .toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+
+    notifyListeners();
+  }
+
+  Future<void> saveRecord(WealthRecord record) async {
+    final finalRecord = record.id.isEmpty
+        ? record.copyWith(id: DateTime.now().microsecondsSinceEpoch.toString())
+        : record;
+
+    if (finalRecord.id.isNotEmpty && record.id.isNotEmpty) {
+      await store.deleteById(finalRecord.id);
+    }
+
+    final chunk = DocChunk(
+      id: finalRecord.id,
+      docName: 'wealth_${finalRecord.id}',
+      chunkIndex: 0,
+      text: finalRecord.toRagString(),
+      collectionName: kWealthCollection,
+      metadata: {
+        'type': kWealthTypeTag,
+        'data': finalRecord.toJson(),
+      },
+    );
+
+    await store.add(chunk, _generateDummyEmbedding(chunk.text));
+    await _loadAll();
+  }
+
+  Future<void> deleteRecord(String id) async {
+    await store.deleteById(id);
+    await _loadAll();
+  }
+
+  List<WealthRecord> searchRecords(String query) {
+    final q = query.toLowerCase();
+    return _records.where((r) {
+      return r.assetType.toLowerCase().contains(q) ||
+          r.notes.toLowerCase().contains(q) ||
+          r.tags.any((t) => t.toLowerCase().contains(q));
+    }).toList();
+  }
+
+  List<WealthRecord> getAllRecords() => List.unmodifiable(_records);
+
+  // Statistics
+  double getTotalAssets() {
+    return _records.fold(0.0, (sum, r) => sum + r.amount);
+  }
+
+  Map<String, double> getAssetAllocation() {
+    final allocation = <String, double>{};
+    for (final r in _records) {
+      allocation[r.assetType] = (allocation[r.assetType] ?? 0.0) + r.amount;
+    }
+    return allocation;
+  }
+}
+

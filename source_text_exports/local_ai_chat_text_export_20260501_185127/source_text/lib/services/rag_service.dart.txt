@@ -1,0 +1,754 @@
+﻿===== SOURCE FILE: lib\services\rag_service.dart =====
+===== EXPORTED AS TEXT: lib\services\rag_service.dart.txt =====
+===== SIZE: 20963 bytes | LAST WRITE: 04/30/2026 20:26:32 =====
+
+// lib/services/rag_service.dart
+import 'dart:math' as math;
+
+import '../models/app_settings.dart';
+import 'ambiguous_query_detector.dart';
+import 'document_loader.dart';
+import 'embedding_service.dart';
+import 'long_context_optimizer.dart';
+import 'multi_hop_reasoner.dart';
+import 'query_expansion.dart';
+import 'vector_store.dart';
+
+typedef IngestProgress = void Function(int done, int total);
+typedef CancelCheck = bool Function();
+
+class IngestResult {
+  const IngestResult({
+    required this.success,
+    required this.chunksWritten,
+    this.cancelled = false,
+    this.error,
+    this.stackTrace,
+  });
+
+  final bool success;
+  final int chunksWritten;
+  final bool cancelled;
+  final Object? error;
+  final StackTrace? stackTrace;
+
+  bool get failed => !success && !cancelled;
+}
+
+class RagSearchDiagnostics {
+  const RagSearchDiagnostics({
+    required this.semanticHits,
+    required this.keywordHits,
+    required this.fusedHits,
+  });
+
+  final List<ScoredChunk> semanticHits;
+  final List<ScoredChunk> keywordHits;
+  final List<ScoredChunk> fusedHits;
+
+  String summary() {
+    String format(List<ScoredChunk> hits) {
+      return hits
+          .map((hit) =>
+              '${hit.chunk.docName}#${hit.chunk.chunkIndex}:${hit.score.toStringAsFixed(3)}')
+          .join(', ');
+    }
+
+    return 'semantic=[${format(semanticHits)}] '
+        'keyword=[${format(keywordHits)}] '
+        'final=[${format(fusedHits)}]';
+  }
+}
+
+class RrfConfig {
+  const RrfConfig({
+    this.rankConstant = 60,
+    this.semanticWeight = 1.0,
+    this.keywordWeight = 1.3,
+  });
+
+  final int rankConstant;
+  final double semanticWeight;
+  final double keywordWeight;
+
+  Map<String, Object?> toJson() => {
+        'rankConstant': rankConstant,
+        'semanticWeight': semanticWeight,
+        'keywordWeight': keywordWeight,
+      };
+}
+
+class RagService {
+  final EmbeddingService embedder;
+  final VectorStore store;
+  RagSearchDiagnostics? lastDiagnostics;
+  MultiHopTrace? lastMultiHopTrace;
+  LongContextTrace? lastLongContextTrace;
+
+  RagService({required this.embedder, required this.store});
+
+  Future<int> indexFile(String path) async {
+    final text = await loadDocument(path);
+    final docName = path.split(RegExp(r'[\\/]')).last;
+    return ingest(docName: docName, text: text);
+  }
+
+  /// 智能切塊：依段落 / 句子分隔，再合併成接近 [maxChars] 嘅塊，
+  /// 相鄰塊之間有 [overlap] 字元重疊，保留上下文。
+  static List<String> chunk(
+    String text, {
+    int maxChars = 800,
+    int overlap = 120,
+  }) {
+    final clean = text.replaceAll('\r', '').trim();
+    if (clean.isEmpty) return [];
+
+    // 先按空行（段落）切，再按句號 / 問號 / 驚嘆號切細段
+    final paras = clean.split(RegExp(r'\n\s*\n'));
+    final segments = <String>[];
+    for (final p in paras) {
+      final sents = p.split(RegExp(r'(?<=[。！？.!?])\s+|(?<=[。！？])(?=\S)'));
+      segments.addAll(sents.where((s) => s.trim().isNotEmpty));
+    }
+
+    final chunks = <String>[];
+    final buf = StringBuffer();
+    for (final seg in segments) {
+      if (buf.length + seg.length + 1 > maxChars && buf.isNotEmpty) {
+        chunks.add(buf.toString().trim());
+        // 留 overlap 部分作為下一塊嘅開頭
+        final tail = buf.toString();
+        final start = tail.length > overlap ? tail.length - overlap : 0;
+        buf
+          ..clear()
+          ..write(tail.substring(start))
+          ..write(' ');
+      }
+      buf
+        ..write(seg.trim())
+        ..write(' ');
+    }
+    if (buf.toString().trim().isNotEmpty) chunks.add(buf.toString().trim());
+    return chunks;
+  }
+
+  /// 將文件加入向量庫
+  Future<int> ingest({
+    required String docName,
+    required String text,
+    int maxChars = 800,
+    int overlap = 120,
+    IngestProgress? onProgress,
+    CancelCheck? cancelCheck,
+    int batchSize = 1,
+  }) async {
+    final result = await ingestDetailed(
+      docName: docName,
+      text: text,
+      maxChars: maxChars,
+      overlap: overlap,
+      onProgress: onProgress,
+      cancelCheck: cancelCheck,
+      batchSize: batchSize,
+    );
+
+    if (result.failed) {
+      Error.throwWithStackTrace(result.error!, result.stackTrace!);
+    }
+
+    return result.chunksWritten;
+  }
+
+  Future<IngestResult> ingestDetailed({
+    required String docName,
+    required String text,
+    int maxChars = 800,
+    int overlap = 120,
+    IngestProgress? onProgress,
+    CancelCheck? cancelCheck,
+    int batchSize = 1,
+  }) async {
+    final pieces = chunk(text, maxChars: maxChars, overlap: overlap);
+    if (pieces.isEmpty) {
+      return const IngestResult(success: true, chunksWritten: 0);
+    }
+
+    final safeBatchSize = math.max(1, batchSize);
+    var done = 0;
+    final nextChunks = <DocChunk>[];
+    try {
+      for (var i = 0; i < pieces.length; i += safeBatchSize) {
+        if (cancelCheck?.call() == true) {
+          return IngestResult(
+            success: false,
+            chunksWritten: done,
+            cancelled: true,
+          );
+        }
+
+        final end = math.min(i + safeBatchSize, pieces.length);
+        final batch = pieces.sublist(i, end);
+        final embeddings = await embedder.embedAll(batch);
+
+        if (cancelCheck?.call() == true) {
+          return IngestResult(
+            success: false,
+            chunksWritten: done,
+            cancelled: true,
+          );
+        }
+
+        for (var j = 0; j < batch.length; j++) {
+          final chunkIndex = i + j;
+          nextChunks.add(DocChunk(
+            id: '${docName}_$chunkIndex',
+            docName: docName,
+            chunkIndex: chunkIndex,
+            text: batch[j],
+            embedding: embeddings[j],
+          ));
+          done++;
+          onProgress?.call(done, pieces.length);
+        }
+      }
+
+      if (cancelCheck?.call() == true) {
+        return IngestResult(
+          success: false,
+          chunksWritten: done,
+          cancelled: true,
+        );
+      }
+
+      // 同名文件只在新索引完整建立後先剷走，避免取消時清掉舊索引。
+      final indexedChunks = [
+        for (final chunk in store.chunks)
+          if (chunk.docName != docName) chunk,
+        ...nextChunks,
+      ];
+      await store.replaceDoc(
+        docName,
+        nextChunks,
+        sparseIndex: buildSparseIndex(indexedChunks),
+      );
+
+      return IngestResult(success: true, chunksWritten: done);
+    } catch (error, stackTrace) {
+      return IngestResult(
+        success: false,
+        chunksWritten: done,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  /// 為一條查詢取相關段落
+  Future<List<ScoredChunk>> retrieve(
+    String query, {
+    int k = 4,
+    String? docName,
+    double minScore = 0.0,
+    RetrievalMode mode = RetrievalMode.hybrid,
+    RrfConfig rrfConfig = const RrfConfig(),
+    bool useQueryExpansion = false,
+    bool detectAmbiguous = false,
+    bool enableMultiHop = false,
+    bool enableLongContext = false,
+    bool enableDeepLongContext = false,
+  }) async {
+    lastDiagnostics = const RagSearchDiagnostics(
+      semanticHits: [],
+      keywordHits: [],
+      fusedHits: [],
+    );
+    lastMultiHopTrace = null;
+    lastLongContextTrace = null;
+
+    if (detectAmbiguous &&
+        const AmbiguousQueryDetector().isAmbiguous(query, activeDoc: docName)) {
+      return [];
+    }
+
+    if (store.length == 0) return [];
+    final pool = _searchPool(docName);
+    if (pool.isEmpty) return [];
+
+    final longContextOptimizer = const LongContextOptimizer();
+    if ((enableLongContext || enableDeepLongContext) &&
+        longContextOptimizer.isLongContext(query)) {
+      final result = await longContextOptimizer.retrieve(
+        query: query,
+        k: k,
+        deep: enableDeepLongContext,
+        retriever: (subQuery, {required k}) {
+          return retrieve(
+            subQuery,
+            k: k,
+            docName: docName,
+            minScore: minScore,
+            mode: mode,
+            rrfConfig: rrfConfig,
+            useQueryExpansion: useQueryExpansion,
+            detectAmbiguous: false,
+            enableMultiHop: false,
+            enableLongContext: false,
+            enableDeepLongContext: false,
+          );
+        },
+      );
+      lastLongContextTrace = result.trace;
+      lastDiagnostics = RagSearchDiagnostics(
+        semanticHits: lastDiagnostics?.semanticHits ?? const [],
+        keywordHits: lastDiagnostics?.keywordHits ?? const [],
+        fusedHits: result.hits,
+      );
+      return result.hits;
+    }
+
+    final multiHopReasoner = const MultiHopReasoner();
+    if (enableMultiHop && multiHopReasoner.isMultiHop(query)) {
+      final result = await multiHopReasoner.retrieve(
+        query: query,
+        k: k,
+        retriever: (subQuery, {required k}) {
+          return retrieve(
+            subQuery,
+            k: k,
+            docName: docName,
+            minScore: minScore,
+            mode: mode,
+            rrfConfig: rrfConfig,
+            useQueryExpansion: useQueryExpansion,
+            detectAmbiguous: false,
+            enableMultiHop: false,
+            enableLongContext: false,
+            enableDeepLongContext: false,
+          );
+        },
+      );
+      lastMultiHopTrace = result.trace;
+      lastDiagnostics = RagSearchDiagnostics(
+        semanticHits: lastDiagnostics?.semanticHits ?? const [],
+        keywordHits: lastDiagnostics?.keywordHits ?? const [],
+        fusedHits: result.hits,
+      );
+      return result.hits;
+    }
+
+    final candidateK = math.max(k, math.min(pool.length, k * 8));
+
+    final semanticHits = mode == RetrievalMode.sparse
+        ? <ScoredChunk>[]
+        : store
+            .topK(
+              await embedder.embed(query),
+              k: candidateK,
+              docName: docName,
+            )
+            .where((s) => s.score >= minScore)
+            .toList();
+
+    final sparseQuery = const QueryExpansion().sparseQueryForRetrieval(
+      query,
+      enabled: mode == RetrievalMode.hybrid && useQueryExpansion,
+    );
+
+    final keywordHits = mode == RetrievalMode.dense
+        ? <ScoredChunk>[]
+        : store.sparseIndex == null
+            ? bm25Rank(sparseQuery, pool, k: candidateK)
+            : bm25RankWithIndex(
+                sparseQuery,
+                pool,
+                store.sparseIndex!,
+                k: candidateK,
+              );
+
+    final finalHits = switch (mode) {
+      RetrievalMode.dense => semanticHits.take(k).toList(),
+      RetrievalMode.sparse => keywordHits.take(k).toList(),
+      RetrievalMode.hybrid => rrfFuse(
+          semanticHits: semanticHits,
+          keywordHits: keywordHits,
+          k: k,
+          rankConstant: rrfConfig.rankConstant,
+          semanticWeight: rrfConfig.semanticWeight,
+          keywordWeight: rrfConfig.keywordWeight,
+        ),
+    };
+
+    lastDiagnostics = RagSearchDiagnostics(
+      semanticHits: semanticHits.take(k).toList(),
+      keywordHits: keywordHits.take(k).toList(),
+      fusedHits: finalHits,
+    );
+
+    return finalHits;
+  }
+
+  /// 粗略確認檢索結果至少有一個實詞對得上問題，避免低質量
+  /// embedding 將完全無關片段送入模型後誘發幻覺。
+  static bool hasKeywordGrounding(String query, List<ScoredChunk> hits) {
+    if (hits.isEmpty) return false;
+    final queryKeywords = keywords(query);
+    if (queryKeywords.isEmpty) return true;
+
+    return hits.any((hit) {
+      final chunkKeywords = keywords(hit.chunk.text);
+      final overlap = chunkKeywords.intersection(queryKeywords);
+      if (overlap.isNotEmpty) return true;
+
+      final queryAliases = expandedKeywords(queryKeywords);
+      final chunkAliases = expandedKeywords(chunkKeywords);
+      return chunkAliases.intersection(queryAliases).isNotEmpty;
+    });
+  }
+
+  List<DocChunk> _searchPool(String? docName) {
+    if (docName == null) return store.chunks;
+    return store.chunks.where((chunk) => chunk.docName == docName).toList();
+  }
+
+  static List<ScoredChunk> bm25Rank(
+    String query,
+    List<DocChunk> chunks, {
+    int k = 8,
+  }) {
+    if (chunks.isEmpty) return [];
+
+    final queryTerms = expandedKeywords(keywords(query)).toList();
+    if (queryTerms.isEmpty) return [];
+
+    final tokenized = [
+      for (final chunk in chunks) keywordTerms(chunk.text),
+    ];
+    final avgLength = tokenized.isEmpty
+        ? 0.0
+        : tokenized.fold<int>(0, (sum, terms) => sum + terms.length) /
+            tokenized.length;
+
+    final documentFrequency = <String, int>{};
+    for (final terms in tokenized) {
+      for (final term in terms.toSet()) {
+        documentFrequency[term] = (documentFrequency[term] ?? 0) + 1;
+      }
+    }
+
+    const k1 = 1.2;
+    const b = 0.75;
+    final scored = <ScoredChunk>[];
+    for (var i = 0; i < chunks.length; i++) {
+      final terms = tokenized[i];
+      if (terms.isEmpty) continue;
+      final frequencies = <String, int>{};
+      for (final term in terms) {
+        frequencies[term] = (frequencies[term] ?? 0) + 1;
+      }
+
+      var score = 0.0;
+      for (final term in queryTerms) {
+        final tf = frequencies[term] ?? 0;
+        if (tf == 0) continue;
+        final df = documentFrequency[term] ?? 0;
+        final idf = math.log(
+          1 + (chunks.length - df + 0.5) / (df + 0.5),
+        );
+        final lengthNorm = 1 - b + b * (terms.length / math.max(avgLength, 1));
+        score += idf * ((tf * (k1 + 1)) / (tf + k1 * lengthNorm));
+      }
+
+      if (score > 0) {
+        scored.add(ScoredChunk(chunks[i], score));
+      }
+    }
+
+    scored.sort((a, b) => b.score.compareTo(a.score));
+    return scored.take(k).toList();
+  }
+
+  static SparseIndexSnapshot buildSparseIndex(List<DocChunk> chunks) {
+    if (chunks.isEmpty) {
+      return const SparseIndexSnapshot(
+        docCount: 0,
+        avgDocLength: 0,
+        chunkLengths: {},
+        documentFrequency: {},
+        termFrequency: {},
+      );
+    }
+
+    final chunkLengths = <String, int>{};
+    final documentFrequency = <String, int>{};
+    final termFrequency = <String, Map<String, int>>{};
+    var totalLength = 0;
+
+    for (final chunk in chunks) {
+      final terms = keywordTerms(chunk.text);
+      chunkLengths[chunk.id] = terms.length;
+      totalLength += terms.length;
+
+      final frequencies = <String, int>{};
+      for (final term in terms) {
+        frequencies[term] = (frequencies[term] ?? 0) + 1;
+      }
+      for (final term in frequencies.keys) {
+        documentFrequency[term] = (documentFrequency[term] ?? 0) + 1;
+      }
+      termFrequency[chunk.id] = frequencies;
+    }
+
+    return SparseIndexSnapshot(
+      docCount: chunks.length,
+      avgDocLength: totalLength / chunks.length,
+      chunkLengths: chunkLengths,
+      documentFrequency: documentFrequency,
+      termFrequency: termFrequency,
+    );
+  }
+
+  static List<ScoredChunk> bm25RankWithIndex(
+    String query,
+    List<DocChunk> chunks,
+    SparseIndexSnapshot index, {
+    int k = 8,
+  }) {
+    if (chunks.isEmpty || index.docCount == 0) return [];
+
+    final queryTerms = expandedKeywords(keywords(query)).toList();
+    if (queryTerms.isEmpty) return [];
+
+    const k1 = 1.2;
+    const b = 0.75;
+    final idfByTerm = <String, double>{};
+    for (final term in queryTerms) {
+      final df = index.documentFrequency[term] ?? 0;
+      if (df == 0) continue;
+      idfByTerm[term] = math.log(
+        1 + (index.docCount - df + 0.5) / (df + 0.5),
+      );
+    }
+    if (idfByTerm.isEmpty) return [];
+
+    final avgDocLength = math.max(index.avgDocLength, 1);
+    final scored = <ScoredChunk>[];
+    for (final chunk in chunks) {
+      final frequencies = index.termFrequency[chunk.id];
+      final length = index.chunkLengths[chunk.id];
+      if (frequencies == null || length == null || length == 0) continue;
+
+      var score = 0.0;
+      for (final term in queryTerms) {
+        final tf = frequencies[term] ?? 0;
+        final idf = idfByTerm[term];
+        if (tf == 0 || idf == null) continue;
+
+        final lengthNorm = 1 - b + b * (length / avgDocLength);
+        score += idf * ((tf * (k1 + 1)) / (tf + k1 * lengthNorm));
+      }
+
+      if (score > 0) {
+        scored.add(ScoredChunk(chunk, score));
+      }
+    }
+
+    scored.sort((a, b) => b.score.compareTo(a.score));
+    return scored.take(k).toList();
+  }
+
+  static List<ScoredChunk> rrfFuse({
+    required List<ScoredChunk> semanticHits,
+    required List<ScoredChunk> keywordHits,
+    required int k,
+    int rankConstant = 60,
+    double semanticWeight = 1.0,
+    double keywordWeight = 1.3,
+  }) {
+    final byId = <String, DocChunk>{};
+    final scores = <String, double>{};
+
+    void addRanked(List<ScoredChunk> hits, double weight) {
+      for (var i = 0; i < hits.length; i++) {
+        final hit = hits[i];
+        final id = hit.chunk.id;
+        byId[id] = hit.chunk;
+        scores[id] = (scores[id] ?? 0) + weight / (rankConstant + i + 1);
+      }
+    }
+
+    addRanked(semanticHits, semanticWeight);
+    addRanked(keywordHits, keywordWeight);
+
+    final fused = [
+      for (final entry in scores.entries)
+        ScoredChunk(byId[entry.key]!, entry.value),
+    ]..sort((a, b) {
+        final scoreCompare = b.score.compareTo(a.score);
+        if (scoreCompare != 0) return scoreCompare;
+        return a.chunk.chunkIndex.compareTo(b.chunk.chunkIndex);
+      });
+
+    return fused.take(k).toList();
+  }
+
+  static Set<String> keywords(String text) {
+    return keywordTerms(text).toSet();
+  }
+
+  static List<String> keywordTerms(String text) {
+    final stopwords = {
+      'a',
+      'an',
+      'and',
+      'any',
+      'are',
+      'about',
+      'according',
+      'doc',
+      'document',
+      'does',
+      'do',
+      'did',
+      'file',
+      'for',
+      'from',
+      'has',
+      'have',
+      'in',
+      'is',
+      'it',
+      'loaded',
+      'me',
+      'mention',
+      'mentioned',
+      'of',
+      'on',
+      'or',
+      'pdf',
+      'please',
+      'tell',
+      'that',
+      'the',
+      'there',
+      'this',
+      'to',
+      'what',
+      'where',
+      'which',
+      'who',
+      'why',
+      'with',
+      '中',
+      '有',
+      '沒有',
+      '呢個',
+      '嗰個',
+      '邊個',
+      '邊度',
+      '點解',
+      '點樣',
+      '幾多',
+      '乜嘢',
+      '而家',
+      '之後',
+      '文件',
+      '是否',
+      '的',
+      '是',
+      '請',
+      '問',
+    };
+
+    final out = <String>[];
+    final matches = RegExp(r'[A-Za-z0-9]+|[一-龥]+').allMatches(
+      text.toLowerCase(),
+    );
+
+    for (final match in matches) {
+      final token = match.group(0) ?? '';
+      if (token.isEmpty || stopwords.contains(token)) continue;
+
+      final isLatin = RegExp(r'^[a-z0-9]+$').hasMatch(token);
+      if (isLatin) {
+        if (token.length >= 3 || RegExp(r'\d').hasMatch(token)) {
+          out.add(token);
+        }
+        continue;
+      }
+
+      if (token.length <= 2) {
+        out.add(token);
+      } else {
+        for (var size = 2; size <= 3; size++) {
+          for (var i = 0; i <= token.length - size; i++) {
+            final gram = token.substring(i, i + size);
+            if (!stopwords.contains(gram)) out.add(gram);
+          }
+        }
+      }
+    }
+
+    return out;
+  }
+
+  static Set<String> expandedKeywords(Set<String> terms) {
+    final out = <String>{...terms};
+    const groups = [
+      {'deadline', 'due', 'date', 'schedule', '期限', '截止', '日期'},
+      {
+        'risk',
+        'danger',
+        'issue',
+        'problem',
+        'limitation',
+        'limit',
+        '風險',
+        '問題',
+        '限制'
+      },
+      {
+        'mitigation',
+        'mitigate',
+        'solution',
+        'fix',
+        'workaround',
+        'remedy',
+        '緩解',
+        '解決',
+        '方案',
+        '處理'
+      },
+      {'owner', 'responsible', 'lead', '負責', '擁有人', '負責人'},
+      {'budget', 'cost', 'price', 'spend', 'expense', '預算', '成本', '費用'},
+      {'security', 'safe', 'safety', 'secure', '安全'},
+      {'feature', 'function', 'capability', '功能', '能力'},
+    ];
+
+    for (final group in groups) {
+      if (terms.intersection(group).isNotEmpty) {
+        out.addAll(group);
+      }
+    }
+
+    return out;
+  }
+
+  /// 將檢索結果格式化成 system prompt
+  static String buildContext(List<ScoredChunk> hits) {
+    if (hits.isEmpty) return '';
+    final sb = StringBuffer()
+      ..writeln('以下係從用戶上載文件中檢索到嘅相關段落，請優先根據呢啲資料作答。')
+      ..writeln('只可根據以下段落回答文件相關問題；如果段落唔夠資料答問題，請直接講「在文件中沒有找到相關資訊」，不要猜測或編造。')
+      ..writeln();
+    for (var i = 0; i < hits.length; i++) {
+      final h = hits[i];
+      sb
+        ..writeln(
+            '--- 片段 ${i + 1}（來源：${h.chunk.docName}，相似度 ${h.score.toStringAsFixed(2)}）---')
+        ..writeln(h.chunk.text)
+        ..writeln();
+    }
+    return sb.toString();
+  }
+}
+

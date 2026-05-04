@@ -1,0 +1,99 @@
+﻿===== SOURCE FILE: test\eval\rrf_tuning_runner.dart =====
+===== EXPORTED AS TEXT: test\eval\rrf_tuning_runner.dart.txt =====
+===== SIZE: 3243 bytes | LAST WRITE: 05/01/2026 16:19:01 =====
+
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:local_ai_chat/models/app_settings.dart';
+import 'package:local_ai_chat/services/rag_service.dart';
+import 'package:local_ai_chat/services/rrf_tuner.dart';
+
+import 'rag_eval_runner.dart';
+
+class RrfTuningRunner {
+  const RrfTuningRunner({
+    this.baselinePassRate = 0.962,
+    this.improvementThreshold = 0.02,
+  });
+
+  final double baselinePassRate;
+  final double improvementThreshold;
+
+  Future<Map<String, Object?>> runTuning({
+    required RagService rag,
+    required String outputPath,
+    String embeddingModel = 'bge-m3',
+    RetrievalMode retrievalMode = RetrievalMode.hybrid,
+    int topK = 4,
+    String? baselineSnapshot,
+    Map<String, Object?> extraMetadata = const {},
+  }) async {
+    final tuner = const RrfTuner();
+    final results = <RrfTuningResult>[];
+    final tempDir = Directory('build/eval_snapshots/rrf_tuning_runner');
+    await tempDir.create(recursive: true);
+
+    for (final config in tuner.generateGrid()) {
+      final runner = RagEvalRunner(
+        rag: rag,
+        embeddingModel: embeddingModel,
+        retrievalMode: retrievalMode,
+        topK: topK,
+        rrfConfig: config,
+      );
+      final payload = await runner.run(
+        version: 'v2.0-phase3b-rrf-tuning',
+        outputPath: _tempSnapshotPath(tempDir.path, config),
+        baselineSnapshot: baselineSnapshot,
+        extraMetadata: const {
+          'productionDefaultChanged': false,
+          'experiment': 'rrf_weight_tuning',
+        },
+      );
+      final summary = payload['summary'] as Map<String, Object?>;
+      results.add(RrfTuningResult(
+        config: config,
+        passRate: (summary['passRate'] as num).toDouble(),
+        score: (summary['score'] as num).toDouble(),
+        pass: summary['pass'] as int,
+        partial: summary['partial'] as int,
+        fail: summary['fail'] as int,
+      ));
+    }
+
+    final best = tuner.bestResult(results);
+    final improvement = best.passRate - baselinePassRate;
+    final report = <String, Object?>{
+      'version': 'v2.0-phase3b-rrf-tuning',
+      'date': DateTime.now().toUtc().toIso8601String(),
+      'source': 'rrf_tuning_runner',
+      'embeddingModel': embeddingModel,
+      'retrievalMode': retrievalMode.name,
+      'topK': topK,
+      if (baselineSnapshot != null) 'baselineSnapshot': baselineSnapshot,
+      ...extraMetadata,
+      'baselinePassRate': baselinePassRate,
+      'best': best.toJson(),
+      'improvementVsBaseline': double.parse(improvement.toStringAsFixed(3)),
+      'recommendProductionDefaultChange': improvement >= improvementThreshold,
+      'productionDefaultChanged': false,
+      'gridSize': results.length,
+      'results': [for (final result in results) result.toJson()],
+    };
+
+    final output = File(outputPath);
+    await output.parent.create(recursive: true);
+    await output.writeAsString(
+      const JsonEncoder.withIndent('  ').convert(report),
+      flush: true,
+    );
+    return report;
+  }
+
+  String _tempSnapshotPath(String dir, RrfConfig config) {
+    return '$dir/'
+        'k${config.rankConstant}_d${config.semanticWeight}_s${config.keywordWeight}.json';
+  }
+}
+

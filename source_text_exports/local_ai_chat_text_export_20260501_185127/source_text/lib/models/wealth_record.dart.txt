@@ -1,0 +1,89 @@
+﻿===== SOURCE FILE: lib\models\wealth_record.dart =====
+===== EXPORTED AS TEXT: lib\models\wealth_record.dart.txt =====
+===== SIZE: 2382 bytes | LAST WRITE: 05/01/2026 18:01:55 =====
+
+class WealthRecord {
+  final String id;
+  final DateTime date;
+  final String assetType; // stock/fund/crypto/cash/real_estate
+  final double amount;
+  final String currency;
+  final String notes;
+  final List<String> tags;
+  final DateTime dateAdded;
+
+  WealthRecord({
+    this.id = '',
+    required this.date,
+    required this.assetType,
+    required this.amount,
+    this.currency = 'TWD',
+    this.notes = '',
+    this.tags = const [],
+    DateTime? dateAdded,
+  }) : dateAdded = dateAdded ?? DateTime.now();
+
+  WealthRecord copyWith({
+    String? id,
+    DateTime? date,
+    String? assetType,
+    double? amount,
+    String? currency,
+    String? notes,
+    List<String>? tags,
+    DateTime? dateAdded,
+  }) {
+    return WealthRecord(
+      id: id ?? this.id,
+      date: date ?? this.date,
+      assetType: assetType ?? this.assetType,
+      amount: amount ?? this.amount,
+      currency: currency ?? this.currency,
+      notes: notes ?? this.notes,
+      tags: tags ?? this.tags,
+      dateAdded: dateAdded ?? this.dateAdded,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'date': date.toIso8601String(),
+      'assetType': assetType,
+      'amount': amount,
+      'currency': currency,
+      'notes': notes,
+      'tags': tags,
+      'dateAdded': dateAdded.toIso8601String(),
+    };
+  }
+
+  factory WealthRecord.fromMap(Map<String, dynamic> map) {
+    return WealthRecord(
+      id: map['id']?.toString() ?? '',
+      date: map['date'] != null ? DateTime.parse(map['date'].toString()) : DateTime.now(),
+      assetType: map['assetType']?.toString() ?? '',
+      amount: (map['amount'] as num?)?.toDouble() ?? 0.0,
+      currency: map['currency']?.toString() ?? 'TWD',
+      notes: map['notes']?.toString() ?? '',
+      tags: (map['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      dateAdded: map['dateAdded'] != null
+          ? DateTime.parse(map['dateAdded'].toString())
+          : DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => toMap();
+
+  factory WealthRecord.fromJson(Map<String, dynamic> source) =>
+      WealthRecord.fromMap(source);
+
+  String toRagString() {
+    return '【理財紀錄】日期：${date.toIso8601String().split('T')[0]}\n'
+        '資產類型：$assetType\n'
+        '金額：$amount $currency\n'
+        '備註：$notes\n'
+        '標籤：${tags.join(', ')}';
+  }
+}
+

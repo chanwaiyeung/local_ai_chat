@@ -1,0 +1,219 @@
+{
+  "@@locale": "en",
+  "appTitle": "AI Library",
+
+  "tabRecords": "Records",
+  "tabAllocation": "Allocation",
+
+  "investmentFinance": "Investment",
+  "noInvestmentRecords": "No investment records yet",
+  "aiFinancialAdvisor": "AI Financial Advisor",
+  "totalAssets": "Net Worth",
+  "currencyLabel": "Currency:",
+
+  "moduleExpense": "Expenses",
+  "moduleContacts": "Contacts",
+  "moduleHealth": "Health",
+  "moduleWealth": "Investment",
+  "moduleDashboardSoon": "Full Dashboard",
+  "comingSoon": "Coming soon",
+
+  "expenseCount": "{count, plural, =0{No records yet} =1{1 record} other{{count} records}}",
+  "@expenseCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "saveButton": "Save",
+  "cancelButton": "Cancel",
+  "deleteButton": "Delete",
+
+  "settings": "Settings",
+  "language": "Language",
+  "languageZhTw": "Traditional Chinese",
+  "languageZhCn": "Simplified Chinese",
+  "languageEn": "English",
+
+  "personalHubTitle": "Personal Hub",
+  "modules": "Modules",
+  "dashboardTitle": "Dashboard for {month}/{year}",
+  "@dashboardTitle": {
+    "placeholders": {
+      "year": { "type": "int" },
+      "month": { "type": "int" }
+    }
+  },
+  "totalExpensesThisMonth": "Total Expenses This Month",
+  "noExpensesThisMonth": "No expenses this month",
+  "totalContacts": "Total Contacts",
+  "healthRecords": "Health Records",
+  "investmentNetWorth": "Net Worth",
+  "quickAiQuery": "Quick AI Query",
+  "featureNotEnabled": "{feature}: Not enabled yet",
+  "@featureNotEnabled": {
+    "placeholders": { "feature": { "type": "String" } }
+  },
+  "aiQueryFeatureComingSoon": "Cross-module AI query coming in Phase 6.3'b",
+  "noRecordsYet": "No records yet",
+  "noContactsYet": "No contacts yet",
+  "recordCountPlural": "{count, plural, =0{No records yet} =1{1 record} other{{count} records}}",
+  "@recordCountPlural": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "contactCountPlural": "{count, plural, =0{No contacts yet} =1{1 contact} other{{count} contacts}}",
+  "@contactCountPlural": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "wealth": "Investment & Finance",
+  "assetAllocation": "Asset Allocation",
+  "addRecord": "Add Record",
+  "netWorth": "Net Worth",
+  "totalLiabilities": "Total Liabilities",
+  "searchAssetHint": "Search asset / notes / tags...",
+  "noDataToChart": "No investment data to chart",
+  "addFirstRecordHint": "Add your first record from the 'Records' tab",
+  "netWorthOverview": "Net Worth Overview",
+  "assetCountLabel": "{count} Assets",
+  "@assetCountLabel": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "valuationNote": "Based on latest valuation (no cross-currency conversion)",
+  "noData": "No data",
+  "netWorthTrend": "Net Worth Trend",
+  "needTwoDatesForChart": "Need at least two different dates to chart trend",
+  "addInvestmentRecord": "Add Investment Record",
+  "editInvestmentRecord": "Edit Investment Record",
+  "valuationDate": "Valuation Date",
+  "assetClass": "Asset Class",
+  "assetNameHint": "Asset Name (Optional, e.g., AAPL / 0050.TW)",
+  "amount": "Amount",
+  "invalidAmountError": "Please enter a valid amount",
+  "currency": "Currency",
+  "notes": "Notes",
+  "tagsCommaSeparated": "Tags (comma separated)",
+
+  "aiHealthAdvisor": "AI Health Advisor",
+  "searchHealthHint": "Search notes / tags...",
+  "noHealthRecords": "No health records yet",
+  "noRecordsLast30Days": "No records in the last 30 days",
+  "last30DaysOverview": "Last 30 days overview",
+  "recordCountUnit": "{count} records",
+  "@recordCountUnit": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "weight": "Weight",
+  "avgWeightStat": "Avg {val} kg ({count} times)",
+  "@avgWeightStat": {
+    "placeholders": {
+      "val": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "bloodPressure": "Blood Pressure",
+  "avgBpStat": "Avg {sys} / {dia} mmHg ({count} times)",
+  "@avgBpStat": {
+    "placeholders": {
+      "sys": { "type": "String" },
+      "dia": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "heartRate": "Heart Rate",
+  "avgHeartRateStat": "Avg {val} bpm ({count} times)",
+  "@avgHeartRateStat": {
+    "placeholders": {
+      "val": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "steps": "Steps",
+  "totalStepsStat": "Total {val} steps ({count} days)",
+  "@totalStepsStat": {
+    "placeholders": {
+      "val": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "sleep": "Sleep",
+  "avgSleepStat": "Avg {val} hours ({count} times)",
+  "@avgSleepStat": {
+    "placeholders": {
+      "val": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "noDataLabel": "(No data)",
+  "addHealthRecord": "Add Health Record",
+  "editHealthRecord": "Edit Health Record",
+  "measurementDate": "Measurement Date",
+  "weightKg": "Weight (kg)",
+  "systolicMmHg": "Systolic (mmHg)",
+  "diastolicMmHg": "Diastolic (mmHg)",
+  "heartRateBpm": "Heart Rate (bpm)",
+  "sleepHours": "Sleep Hours (hours)",
+  "fillAtLeastOneMeasurement": "Please fill in at least one measurement or note",
+  "trendCharts": "Trend Charts",
+  "weightTrend": "Weight Trend (kg)",
+  "systolicTrend": "Systolic Trend (mmHg)",
+  "sleepHoursLabel": "Sleep Hours",
+
+  "searchExpenseHint": "Search merchant / category / notes...",
+  "noMatchingExpenses": "No matching expenses",
+  "previousMonth": "Previous month",
+  "nextMonth": "Next month",
+  "yearMonthTitle": "{month} / {year}",
+  "@yearMonthTitle": {
+    "placeholders": {
+      "year": { "type": "int" },
+      "month": { "type": "int" }
+    }
+  },
+  "noExpensesThisMonth": "No expenses this month",
+  "monthlyTotal": "Monthly total: {totalText}",
+  "@monthlyTotal": {
+    "placeholders": { "totalText": { "type": "String" } }
+  },
+  "categoryAmountChip": "{label} · {amount}",
+  "@categoryAmountChip": {
+    "placeholders": {
+      "label": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "noMerchant": "(No merchant)",
+  "addExpense": "Add Expense",
+  "editExpense": "Edit Expense",
+  "merchant": "Merchant",
+  "category": "Category",
+  "defaultCategoriesLabel": "Default categories",
+  "customCategoriesCount": "{count} custom categories",
+  "@customCategoriesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "paymentMethod": "Payment Method",
+  "date": "Date",
+
+  "appearance": "Appearance",
+  "theme": "Theme",
+  "darkMode": "Dark Mode",
+  "lightMode": "Light Mode",
+  "systemDefault": "System Default",
+  "mySkills": "My Skills",
+  
+  "embeddingSettings": "Embedding Settings",
+  "enterEmbeddingModelName": "Please enter an embedding model name",
+  "modelInstalled": "Installed",
+  "modelNotInstalled": "Not installed, please pull this model using Ollama first",
+  "useCustomEmbeddingModel": "Use custom embedding model",
+  "customModelHint": "e.g., mxbai-embed-large",
+  "currentSelection": "Current selection: {model}",
+  "@currentSelection": {
+    "placeholders": { "model": { "type": "String" } }
+  },
+  "changeModelWarning": "Note: Changing the embedding model will clear the current vector store. Please re-import your documents.",
+  "retrievalMode": "Retrieval Mode",
+  "denseMode": "Dense: Vector Semantic Search",
+  "sparseMode": "Sparse: BM25 Keyword Search",
+  "hybridMode": "Hybrid: Dense + BM25 + RRF",
+  "applySettings": "Apply Settings"
+}
