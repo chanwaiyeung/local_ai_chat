@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 import '../l10n/app_localizations.dart';
 import '../main.dart';
@@ -83,6 +85,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _loadingModels = false;
       });
       debugPrint('SettingsScreen: failed to load installed models');
+    }
+  }
+
+  Future<void> _testGeminiConnection() async {
+    final key = _geminiApiKeyController.text.trim();
+    if (key.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('請先輸入 API Key')));
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('測試連線中...')));
+    try {
+      final uri = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$key');
+      final response = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'contents': [{'parts': [{'text': 'Hello'}]}]
+        }),
+      );
+      if (!mounted) return;
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ 連線成功！')));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('❌ 連線失敗 (${response.statusCode})')));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('❌ 測試錯誤：$e')));
     }
   }
 
@@ -222,7 +252,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              '設定您的 API Key 以啟用「雲端大模型教導本地小模型」功能。這將被妥善保存在本機。',
+              '設定您的 API Key 以啟用「雲端大模型教導本地小模型」與「Wealth 模組的照片掃描」功能。這將被妥善保存在本機。',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 12),
@@ -246,6 +276,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.key),
                       ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            icon: const Icon(Icons.test_pipe),
+                            label: const Text('測試連線'),
+                            onPressed: _testGeminiConnection,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: FilledButton.icon(
+                            icon: const Icon(Icons.save),
+                            label: const Text('儲存'),
+                            onPressed: _submit,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
