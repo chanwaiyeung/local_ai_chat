@@ -207,7 +207,17 @@ class _WealthScreenState extends State<WealthScreen>
             FloatingActionButton(
               heroTag: 'vision',
               onPressed: () async {
+                final settings = await AppSettingsService().load();
+                if (settings.geminiApiKey?.trim().isEmpty ?? true) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('請先到 Settings 設定 Gemini API Key')),
+                  );
+                  return;
+                }
+
                 final picker = ImagePicker();
+                if (!context.mounted) return;
                 final image = await showDialog<XFile?>(
                   context: context,
                   builder: (context) => AlertDialog(
@@ -236,36 +246,34 @@ class _WealthScreenState extends State<WealthScreen>
 
                 if (image == null) return;
 
-                final settings = await AppSettingsService().load();
-                if (settings.geminiApiKey == null || settings.geminiApiKey!.isEmpty) {
-                  if (!context.mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('請先至設定頁面設定 Gemini API Key')),
-                  );
-                  return;
-                }
-
                 if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('AI 辨識中，請稍候...')),
+                // Loading 狀態
+                final loadingSnack = ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('AI 正在分析圖片...'), duration: Duration(seconds: 30)),
                 );
 
                 try {
                   final visionService = VisionLLMService();
-                  final record = await visionService.scanWealthFromImage(image.path, apiKey: settings.geminiApiKey!);
+                  final record = await visionService.scanWealthFromImage(
+                    image.path, 
+                    apiKey: settings.geminiApiKey!,
+                  );
                   
                   if (!context.mounted) return;
+                  loadingSnack.close();
+
                   if (record != null) {
                     _openForm(existing: record); // 預填後開啟表單讓使用者確認
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('無法從圖片辨識資產資訊')),
+                      const SnackBar(content: Text('無法辨識圖片中的資產，請手動輸入或重試')),
                     );
                   }
                 } catch (e) {
                   if (!context.mounted) return;
+                  loadingSnack.close();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('掃描失敗：$e')),
+                    SnackBar(content: Text('掃描失敗：${e.toString()}')),
                   );
                 }
               },

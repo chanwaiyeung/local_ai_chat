@@ -21,70 +21,69 @@ class VisionLLMService {
     return scanWealthFromBytes(bytes, apiKey: apiKey);
   }
 
-  Future<WealthRecord?> scanWealthFromBytes(Uint8List bytes, {required String apiKey}) async {
+  Future<WealthRecord?> scanWealthFromBytes(Uint8List bytes, {required String apiKey, int maxRetries = 2}) async {
     if (apiKey.trim().isEmpty) {
-      throw const VisionLlmException('Gemini API Key 未設定，請先前往 Settings 頁面設定');
+      throw const VisionLlmException('Gemini API Key 未設定，請先前往 Settings 設定');
     }
     if (bytes.isEmpty) throw const VisionLlmException('圖片資料為空');
 
-    final prompt = '''
-請分析這張圖片中的資產/投資/理財相關資訊，並**嚴格**以以下 JSON 格式回覆（不要任何額外文字、解釋或 markdown）：
+    for (int attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        final prompt = '''
+請從圖片中提取資產資訊，嚴格回傳 JSON（不要任何其他文字）：
 
 {
-  "assetType": "stock | fund | bond | crypto | real_estate | cash | insurance | other",
-  "assetName": "資產名稱或代號（例如：台積電、AAPL、美債）",
-  "currency": "TWD | USD | HKD | CNY | ...",
-  "amount": 數字（例如：892.5 或 15000）,
-  "note": "簡短備註（可包含日期、來源等）"
+  "assetType": "stock|fund|bond|crypto|real_estate|cash|insurance|other",
+  "assetName": "資產名稱",
+  "currency": "TWD|USD|HKD|...",
+  "amount": 數字,
+  "note": "備註"
 }
 
-如果圖片中無法辨識明確資產資訊，請直接回傳 null。
+無法辨識請回傳 null。
 ''';
 
-    final uri = Uri.parse(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey',
-    );
+        final uri = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey');
 
-    final response = await _http.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'contents': [
-          {
-            'parts': [
-              {'text': prompt},
-              {'inlineData': {'mimeType': 'image/jpeg', 'data': base64Encode(bytes)}},
+        final response = await _http.post(
+          uri,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'contents': [
+              {
+                'parts': [
+                  {'text': prompt},
+                  {'inlineData': {'mimeType': 'image/jpeg', 'data': base64Encode(bytes)}},
+                ],
+              },
             ],
-          },
-        ],
-      }),
-    );
+          }),
+        );
 
-    if (response.statusCode != 200) {
-      throw VisionLlmException('API 呼叫失敗，請檢查網路或 API Key', statusCode: response.statusCode);
+        if (response.statusCode == 200) {
+          final decoded = jsonDecode(utf8.decode(response.bodyBytes));
+          final text = _extractText(decoded);
+          if (text.trim().isEmpty) return null;
+
+          final jsonStr = text.replaceAll(RegExp(r'^```json|```$|\n'), '').trim();
+          final data = jsonDecode(jsonStr) as Map<String, dynamic>;
+
+          return WealthRecord(
+            id: '',
+            assetType: (data['assetType'] ?? 'other').toString(),
+            assetName: (data['assetName'] ?? '未知資產').toString(),
+            currency: (data['currency'] ?? 'TWD').toString(),
+            amount: (data['amount'] as num?)?.toDouble() ?? 0.0,
+            date: DateTime.now(),
+            note: (data['note'] ?? 'AI Vision 自動辨識').toString(),
+          );
+        }
+      } catch (e) {
+        if (attempt == maxRetries) rethrow;
+        await Future.delayed(Duration(seconds: attempt)); // 簡單重試延遲
+      }
     }
-
-    final decoded = jsonDecode(utf8.decode(response.bodyBytes));
-    final text = _extractText(decoded);
-
-    if (text.trim().isEmpty) return null;
-
-    try {
-      final jsonStr = text.replaceAll(RegExp(r'^```json|```$|\n'), '').trim();
-      final data = jsonDecode(jsonStr) as Map<String, dynamic>;
-
-      return WealthRecord(
-        id: '',
-        assetType: (data['assetType'] ?? 'other').toString(),
-        assetName: (data['assetName'] ?? '未知資產').toString(),
-        currency: (data['currency'] ?? 'TWD').toString(),
-        amount: (data['amount'] as num?)?.toDouble() ?? 0.0,
-        date: DateTime.now(),
-        note: (data['note'] ?? 'AI Vision 自動辨識').toString(),
-      );
-    } catch (_) {
-      return null;
-    }
+    return null;
   }
 
   String _extractText(dynamic decoded) {
