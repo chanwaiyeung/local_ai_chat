@@ -7,12 +7,17 @@
 //   - NDJSON load/save round-trip
 
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:local_ai_chat/services/vector_store.dart';
 
 Chunk _c(String doc, int idx, String text) =>
     Chunk(docName: doc, chunkIndex: idx, text: text);
+
+Future<Uint8List> _fixedEncryptionKey() async {
+  return Uint8List.fromList(List<int>.generate(32, (i) => i));
+}
 
 void main() {
   group('VectorStore in-memory', () {
@@ -61,6 +66,90 @@ void main() {
       await store.clear('a.txt');
       expect(store.docNames, ['b.txt']);
       expect(store.totalChunks, 1);
+    });
+
+    test('clear() throws when wiping default collection entirely', () async {
+      final store = VectorStore();
+
+      await expectLater(
+        store.clear(),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+
+    test('clear() allows clearing specific doc in default collection',
+        () async {
+      final store = VectorStore();
+
+      await store.clear('some_doc');
+    });
+
+    test('clear() throws when specific doc would empty default collection',
+        () async {
+      final store = VectorStore();
+      await store.add(_c('only.txt', 0, 'only'), [1.0]);
+
+      await expectLater(
+        store.clear('only.txt'),
+        throwsA(
+          isA<ArgumentError>().having(
+            (e) => e.message,
+            'message',
+            'default collection cannot be deleted',
+          ),
+        ),
+      );
+    });
+
+    test('removeDoc() throws when it would empty default collection', () async {
+      final store = VectorStore();
+      await store.add(_c('only.txt', 0, 'only'), [1.0]);
+
+      expect(
+        () => store.removeDoc('only.txt'),
+        throwsA(
+          isA<ArgumentError>().having(
+            (e) => e.message,
+            'message',
+            'default collection cannot be deleted',
+          ),
+        ),
+      );
+    });
+
+    test('deleteById() throws when it would empty default collection',
+        () async {
+      final store = VectorStore();
+      await store.add(
+        DocChunk(
+          id: 'only-id',
+          docName: 'only.txt',
+          chunkIndex: 0,
+          text: 'only',
+        ),
+        [1.0],
+      );
+
+      await expectLater(
+        store.deleteById('only-id'),
+        throwsA(
+          isA<ArgumentError>().having(
+            (e) => e.message,
+            'message',
+            'default collection cannot be deleted',
+          ),
+        ),
+      );
+    });
+
+    test('removeDoc() allows deleting one doc when default remains', () async {
+      final store = VectorStore();
+      await store.add(_c('a.txt', 0, 'a'), [1.0]);
+      await store.add(_c('b.txt', 0, 'b'), [1.0]);
+
+      store.removeDoc('a.txt');
+
+      expect(store.docNames, ['b.txt']);
     });
 
     test('mismatched dimensions throw on search', () async {
@@ -214,6 +303,49 @@ void main() {
 
       final hits = s2.search([0.5, 0.5], topK: 5);
       expect(hits.map((h) => h.chunk.text), ['hello', 'world']);
+    });
+
+    test('encrypted add → load round-trip does not leak plaintext', () async {
+      final s1 = VectorStore(
+        storagePath: indexPath,
+        encryptionKeyProvider: _fixedEncryptionKey,
+      );
+      await s1.add(_c('secret.txt', 0, 'private portfolio note'), [0.5, 0.5]);
+
+      final raw = await File(indexPath).readAsString();
+      expect(raw, contains('LOCAL_AI_CHAT_VECTOR_STORE_AES_GCM_V1'));
+      expect(raw, isNot(contains('private portfolio note')));
+      expect(raw, isNot(contains('secret.txt')));
+
+      final s2 = VectorStore(
+        storagePath: indexPath,
+        encryptionKeyProvider: _fixedEncryptionKey,
+      );
+      await s2.load();
+
+      expect(s2.totalChunks, 1);
+      expect(s2.chunks.single.text, 'private portfolio note');
+      expect(s2.docNames, ['secret.txt']);
+    });
+
+    test('plaintext store migrates to encrypted format when key is configured',
+        () async {
+      final writer = VectorStore(storagePath: indexPath);
+      await writer.add(_c('legacy.txt', 0, 'legacy plaintext'), [1.0]);
+      expect(
+          await File(indexPath).readAsString(), contains('legacy plaintext'));
+
+      final reader = VectorStore(
+        storagePath: indexPath,
+        encryptionKeyProvider: _fixedEncryptionKey,
+      );
+      await reader.load();
+
+      expect(reader.totalChunks, 1);
+      expect(reader.chunks.single.text, 'legacy plaintext');
+      final migratedRaw = await File(indexPath).readAsString();
+      expect(migratedRaw, contains('LOCAL_AI_CHAT_VECTOR_STORE_AES_GCM_V1'));
+      expect(migratedRaw, isNot(contains('legacy plaintext')));
     });
 
     test('clear() rewrites the file', () async {

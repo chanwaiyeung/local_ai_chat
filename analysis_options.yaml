@@ -28,8 +28,6 @@ analyzer:
     - handoff_exports/**
     - lib_backup/**
     - release_v2.0.0/**
-    - api_server.dart
-    - ollama_client.dart
     - main_integration_example.dart
 
 linter:

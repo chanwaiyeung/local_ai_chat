@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:local_ai_chat/core/locator.dart';
 import 'package:local_ai_chat/screens/doc_viewer_screen.dart';
 import 'package:local_ai_chat/services/vector_store.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
@@ -10,7 +11,8 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 void main() {
   late Directory tempDir;
 
-  setUp(() {
+  setUp(() async {
+    await Locator.resetForTest();
     tempDir = Directory.systemTemp.createTempSync('doc_viewer_test_');
     PathProviderPlatform.instance = _FakePathProviderPlatform(tempDir.path);
   });

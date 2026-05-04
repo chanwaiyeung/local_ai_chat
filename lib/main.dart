@@ -7,59 +7,57 @@ import 'package:flutter/material.dart';
 import 'controllers/contact_controller.dart';
 import 'controllers/expense_controller.dart';
 import 'controllers/health_controller.dart';
+import 'controllers/wealth_controller.dart';
+import 'core/locator.dart';
+import 'l10n/app_localizations.dart';
 import 'screens/personal_hub_screen.dart';
 import 'server/api_server.dart';
 import 'server/ollama_client.dart';
 import 'services/embedding_service.dart';
 import 'services/personal_rag_service.dart';
 import 'services/rag_service.dart';
+import 'services/secure_storage_service.dart';
 import 'services/vector_store.dart';
 
-// ----------------------------- dart-define config -----------------------------
-//
-// Compile-time switches. Use --dart-define on the flutter run / build
-// command line. dart-define is preferred over Platform.environment for two
-// reasons: (1) it works on Flutter web where Platform.environment is empty;
-// (2) the value is baked into the compiled artifact, so production builds
-// can ship with a known-good config.
-//
-// Examples:
-//   flutter run -d windows
-//       (loopback-only, no auth — safe local dev default)
-//
-//   flutter run -d windows \
-//       --dart-define=AI_LIB_LAN=true \
-//       --dart-define=AI_LIB_TOKEN=your-secret
-//       (LAN-exposed, phone can connect; auth required)
-//
 const _aiLibLan = bool.fromEnvironment('AI_LIB_LAN', defaultValue: false);
 const _aiLibToken = String.fromEnvironment('AI_LIB_TOKEN', defaultValue: '');
 
 late final VectorStore globalStore;
+@Deprecated('Use Locator.xxx for v2.7+')
 late final ExpenseController globalExpenseController;
+@Deprecated('Use Locator.xxx for v2.7+')
 late final ContactController globalContactController;
+@Deprecated('Use Locator.xxx for v2.7+')
 late final HealthController globalHealthController;
+@Deprecated('Use Locator.xxx for v2.7+')
+late final WealthController globalWealthController;
+@Deprecated('Use Locator.xxx for v2.7+')
 late final PersonalRagService globalPersonalRagService;
 late final OllamaClient globalOllama;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SecureStorageService.instance.init();
+  await Locator.init();
 
   final embedModel = Platform.environment['EMBED_MODEL'] ?? 'bge-m3';
   final ollamaModel = Platform.environment['OLLAMA_MODEL'] ?? 'llama3.1:8b';
   final ollamaUrl =
       Platform.environment['OLLAMA_URL'] ?? 'http://localhost:11434';
 
-  globalStore = VectorStore();
+  globalStore = VectorStore(
+    encryptionKeyProvider: SecureStorageService.instance.getEncryptionKey,
+  );
   await globalStore.load();
 
   globalExpenseController = ExpenseController(globalStore);
   globalContactController = ContactController(store: globalStore);
   globalHealthController = HealthController(globalStore);
+  globalWealthController = WealthController(globalStore);
+
   await globalExpenseController.getAllExpenses();
   await globalContactController.getAllContacts();
-  // HealthController loads synchronously from VectorStore so no await needed here for all records,
-  // but if needed, we can call getAllRecords().
+  await globalWealthController.loadAll();
 
   globalOllama = OllamaClient(baseUrl: ollamaUrl, model: ollamaModel);
 
@@ -69,6 +67,16 @@ Future<void> main() async {
     llmCompleteStream: ({required systemPrompt, required userPrompt}) {
       return globalOllama.generate('$systemPrompt\n\n$userPrompt');
     },
+  );
+
+  Locator.registerAppServices(
+    store: globalStore,
+    expenseController: globalExpenseController,
+    contactController: globalContactController,
+    healthController: globalHealthController,
+    wealthController: globalWealthController,
+    personalRagService: globalPersonalRagService,
+    ollamaClient: globalOllama,
   );
 
   await _startServerForDesktop();
@@ -83,8 +91,6 @@ Future<void> _startServerForDesktop() async {
     return;
   }
 
-  // These remain Platform.environment (runtime override, no rebuild needed):
-  // they are operational tunables, not security-critical settings.
   final port = int.tryParse(Platform.environment['PORT'] ?? '') ?? 8080;
 
   final embedModel = Platform.environment['EMBED_MODEL'] ?? 'bge-m3';
@@ -96,10 +102,6 @@ Future<void> _startServerForDesktop() async {
     store: globalStore,
   );
 
-  // Trim the token before passing on. Inside ApiServer this is what's
-  // compared byte-for-byte against the `Authorization: Bearer …` header,
-  // so a leading/trailing space sneaking through dart-define would make
-  // every request fail with 401 and look like a server bug.
   final trimmedToken = _aiLibToken.trim();
   final server = ApiServer(
     rag: rag,
@@ -108,9 +110,6 @@ Future<void> _startServerForDesktop() async {
     authToken: trimmedToken.isEmpty ? null : trimmedToken,
   );
 
-  // ApiServer.start() throws StateError if lanMode is true without a
-  // non-blank token. Catch it explicitly so a misconfigured release
-  // build prints a clear diagnostic instead of a bare uncaught error.
   try {
     await server.start(port: port, lanMode: _aiLibLan);
   } on StateError catch (e) {
@@ -130,6 +129,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '智讀館',
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
@@ -138,6 +140,7 @@ class MyApp extends StatelessWidget {
         expenseController: globalExpenseController,
         contactController: globalContactController,
         healthController: globalHealthController,
+        wealthController: globalWealthController,
         personalRagService: globalPersonalRagService,
       ),
     );

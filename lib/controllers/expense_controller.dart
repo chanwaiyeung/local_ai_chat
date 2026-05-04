@@ -1,4 +1,6 @@
 // lib/controllers/expense_controller.dart
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 
 import '../models/expense.dart';
@@ -8,6 +10,7 @@ class ExpenseController extends ChangeNotifier {
   ExpenseController(this._vectorStore);
 
   final VectorStore _vectorStore;
+  final math.Random _rng = math.Random();
 
   static const String kExpenseCollection = 'Expenses';
   static const String kExpenseTypeTag = 'personal_hub_expense';
@@ -29,9 +32,8 @@ class ExpenseController extends ChangeNotifier {
   Future<void> saveExpense(Expense expense) async {
     _setLoading(true);
     try {
-      final finalExpense = expense.id.isEmpty
-          ? expense.copyWith(id: DateTime.now().microsecondsSinceEpoch.toString())
-          : expense;
+      final finalExpense =
+          expense.id.isEmpty ? expense.copyWith(id: _generateId()) : expense;
 
       if (expense.id.isNotEmpty) {
         await _vectorStore.deleteById(expense.id);
@@ -58,6 +60,12 @@ class ExpenseController extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+  }
+
+  String _generateId() {
+    final ts = DateTime.now().microsecondsSinceEpoch;
+    final rand = _rng.nextInt(0xFFFFFFFF).toRadixString(16).padLeft(8, '0');
+    return 'exp_${ts}_$rand';
   }
 
   Future<void> deleteExpense(String id) async {
@@ -141,7 +149,9 @@ class ExpenseController extends ChangeNotifier {
   }
 
   List<Expense> getMonthlyExpenses(int year, int month) {
-    return _expenses.where((e) => e.date.year == year && e.date.month == month).toList();
+    return _expenses
+        .where((e) => e.date.year == year && e.date.month == month)
+        .toList();
   }
 
   Map<String, double> getMonthlyByCategory(int year, int month) {

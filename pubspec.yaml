@@ -14,7 +14,7 @@
 name: local_ai_chat
 description: 智讀館 — Local AI library reader + server.
 publish_to: 'none'
-version: 2.2.0
+version: 2.4.0
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
@@ -23,16 +23,22 @@ environment:
 dependencies:
   archive: ^3.6.1   # ZIP / CBZ unpacking
   # Document loaders for the indexer.
+  encrypt: 5.0.3
   epubx: ^4.0.0     # pure-Dart EPUB parser
   file_picker: ^8.3.7
   flutter:
     sdk: flutter
   flutter_highlight: ^0.7.0
-  flutter_markdown: ^0.7.7
+  flutter_localizations:
+    sdk: flutter
+  flutter_markdown_plus: ^1.0.7
+  flutter_secure_storage: 9.2.2
   flutter_tts: ^4.2.5
+  get_it: ^8.0.0
   html: ^0.15.4     # HTML → text for EPUB chapter content
   # HTTP client (mobile + LLM client).
   http: ^1.2.2
+  intl: any
   markdown: ^7.3.0
   # Path manipulation (basename, join) for the indexing CLI / RAG.
   path: ^1.9.1
@@ -43,7 +49,8 @@ dependencies:
   shelf_cors_headers: ^0.1.5
   shelf_router: ^1.1.4
   speech_to_text: ^7.3.0
-  syncfusion_flutter_pdf: ^27.2.5
+  syncfusion_flutter_core: 33.2.4
+  syncfusion_flutter_pdf: 33.2.4
   url_launcher: ^6.3.1
 
 dev_dependencies:
@@ -54,4 +61,6 @@ dev_dependencies:
   plugin_platform_interface: ^2.1.8
 
 flutter:
+  generate: true
   uses-material-design: true
+

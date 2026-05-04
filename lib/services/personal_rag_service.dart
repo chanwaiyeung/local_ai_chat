@@ -39,6 +39,8 @@ import 'dart:convert';
 
 import '../models/contact.dart';
 import '../models/expense.dart';
+import '../models/health_record.dart';
+import '../models/wealth_record.dart';
 import 'embedding_service.dart';
 import 'vector_store.dart';
 
@@ -67,7 +69,12 @@ class PersonalRagService {
     required this.store,
     this.llmComplete,
     this.llmCompleteStream,
-    this.collections = const [kExpensesCollection, kContactsCollection],
+    this.collections = const [
+      kExpensesCollection,
+      kContactsCollection,
+      kHealthCollection,
+      kWealthCollection,
+    ],
     String? defaultSystemPrompt,
   }) : defaultSystemPrompt = defaultSystemPrompt ?? _defaultSystemPromptText;
 
@@ -75,6 +82,8 @@ class PersonalRagService {
   /// by ExpenseController / ContactController.
   static const String kExpensesCollection = 'Expenses';
   static const String kContactsCollection = 'Contacts';
+  static const String kHealthCollection = 'Health';
+  static const String kWealthCollection = 'Wealth';
 
   final EmbeddingService embedder;
   final VectorStore store;
@@ -103,6 +112,19 @@ class PersonalRagService {
 
     final texts = chunks.map(_extractSearchText).toList();
     final embeddings = await embedder.embedAll(texts);
+    if (embeddings.length != chunks.length) {
+      _debugLog(
+        '[PersonalRagService] embedAll returned ${embeddings.length} results '
+        'for ${chunks.length} inputs in collection $collectionName. '
+        'Skipping collection reindex.',
+      );
+      return 0;
+    }
+    assert(
+      embeddings.length == chunks.length,
+      'embedAll length mismatch: got ${embeddings.length}, '
+      'expected ${chunks.length}',
+    );
 
     return _replaceCollectionInPlace(collectionName, chunks, embeddings);
   }
@@ -123,6 +145,19 @@ class PersonalRagService {
 
       final texts = missingChunks.map(_extractSearchText).toList();
       final embeddings = await embedder.embedAll(texts);
+      if (embeddings.length != missingChunks.length) {
+        _debugLog(
+          '[PersonalRagService] embedAll returned ${embeddings.length} results '
+          'for ${missingChunks.length} inputs in collection $col. '
+          'Skipping batch.',
+        );
+        continue;
+      }
+      assert(
+        embeddings.length == missingChunks.length,
+        'embedAll length mismatch: got ${embeddings.length}, '
+        'expected ${missingChunks.length}',
+      );
 
       // Build the full updated chunk list for the collection: missing ones
       // get new embeddings, the rest stay as-is (preserving prior real
@@ -196,17 +231,82 @@ class PersonalRagService {
     );
   }
 
-  /// Decode a Personal Hub chunk's text back into Expense/Contact form and
-  /// return its toSearchText() output. Falls back to raw text if the JSON
-  /// is unrecognised (defensive against future schema additions).
+  /// Decode a Personal Hub chunk's text into a search-friendly representation
+  /// that the embedder will index well. Returns the chunk's own text when the
+  /// chunk has no parseable JSON (e.g. Wealth records store toRagString —
+  /// already searchable).
+  static String extractSearchTextForTest(DocChunk c) => _extractSearchText(c);
+
+  static void _debugLog(String message) {
+    // Keep this service usable from pure Dart CLIs such as bin/telegram_bot.dart.
+    // ignore: avoid_print
+    print(message);
+  }
+
   static String _extractSearchText(DocChunk c) {
-    Map<String, dynamic> parsed;
+    // Metadata-first path. Newer Personal Hub modules store structured JSON in
+    // metadata['data'] while keeping chunk.text as the already searchable text.
+    // Prefer the structured payload when available so re-embedding stays stable
+    // if display text changes.
+    final type = c.metadata['type']?.toString().toLowerCase();
+    final data = c.metadata['data'];
+    try {
+      switch (type) {
+        case 'personal_hub_expense':
+        case 'expense':
+        case 'expenses':
+          if (data is Map) {
+            return Expense.fromJson(Map<String, dynamic>.from(data))
+                .toSearchText();
+          }
+          break;
+        case 'personal_hub_contact':
+        case 'contact':
+        case 'contacts':
+          if (data is Map) {
+            return Contact.fromJson(Map<String, dynamic>.from(data))
+                .toSearchText();
+          }
+          return Contact.fromJson(c.metadata).toSearchText();
+        case 'personal_hub_health':
+        case 'health':
+        case 'healthrecord':
+          if (data is Map) {
+            return HealthRecord.fromJson(Map<String, dynamic>.from(data))
+                .toSearchText();
+          }
+          break;
+        case 'personal_hub_wealth':
+        case 'wealth':
+          if (data is Map) {
+            return WealthRecord.fromJson(Map<String, dynamic>.from(data))
+                .toSearchText();
+          }
+          // Wealth chunks usually store a rich RAG/search string in chunk.text.
+          return c.text;
+      }
+    } catch (_) {
+      // Fall through to text decoding/fallback below. This keeps one malformed
+      // Personal Hub record from breaking a full collection reindex.
+    }
+
+    Map<String, dynamic>? parsed;
     try {
       final decoded = jsonDecode(c.text);
-      if (decoded is! Map<String, dynamic>) return c.text;
-      parsed = decoded;
+      if (decoded is Map<String, dynamic>) parsed = decoded;
     } catch (_) {
+      // Not JSON — return the raw text. Expenses + Contacts already store
+      // toSearchText() in chunk.text, so this is the desired output for them.
       return c.text;
+    }
+    if (parsed == null) return c.text;
+
+    // HealthRecord stores its encoded JSON in chunk.text.
+    try {
+      final hr = HealthRecord.fromJson(parsed);
+      return hr.toSearchText();
+    } catch (_) {
+      // not a Health record
     }
     try {
       return Expense.fromJson(parsed).toSearchText();
@@ -218,8 +318,7 @@ class PersonalRagService {
     } catch (_) {
       // not a Contact
     }
-    // Last-resort: concatenate any string-ish values so we still produce a
-    // reasonable embedding source instead of empty text.
+    // Last resort: stringify any non-null values.
     return parsed.values
         .where((v) => v != null)
         .map((v) => v.toString())
@@ -356,11 +455,14 @@ class PersonalRagService {
 
   static const String _defaultSystemPromptText = '''
 你是 Personal Hub 的 AI 助理。使用者會給你一個問題與一組參考資料；
-參考資料來自他們本機的開支與名片紀錄（每筆已標註 collectionName）。
+參考資料來自他們本機的開支(Expenses)、名片(Contacts)、健康(Health)、投資(Wealth)紀錄；
+每筆已標註 collectionName 與 score。
 規則：
 1. 只回答能從參考資料中推導的內容；無法推導時直接說「資料不足」並說明缺什麼。
 2. 引用時用括號註明來源序號，例如「(1)」「(2)」。
 3. 用繁體中文，簡潔，不要重複參考資料原文。
 4. 涉及金額時保留原始幣別，不自動換算。
+5. 涉及健康指標(體重/血壓/心率)時保留原始單位。
+6. 涉及投資淨值時，最新日期那筆即代表現值，較舊日期的紀錄不要當「另一筆資產」相加。
 ''';
 }

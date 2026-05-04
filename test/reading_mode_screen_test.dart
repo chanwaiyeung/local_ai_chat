@@ -6,6 +6,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:local_ai_chat/core/locator.dart';
 import 'package:local_ai_chat/screens/library_screen.dart';
 import 'package:local_ai_chat/screens/reading_mode_screen.dart';
 import 'package:local_ai_chat/services/api_client.dart';
@@ -51,6 +52,10 @@ class _FakeApi extends Fake implements ReaderApi {
 }
 
 void main() {
+  setUp(() async {
+    await Locator.resetForTest();
+  });
+
   group('ReadingModeScreen', () {
     testWidgets('loads chunks and renders body text', (tester) async {
       final api = _FakeApi(chunks: const [

@@ -11,9 +11,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:local_ai_chat/controllers/contact_controller.dart';
 import 'package:local_ai_chat/controllers/expense_controller.dart';
 import 'package:local_ai_chat/controllers/health_controller.dart';
+import 'package:local_ai_chat/controllers/wealth_controller.dart';
+import 'package:local_ai_chat/core/locator.dart';
 import 'package:local_ai_chat/models/contact.dart';
 import 'package:local_ai_chat/models/expense.dart';
 import 'package:local_ai_chat/models/health_record.dart';
+import 'package:local_ai_chat/models/wealth_record.dart';
 import 'package:local_ai_chat/screens/personal_hub_screen.dart';
 import 'package:local_ai_chat/services/vector_store.dart';
 
@@ -22,12 +25,15 @@ void main() {
   late ExpenseController expenseController;
   late ContactController contactController;
   late HealthController healthController;
+  late WealthController wealthController;
 
-  setUp(() {
+  setUp(() async {
+    await Locator.resetForTest();
     store = VectorStore();
     expenseController = ExpenseController(store);
     contactController = ContactController(store: store);
     healthController = HealthController(store);
+    wealthController = WealthController(store);
   });
 
   Widget hostFor() => MaterialApp(
@@ -35,6 +41,7 @@ void main() {
           expenseController: expenseController,
           contactController: contactController,
           healthController: healthController,
+          wealthController: wealthController,
         ),
       );
 
@@ -177,8 +184,8 @@ void main() {
     await tester.pumpWidget(hostFor());
     await tester.tap(find.text('健康紀錄').last);
     await tester.pumpAndSettle();
-    expect(find.text('健康紀錄'),
-        findsWidgets); // Both the grid card and AppBar have '健康紀錄'
+    // Both the grid card and AppBar can contain '健康紀錄' after navigation.
+    expect(find.text('健康紀錄'), findsAtLeastNWidgets(1));
   });
 
   testWidgets('AI quick-query button shows Phase 6.3\'b stub notice',
@@ -239,5 +246,24 @@ void main() {
 
     expect(find.text('尚未加入紀錄'), findsNothing);
     expect(find.text('1 筆'), findsOneWidget);
+  });
+
+  testWidgets('updates when WealthController notifies listeners',
+      (tester) async {
+    await tester.pumpWidget(hostFor());
+    expect(find.text('0 筆資產'), findsOneWidget);
+
+    await wealthController.saveRecord(WealthRecord(
+      id: '',
+      date: DateTime.now(),
+      assetType: 'stock',
+      assetName: 'AAPL',
+      amount: 1000,
+      currency: 'TWD',
+    ));
+    await tester.pump();
+
+    expect(find.text('0 筆資產'), findsNothing);
+    expect(find.text('1 筆資產'), findsOneWidget);
   });
 }

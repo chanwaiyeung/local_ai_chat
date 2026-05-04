@@ -1,16 +1,18 @@
-# 智讀館 AI Library — v2.2.0 Personal Hub GA
+# 智讀館 AI Library — v2.4.0 Personal Hub GA
 
-> **本地 AI 個人生活管家**：名片管理 + 日常開支 + 跨模組 RAG
+> **本地 AI 個人生活管家**：名片管理 + 日常開支 + 健康管理 + 投資理財 + 跨模組 RAG
 
-[![Version](https://img.shields.io/badge/version-2.2.0-blue)]()
-[![Tests](https://img.shields.io/badge/tests-327%20passed-brightgreen)]()
+[![Version](https://img.shields.io/badge/version-2.4.0-blue)]()
+[![Tests](https://img.shields.io/badge/tests-373%2B%20passed-brightgreen)]()
 
 ---
 
-## v2.2.0 主要功能
+## v2.4.0 主要功能
 
 - **名片管理**：掃描 + OCR + RAG 搜尋
 - **日常開支**：掃描 + 手動 + 月份切換 + 統計
+- **健康管理**：體重、血壓、心率、步數、睡眠 + 趨勢圖
+- **投資理財**：多幣別資產記錄、latest-per-asset 淨值、配置圖與趨勢線
 - **跨模組 RAG**：自然語言查詢跨資料來源
 - **統一 Dashboard**：總覽 + 快速查詢
 
@@ -20,21 +22,21 @@
 
 1. 啟動本地 Ollama + 你的 AI Server
 2. 執行 App（Windows / Android）
-3. 開始掃描名片或記錄開支
+3. 開始掃描名片、記錄開支、追蹤健康或管理投資
 
 ---
 
 ## 下載
 
-- Windows：`local_ai_chat_v2.2.0_windows_x64.zip`
-- Android：`local_ai_chat_v2.2.0.apk`
+- Windows：`local_ai_chat_v2.4.0_windows_x64.zip`
+- Android：`local_ai_chat_v2.4.0.apk`
 
 ---
 
 ## Roadmap
 
-- v2.3：健康管理 + 投資理財
-- v2.4：macOS 完整支援
+- v2.5：iOS / macOS 平台支援
+- v2.5：長期投資回測報表
 
 ---
 

@@ -40,3 +40,15 @@ ollama_client.dart
 # ==================== Others ====================
 *.bak
 *.tmp
+
+# ==================== Review / Local AI Handoff ====================
+analyze_output.txt
+test_output.txt
+local_ai_chat_review_*/
+local_ai_chat_full_architecture_review_*/
+local_ai_chat_architecture_review_*/
+apis.txt
+
+project_export/
+
+git_status_before_*.txt

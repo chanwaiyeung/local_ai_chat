@@ -3,6 +3,7 @@ import 'package:local_ai_chat/controllers/chat_send_controller.dart';
 import 'package:local_ai_chat/models/app_settings.dart';
 import 'package:local_ai_chat/models/message.dart';
 import 'package:local_ai_chat/services/embedding_service.dart';
+import 'package:local_ai_chat/services/ollama_service.dart';
 import 'package:local_ai_chat/services/rag_service.dart';
 import 'package:local_ai_chat/services/vector_store.dart';
 
@@ -52,6 +53,20 @@ void main() {
 
     expect(context.blockedMessage, isNotNull);
   });
+
+  test(
+      'streamAssistantResponse throttles rapid token updates but flushes final',
+      () async {
+    final updates = <String>[];
+    final result = await const ChatSendController().streamAssistantResponse(
+      ollama: _FakeOllamaService(['Hel', 'lo', ' ', 'world']),
+      outgoing: const [],
+      onContent: updates.add,
+    );
+
+    expect(result, 'Hello world');
+    expect(updates, ['Hello world']);
+  });
 }
 
 ScoredChunk _hit(String text, {required int index}) {
@@ -93,4 +108,17 @@ class _FakeRagService extends RagService {
 
 class _NoopEmbeddingService extends EmbeddingService {
   _NoopEmbeddingService() : super(baseUrl: 'http://unused.invalid');
+}
+
+class _FakeOllamaService extends OllamaService {
+  _FakeOllamaService(this.chunks) : super(baseUrl: 'http://unused.invalid');
+
+  final List<String> chunks;
+
+  @override
+  Stream<String> chatStream(List<ChatMessage> messages) async* {
+    for (final chunk in chunks) {
+      yield chunk;
+    }
+  }
 }

@@ -7,6 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:local_ai_chat/core/locator.dart';
 import 'package:local_ai_chat/models/contact.dart';
 import 'package:local_ai_chat/models/expense.dart';
 import 'package:local_ai_chat/screens/personal_query_screen.dart';
@@ -29,6 +30,7 @@ void main() {
   late EmbeddingService embedder;
 
   setUp(() async {
+    await Locator.resetForTest();
     store = VectorStore();
     embedder = EmbeddingService(embedFn: keywordEmbed);
   });

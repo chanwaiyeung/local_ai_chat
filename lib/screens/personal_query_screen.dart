@@ -1,7 +1,8 @@
 // lib/screens/personal_query_screen.dart
 //
 // Phase 6.5 — Personal Hub AI query screen.
-// Single-turn streaming Q&A over Personal Hub data (Expenses + Contacts).
+// Single-turn streaming Q&A over Personal Hub data
+// (Expenses + Contacts + Health + Wealth).
 //
 // Flow on submit:
 //   1. retrieveAcross(query) → display top-k source chunks immediately

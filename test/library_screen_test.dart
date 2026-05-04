@@ -7,6 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:local_ai_chat/core/locator.dart';
 import 'package:local_ai_chat/screens/library_screen.dart';
 import 'package:local_ai_chat/screens/reader_screen.dart';
 import 'package:local_ai_chat/services/api_client.dart';
@@ -41,6 +42,10 @@ class _FakeApiClient extends Fake implements ReaderApi {
 }
 
 void main() {
+  setUp(() async {
+    await Locator.resetForTest();
+  });
+
   testWidgets('renders book titles from ApiClient', (tester) async {
     await tester.pumpWidget(MaterialApp(
       home: LibraryScreen(

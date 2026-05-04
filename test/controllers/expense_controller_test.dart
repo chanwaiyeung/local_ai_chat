@@ -102,5 +102,27 @@ void main() {
       expect(summary['CAD'], 150.0);
       expect(summary['JPY'], 1500.0);
     });
+
+    test('generated ids include entropy suffix to avoid batch collisions',
+        () async {
+      final generatedIds = <String>{};
+
+      for (var i = 0; i < 20; i++) {
+        await controller.saveExpense(Expense(
+          id: '',
+          amount: i + 1,
+          date: DateTime(2026, 5, 1),
+        ));
+      }
+
+      generatedIds.addAll(controller.expenses.map((expense) => expense.id));
+      expect(generatedIds, hasLength(20));
+      expect(generatedIds.every((id) => id.startsWith('exp_')), isTrue);
+      expect(
+        generatedIds
+            .every((id) => RegExp(r'^exp_\d+_[0-9a-f]{8}$').hasMatch(id)),
+        isTrue,
+      );
+    });
   });
 }

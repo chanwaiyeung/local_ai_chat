@@ -1,0 +1,7 @@
+{
+  "@@locale": "en",
+  "appTitle": "Local AI Chat",
+  "@appTitle": {
+    "description": "The title of the application"
+  }
+}

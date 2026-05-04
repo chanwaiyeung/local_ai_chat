@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:path_provider/path_provider.dart';
+import 'vector_store_path.dart';
 
 class DebugLogService {
   static const _fileName = 'rag_debug.log';
@@ -8,7 +8,7 @@ class DebugLogService {
   static Future<void> _writeQueue = Future.value();
 
   static Future<File> logFile() async {
-    final dir = await getApplicationSupportDirectory();
+    final dir = await vectorStoreSupportDirectory();
     final appDir = Directory(
       '${dir.path}${Platform.pathSeparator}local_ai_chat',
     );

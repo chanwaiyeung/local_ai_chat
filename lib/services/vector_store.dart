@@ -1,10 +1,25 @@
 // lib/services/vector_store.dart
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:math' as math;
-import 'package:path_provider/path_provider.dart';
+import 'dart:typed_data';
+
+import 'package:encrypt/encrypt.dart' as encrypt;
 
 import 'debug_log_service.dart';
+import 'vector_store_path.dart';
+
+Map<String, dynamic> _isolateDecodeJsonObject(String raw) {
+  final decoded = jsonDecode(raw);
+  if (decoded is Map<String, dynamic>) return decoded;
+  if (decoded is Map) return Map<String, dynamic>.from(decoded);
+  throw const FormatException('VectorStore snapshot must be a JSON object.');
+}
+
+String _isolateEncodeJsonObject(Map<String, dynamic> payload) {
+  return jsonEncode(payload);
+}
 
 /// 一段被切碎並向量化嘅文字片段
 class DocChunk {
@@ -109,6 +124,20 @@ class SparseIndexSnapshot {
 
 typedef SparseIndexBuilder = SparseIndexSnapshot Function(
     List<DocChunk> chunks);
+typedef VectorStoreEncryptionKeyProvider = Future<Uint8List> Function();
+
+const String _encryptedSnapshotMagic = 'LOCAL_AI_CHAT_VECTOR_STORE_AES_GCM_V1';
+const String _encryptedSnapshotAad = 'local_ai_chat.vector_store.v1';
+
+class _DecodedVectorStoreFile {
+  const _DecodedVectorStoreFile({
+    required this.payload,
+    required this.wasPlaintext,
+  });
+
+  final Map<String, dynamic> payload;
+  final bool wasPlaintext;
+}
 
 class VectorStoreSnapshot {
   const VectorStoreSnapshot({
@@ -128,10 +157,15 @@ class VectorStoreSnapshot {
 
 /// 簡單嘅 in-memory 向量庫，支援 JSON 持久化
 class VectorStore {
-  VectorStore({String? storagePath}) : _storagePath = storagePath;
+  VectorStore({
+    String? storagePath,
+    VectorStoreEncryptionKeyProvider? encryptionKeyProvider,
+  })  : _storagePath = storagePath,
+        _encryptionKeyProvider = encryptionKeyProvider;
 
   final List<DocChunk> _chunks = [];
   final String? _storagePath;
+  final VectorStoreEncryptionKeyProvider? _encryptionKeyProvider;
   String? _embeddingModel;
   SparseIndexSnapshot? _sparseIndex;
 
@@ -178,6 +212,14 @@ class VectorStore {
 
   Future<void> clear(
       [String? docName, String collectionName = 'default']) async {
+    if (collectionName == 'default' && docName == null) {
+      throw ArgumentError('default collection cannot be deleted');
+    }
+    if (collectionName == 'default' &&
+        docName != null &&
+        _wouldEmptyDefaultCollection((c) => c.docName == docName)) {
+      throw ArgumentError('default collection cannot be deleted');
+    }
     if (docName == null) {
       _chunks.removeWhere((c) => c.collectionName == collectionName);
       _embeddingModel = null;
@@ -199,14 +241,26 @@ class VectorStore {
   }
 
   void removeDoc(String docName) {
+    if (_wouldEmptyDefaultCollection((c) => c.docName == docName)) {
+      throw ArgumentError('default collection cannot be deleted');
+    }
     _chunks.removeWhere((c) => c.docName == docName);
     _sparseIndex = null;
   }
 
   Future<void> deleteById(String id) async {
+    if (_wouldEmptyDefaultCollection((c) => c.id == id)) {
+      throw ArgumentError('default collection cannot be deleted');
+    }
     _chunks.removeWhere((c) => c.id == id);
     _sparseIndex = null;
     if (_storagePath != null) await save();
+  }
+
+  bool _wouldEmptyDefaultCollection(bool Function(DocChunk chunk) remove) {
+    final defaultChunks =
+        _chunks.where((c) => c.collectionName == 'default').toList();
+    return defaultChunks.isNotEmpty && defaultChunks.every(remove);
   }
 
   List<ScoredChunk> search(
@@ -385,7 +439,7 @@ class VectorStore {
       if (!await parent.exists()) await parent.create(recursive: true);
       return file;
     }
-    final dir = await getApplicationSupportDirectory();
+    final dir = await vectorStoreSupportDirectory();
     final out = Directory('${dir.path}${Platform.pathSeparator}local_ai_chat');
     if (!await out.exists()) await out.create(recursive: true);
     return File('${out.path}${Platform.pathSeparator}vector_store.json');
@@ -400,8 +454,8 @@ class VectorStore {
       'chunks': _chunks.map((c) => c.toJson()).toList(),
       if (_sparseIndex != null) 'sparseIndex': _sparseIndex!.toJson(),
     };
-    final data = jsonEncode(payload);
-    await tmp.writeAsString(data, flush: true);
+    final data = await _encodeForStorage(payload);
+    await tmp.writeAsBytes(data, flush: true);
     if (await f.exists()) {
       await f.delete();
     }
@@ -412,8 +466,8 @@ class VectorStore {
     final f = await _file();
     if (!await f.exists()) return;
     try {
-      final raw = await f.readAsString();
-      final snapshot = decodeSnapshot(jsonDecode(raw));
+      final decodedFile = await _decodeFromStorage(await f.readAsBytes());
+      final snapshot = decodeSnapshot(decodedFile.payload);
       _embeddingModel = snapshot.embeddingModel;
       _chunks
         ..clear()
@@ -424,16 +478,123 @@ class VectorStore {
           sparseIndexBuilder != null) {
         _sparseIndex = sparseIndexBuilder(chunks);
       }
-      if (snapshot.migratedFromLegacy || snapshot.needsSparseIndexMigration) {
+      if (snapshot.migratedFromLegacy ||
+          snapshot.needsSparseIndexMigration ||
+          decodedFile.wasPlaintext) {
         await DebugLogService.append(
           'VectorStore: migrated vector_store.json to schemaVersion=3 '
           'chunks=${_chunks.length} '
-          'sparseIndex=${_sparseIndex == null ? 'missing' : 'present'}',
+          'sparseIndex=${_sparseIndex == null ? 'missing' : 'present'} '
+          'encrypted=${_encryptionKeyProvider != null}',
         );
         await save();
       }
-    } catch (_) {
-      // 檔案損壞就當冇
+    } catch (e) {
+      await DebugLogService.append(
+        'VectorStore: failed to load vector_store.json; starting empty. '
+        'error=$e',
+      );
+    }
+  }
+
+  Future<Uint8List> _encodeForStorage(Map<String, dynamic> payload) async {
+    final json = await Isolate.run(() => _isolateEncodeJsonObject(payload));
+    final plainBytes = Uint8List.fromList(utf8.encode(json));
+    final keyProvider = _encryptionKeyProvider;
+    if (keyProvider == null) return plainBytes;
+
+    try {
+      final keyBytes = await keyProvider();
+      if (keyBytes.length != 32) {
+        throw StateError(
+          'VectorStore encryption key must be 32 bytes, got '
+          '${keyBytes.length}.',
+        );
+      }
+      final iv = encrypt.IV.fromSecureRandom(12);
+      final encrypter = encrypt.Encrypter(
+        encrypt.AES(
+          encrypt.Key(keyBytes),
+          mode: encrypt.AESMode.gcm,
+          padding: null,
+        ),
+      );
+      final encrypted = encrypter.encryptBytes(
+        plainBytes,
+        iv: iv,
+        associatedData: Uint8List.fromList(utf8.encode(_encryptedSnapshotAad)),
+      );
+      final envelope = {
+        'magic': _encryptedSnapshotMagic,
+        'version': 1,
+        'algorithm': 'AES-256-GCM',
+        'nonce': iv.base64,
+        'cipherText': encrypted.base64,
+      };
+      final envelopeJson =
+          await Isolate.run(() => _isolateEncodeJsonObject(envelope));
+      return Uint8List.fromList(utf8.encode(envelopeJson));
+    } catch (e) {
+      await DebugLogService.append(
+        'VectorStore: encryption failed; refusing to write plaintext. error=$e',
+      );
+      rethrow;
+    }
+  }
+
+  Future<_DecodedVectorStoreFile> _decodeFromStorage(Uint8List bytes) async {
+    final raw = utf8.decode(bytes);
+    final decoded = await Isolate.run(() => _isolateDecodeJsonObject(raw));
+
+    if (decoded['magic'] != _encryptedSnapshotMagic) {
+      return _DecodedVectorStoreFile(payload: decoded, wasPlaintext: true);
+    }
+
+    final keyProvider = _encryptionKeyProvider;
+    if (keyProvider == null) {
+      throw StateError(
+        'VectorStore snapshot is encrypted but no encryption key provider '
+        'was configured.',
+      );
+    }
+
+    try {
+      final keyBytes = await keyProvider();
+      if (keyBytes.length != 32) {
+        throw StateError(
+          'VectorStore encryption key must be 32 bytes, got '
+          '${keyBytes.length}.',
+        );
+      }
+      final nonce = decoded['nonce'] as String?;
+      final cipherText = decoded['cipherText'] as String?;
+      if (nonce == null || cipherText == null) {
+        throw const FormatException(
+            'Encrypted VectorStore envelope is invalid.');
+      }
+
+      final encrypter = encrypt.Encrypter(
+        encrypt.AES(
+          encrypt.Key(keyBytes),
+          mode: encrypt.AESMode.gcm,
+          padding: null,
+        ),
+      );
+      final plainBytes = encrypter.decryptBytes(
+        encrypt.Encrypted.fromBase64(cipherText),
+        iv: encrypt.IV.fromBase64(nonce),
+        associatedData: Uint8List.fromList(utf8.encode(_encryptedSnapshotAad)),
+      );
+      final plainJson = utf8.decode(plainBytes);
+      final payload =
+          await Isolate.run(() => _isolateDecodeJsonObject(plainJson));
+      return _DecodedVectorStoreFile(payload: payload, wasPlaintext: false);
+    } catch (e) {
+      await DebugLogService.append(
+        'VectorStore: encrypted vector_store.json could not be decrypted. '
+        'error=$e',
+      );
+      rethrow;
     }
   }
 

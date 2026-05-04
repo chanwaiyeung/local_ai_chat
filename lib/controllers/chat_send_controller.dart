@@ -26,6 +26,8 @@ class ChatSendContext {
 class ChatSendController {
   const ChatSendController();
 
+  static const Duration streamUiUpdateInterval = Duration(milliseconds: 50);
+
   Future<ChatSendContext> buildContext({
     required String query,
     required bool ragEnabled,
@@ -102,11 +104,24 @@ class ChatSendController {
   }) async {
     final buffer = StringBuffer();
     final stream = ollama.chatStream(outgoing);
+    var lastUpdate = DateTime.now();
+    var lastEmitted = '';
+
     await for (final chunk in stream) {
       buffer.write(chunk);
-      onContent(buffer.toString());
+      final content = buffer.toString();
+      final now = DateTime.now();
+      if (now.difference(lastUpdate) >= streamUiUpdateInterval) {
+        onContent(content);
+        lastEmitted = content;
+        lastUpdate = now;
+      }
     }
-    return buffer.toString();
+    final content = buffer.toString();
+    if (content != lastEmitted) {
+      onContent(content);
+    }
+    return content;
   }
 
   String appendSources(String content, List<ScoredChunk> hits) {

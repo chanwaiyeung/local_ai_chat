@@ -10,6 +10,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:local_ai_chat/core/locator.dart';
 import 'package:local_ai_chat/screens/reader_screen.dart';
 import 'package:local_ai_chat/services/api_client.dart';
 import 'package:local_ai_chat/services/ocr_service.dart';
@@ -70,6 +71,10 @@ class _FakeOcrService extends OcrService {
 }
 
 void main() {
+  setUp(() async {
+    await Locator.resetForTest();
+  });
+
   testWidgets('renders book title in AppBar', (tester) async {
     await tester.pumpWidget(MaterialApp(
       home: ReaderScreen(

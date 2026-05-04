@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:local_ai_chat/controllers/health_controller.dart';
+import 'package:local_ai_chat/core/locator.dart';
 import 'package:local_ai_chat/models/health_record.dart';
 import 'package:local_ai_chat/screens/health_screen.dart';
 import 'package:local_ai_chat/services/vector_store.dart';
@@ -11,7 +12,8 @@ void main() {
   late VectorStore store;
   late HealthController controller;
 
-  setUp(() {
+  setUp(() async {
+    await Locator.resetForTest();
     store = VectorStore();
     controller = HealthController(store);
   });
@@ -60,10 +62,10 @@ void main() {
     expect(find.text('趨勢圖表'), findsOneWidget);
     expect(find.text('體重趨勢 (kg)'), findsOneWidget);
     expect(find.text('收縮壓趨勢 (mmHg)'), findsOneWidget);
-    expect(find.text('步數'), findsWidgets);
-    expect(find.text('睡眠時數'), findsWidgets);
+    expect(find.text('步數'), findsAtLeastNWidgets(1));
+    expect(find.text('睡眠時數'), findsAtLeastNWidgets(1));
     
     // Check if CustomPaint widgets are rendered for charts
-    expect(find.byType(CustomPaint), findsWidgets);
+    expect(find.byType(CustomPaint), findsAtLeastNWidgets(1));
   });
 }
