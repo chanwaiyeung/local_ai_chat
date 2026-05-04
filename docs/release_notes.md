@@ -1,5 +1,39 @@
 # Release Notes
 
+## v3.9.0 - Personal Hub 視覺化大升級
+
+**這一版重點：**
+- **Expense 支出視覺化**：每月總覽、類別圓餅圖、每日趨勢長條圖
+- **Health 健康追蹤**：體重、步數、睡眠、心情趨勢圖 + 關鍵指標卡片
+- **Hub 首頁**：左右並列顯示，更直觀專業
+- **Settings 頁面**：API Key 狀態顯示 + 完整模型選擇
+- **Vision Prompt**：大幅強化，多維度專業分析（消費、健康、資產）
+
+### 📸 主要功能截圖
+（已上傳 Hub 首頁、Expense、Health 截圖）
+
+### 🔧 技術更新
+- 整合 Plotly 互動圖表
+- 自動建立 data/ 資料夾與範例資料
+- 獨立 config.json 設定管理
+- 更穩定的 Vision LLM Prompt 系統
+
+### 📌 如何快速開始
+1. Clone 本專案
+2. `pip install -r requirements.txt`
+3. `streamlit run main.py`（或你的入口檔案）
+4. 前往 **Settings** 設定 API Key
+5. 享受 Personal Hub 的完整體驗！
+
+### 🎯 未來方向
+- Telegram Bot 手機即時記帳
+- 手動新增支出與 AI 理財建議
+- PDF 掃描自動記帳
+
+---
+
+
+
 ## 智讀館 v2.5.0 — 多語時代 (2026/05)
 
 ### 🌟 主要更新
