@@ -214,10 +214,7 @@ class _WealthScreenState extends State<WealthScreen>
                 if (apiKey == null || apiKey.isEmpty) {
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('請先前往 Settings 設定 Gemini API Key'),
-                      duration: Duration(seconds: 4),
-                    ),
+                    const SnackBar(content: Text('請先前往 Settings 設定 Gemini API Key')),
                   );
                   return;
                 }
@@ -231,60 +228,63 @@ class _WealthScreenState extends State<WealthScreen>
                     title: const Text('掃描資產'),
                     content: const Text('請選擇圖片來源'),
                     actions: [
-                      TextButton.icon(
-                        icon: const Icon(Icons.camera_alt),
-                        label: const Text('拍照'),
-                        onPressed: () async {
-                          final img = await picker.pickImage(source: ImageSource.camera, imageQuality: 85);
-                          if (context.mounted) Navigator.pop(context, img);
-                        },
-                      ),
-                      TextButton.icon(
-                        icon: const Icon(Icons.photo_library),
-                        label: const Text('從相簿選擇'),
-                        onPressed: () async {
-                          final img = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
-                          if (context.mounted) Navigator.pop(context, img);
-                        },
-                      ),
+                      TextButton.icon(icon: const Icon(Icons.camera_alt), label: const Text('拍照'), onPressed: () async {
+                        final img = await picker.pickImage(source: ImageSource.camera, imageQuality: 90);
+                        if (context.mounted) Navigator.pop(context, img);
+                      }),
+                      TextButton.icon(icon: const Icon(Icons.photo_library), label: const Text('從相簿選擇'), onPressed: () async {
+                        final img = await picker.pickImage(source: ImageSource.gallery, imageQuality: 90);
+                        if (context.mounted) Navigator.pop(context, img);
+                      }),
                     ],
                   ),
                 );
 
                 if (image == null) return;
 
+                // === 阻擋式 Loading Dialog ===
                 if (!context.mounted) return;
-                // Loading 狀態
-                final loadingSnack = ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('AI 正在分析圖片，請稍候...'),
-                    duration: Duration(seconds: 60),
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => AlertDialog(
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 16),
+                        Text('AI 正在分析圖片...\n這可能需要幾秒鐘'),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('取消'),
+                      ),
+                    ],
                   ),
                 );
 
                 try {
                   final visionService = VisionLLMService();
-                  final record = await visionService.scanWealthFromImage(
-                    image.path,
-                    apiKey: apiKey,
-                  );
+                  final record = await visionService.scanWealthFromImage(image.path, apiKey: apiKey);
 
                   if (!context.mounted) return;
-                  loadingSnack.close();
+                  Navigator.pop(context); // 關閉 Loading Dialog
 
                   if (record != null) {
-                    _openForm(existing: record); // 自動預填表單
+                    _openForm(existing: record);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('AI 已成功辨識資產！請確認後儲存')),
+                      const SnackBar(content: Text('✅ AI 已成功辨識資產，請確認後儲存')),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('AI 無法辨識，請手動輸入或換張更清晰的圖片')),
+                      const SnackBar(content: Text('AI 無法辨識清晰資產，請換張更清楚的圖片或手動輸入')),
                     );
                   }
                 } catch (e) {
                   if (!context.mounted) return;
-                  loadingSnack.close();
+                  Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('掃描失敗：${e.toString().replaceAll('VisionLlmException: ', '')}')),
                   );
