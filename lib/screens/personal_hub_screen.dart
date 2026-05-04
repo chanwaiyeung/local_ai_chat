@@ -1,47 +1,15 @@
 // lib/screens/personal_hub_screen.dart
-//
-// Phase 6.3'a + 6.4'b + 6.5 — Personal Hub entry + Dashboard UI.
-//
-// 6.5 changes vs 6.4'b:
-//   * Optional personalRagService parameter. When provided, the "快速 AI 查詢"
-//     button navigates to PersonalQueryScreen. When null (default), it still
-//     shows the legacy stub snackbar — keeps backwards compatibility for any
-//     wiring that hasn't been updated yet.
-//
-// === Wiring (Albert: do this once at app start) ===
-//
-//   final expenseController  = ExpenseController(yourExistingVectorStore);
-//   final contactController  = ContactController(yourExistingVectorStore);
-//   final personalRagService = PersonalRagService(
-//     embedder: yourEmbeddingService,
-//     store:    yourVectorStore,
-//     llmComplete: ({required systemPrompt, required userPrompt}) =>
-//       yourOllamaService.chat([
-//         ChatMessage(role: 'system', content: systemPrompt),
-//         ChatMessage(role: 'user',   content: userPrompt),
-//       ]),
-//     llmCompleteStream: ({required systemPrompt, required userPrompt}) =>
-//       yourOllamaService.chatStream([
-//         ChatMessage(role: 'system', content: systemPrompt),
-//         ChatMessage(role: 'user',   content: userPrompt),
-//       ]),
-//   );
-//
-//   PersonalHubScreen(
-//     expenseController:    expenseController,
-//     contactController:    contactController,
-//     personalRagService:   personalRagService,
-//   )
-
 import 'package:flutter/material.dart';
 
 import '../controllers/contact_controller.dart';
 import '../controllers/expense_controller.dart';
 import '../controllers/health_controller.dart';
+import '../controllers/wealth_controller.dart';
 import '../services/personal_rag_service.dart';
 import 'expense_screen.dart';
 import 'health_screen.dart';
 import 'personal_query_screen.dart';
+import 'wealth_screen.dart';
 
 class PersonalHubScreen extends StatefulWidget {
   const PersonalHubScreen({
@@ -49,14 +17,14 @@ class PersonalHubScreen extends StatefulWidget {
     required this.expenseController,
     required this.contactController,
     required this.healthController,
+    required this.wealthController,
     this.personalRagService,
   });
+  
   final ExpenseController expenseController;
   final ContactController contactController;
   final HealthController healthController;
-
-  /// Optional. When provided, the AI quick-query button opens
-  /// [PersonalQueryScreen]. When null, the button shows a stub snackbar.
+  final WealthController wealthController;
   final PersonalRagService? personalRagService;
 
   @override
@@ -70,6 +38,7 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
     widget.expenseController.addListener(_onChanged);
     widget.contactController.addListener(_onChanged);
     widget.healthController.addListener(_onChanged);
+    widget.wealthController.addListener(_onChanged);
   }
 
   @override
@@ -77,6 +46,7 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
     widget.expenseController.removeListener(_onChanged);
     widget.contactController.removeListener(_onChanged);
     widget.healthController.removeListener(_onChanged);
+    widget.wealthController.removeListener(_onChanged);
     super.dispose();
   }
 
@@ -127,6 +97,9 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
     final expenseCount = widget.expenseController.expenses.length;
     final contactCount = widget.contactController.contactCount;
     final healthCount = widget.healthController.count;
+    final wealthCount = widget.wealthController.count;
+    final wealthTotalsByCcy =
+        widget.wealthController.getCurrentTotalByCurrency();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Personal Hub')),
@@ -140,6 +113,8 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
               monthlySummary: summary,
               contactCount: contactCount,
               healthCount: healthCount,
+              wealthCount: wealthCount,
+              wealthTotalsByCcy: wealthTotalsByCcy,
               onAiQuery: _onAiQueryPressed,
             ),
             const Padding(
@@ -153,9 +128,12 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
               expenseCount: expenseCount,
               contactCount: contactCount,
               healthCount: healthCount,
+              wealthCount: wealthCount,
               onExpenseTap: _openExpense,
               onContactsTap: _openContacts,
               healthController: widget.healthController,
+              wealthController: widget.wealthController,
+              ragService: widget.personalRagService,
             ),
             const SizedBox(height: 16),
           ],
@@ -165,10 +143,6 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
   }
 }
 
-// ============================================================================
-// Dashboard summary card
-// ============================================================================
-
 class _DashboardCard extends StatelessWidget {
   const _DashboardCard({
     required this.year,
@@ -176,6 +150,8 @@ class _DashboardCard extends StatelessWidget {
     required this.monthlySummary,
     required this.contactCount,
     required this.healthCount,
+    required this.wealthCount,
+    required this.wealthTotalsByCcy,
     required this.onAiQuery,
   });
   final int year;
@@ -183,6 +159,8 @@ class _DashboardCard extends StatelessWidget {
   final Map<String, double> monthlySummary;
   final int contactCount;
   final int healthCount;
+  final int wealthCount;
+  final Map<String, double> wealthTotalsByCcy;
   final VoidCallback onAiQuery;
 
   String get _summaryText {
@@ -195,6 +173,17 @@ class _DashboardCard extends StatelessWidget {
   String get _contactText {
     if (contactCount == 0) return '尚未加入名片';
     return '$contactCount 張';
+  }
+
+  String get _wealthText {
+    if (wealthCount == 0) return '尚未加入資產';
+    if (wealthTotalsByCcy.isEmpty) return '$wealthCount 筆資產';
+    final parts = wealthTotalsByCcy.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    return parts
+        .take(2)
+        .map((e) => '${e.value.toStringAsFixed(0)} ${e.key}')
+        .join(' / ');
   }
 
   @override
@@ -235,6 +224,13 @@ class _DashboardCard extends StatelessWidget {
               label: '健康紀錄',
               value: healthCount == 0 ? '尚未加入紀錄' : '$healthCount 筆',
               muted: healthCount == 0,
+            ),
+            const SizedBox(height: 8),
+            _DashboardRow(
+              icon: Icons.account_balance_outlined,
+              label: '投資淨值',
+              value: _wealthText,
+              muted: wealthCount == 0,
             ),
             const SizedBox(height: 12),
             Align(
@@ -290,10 +286,6 @@ class _DashboardRow extends StatelessWidget {
   }
 }
 
-// ============================================================================
-// Modules grid
-// ============================================================================
-
 class _ModuleData {
   const _ModuleData({
     required this.icon,
@@ -316,16 +308,23 @@ class _ModulesGrid extends StatelessWidget {
     required this.expenseCount,
     required this.contactCount,
     required this.healthCount,
+    required this.wealthCount,
     required this.onExpenseTap,
     required this.onContactsTap,
     required this.healthController,
+    required this.wealthController,
+    this.ragService,
   });
+  
   final int expenseCount;
   final int contactCount;
   final int healthCount;
+  final int wealthCount;
   final VoidCallback onExpenseTap;
   final VoidCallback onContactsTap;
   final HealthController healthController;
+  final WealthController wealthController;
+  final PersonalRagService? ragService;
 
   @override
   Widget build(BuildContext context) {
@@ -361,12 +360,20 @@ class _ModulesGrid extends StatelessWidget {
           ),
         ),
       ),
-      const _ModuleData(
-        icon: Icons.show_chart,
+      _ModuleData(
+        icon: Icons.account_balance_outlined,
         label: '投資理財',
-        subtitle: '即將推出',
+        subtitle: '$wealthCount 筆資產',
         color: Colors.purple,
-        enabled: false,
+        enabled: true,
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => WealthScreen(
+              controller: wealthController,
+              ragService: ragService,
+            ),
+          ),
+        ),
       ),
       const _ModuleData(
         icon: Icons.dashboard_customize_outlined,
@@ -450,7 +457,6 @@ class _ModuleCard extends StatelessWidget {
     );
   }
 }
-
 
 class _ContactListScreen extends StatelessWidget {
   const _ContactListScreen({required this.controller});
