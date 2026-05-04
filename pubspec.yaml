@@ -36,6 +36,7 @@ dependencies:
   html: ^0.15.4     # HTML → text for EPUB chapter content
   # HTTP client (mobile + LLM client).
   http: ^1.2.2
+  image_picker: ^1.1.2
   intl: ^0.20.2
   markdown: ^7.3.0
   # Path manipulation (basename, join) for the indexing CLI / RAG.

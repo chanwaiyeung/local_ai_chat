@@ -42,6 +42,9 @@ import '../l10n/app_localizations.dart';
 import '../models/wealth_record.dart';
 
 import '../services/personal_rag_service.dart';
+import '../services/vision_llm_service.dart';
+import '../services/app_settings_service.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../widgets/wealth/wealth_monthly_report_card.dart';
 
@@ -189,9 +192,87 @@ class _WealthScreenState extends State<WealthScreen>
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(),
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('手動新增'),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      // 新增第二個按鈕（右下角）
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            FloatingActionButton(
+              heroTag: 'vision',
+              onPressed: () async {
+                final picker = ImagePicker();
+                final image = await showDialog<XFile?>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('掃描資產'),
+                    content: const Text('請選擇方式'),
+                    actions: [
+                      TextButton.icon(
+                        icon: const Icon(Icons.camera_alt),
+                        label: const Text('拍照'),
+                        onPressed: () async {
+                          final img = await picker.pickImage(source: ImageSource.camera);
+                          if (context.mounted) Navigator.pop(context, img);
+                        },
+                      ),
+                      TextButton.icon(
+                        icon: const Icon(Icons.photo_library),
+                        label: const Text('從相簿選擇'),
+                        onPressed: () async {
+                          final img = await picker.pickImage(source: ImageSource.gallery);
+                          if (context.mounted) Navigator.pop(context, img);
+                        },
+                      ),
+                    ],
+                  ),
+                );
+
+                if (image == null) return;
+
+                final settings = await AppSettingsService().load();
+                if (settings.geminiApiKey == null || settings.geminiApiKey!.isEmpty) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('請先至設定頁面設定 Gemini API Key')),
+                  );
+                  return;
+                }
+
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('AI 辨識中，請稍候...')),
+                );
+
+                try {
+                  final visionService = VisionLLMService();
+                  final record = await visionService.scanWealthFromImage(image.path, apiKey: settings.geminiApiKey!);
+                  
+                  if (!context.mounted) return;
+                  if (record != null) {
+                    _openForm(existing: record); // 預填後開啟表單讓使用者確認
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('無法從圖片辨識資產資訊')),
+                    );
+                  }
+                } catch (e) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('掃描失敗：$e')),
+                  );
+                }
+              },
+              child: const Icon(Icons.camera_alt),
+            ),
+          ],
+        ),
       ),
     );
   }
