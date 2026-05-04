@@ -44,6 +44,8 @@ import '../main.dart';
 import '../models/app_settings.dart';
 import '../services/app_settings_service.dart';
 import '../services/personal_rag_service.dart';
+import '../widgets/wealth/wealth_monthly_report_card.dart';
+import '../widgets/wealth/wealth_report_card.dart';
 import 'expense_screen.dart';
 import 'health_screen.dart';
 import 'my_skills_screen.dart';
@@ -221,6 +223,16 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
               wealthCount: wealthCount,
               wealthTotalsByCcy: wealthTotalsByCcy,
               onAiQuery: _onAiQueryPressed,
+            ),
+            // === 新增：Wealth 月報卡（Personal Hub 首頁重點強化） ===
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: WealthMonthlyReportCard(
+                controller: widget.wealthController,
+                currency: widget.wealthController.getCurrencies().isNotEmpty
+                    ? widget.wealthController.getCurrencies().first
+                    : 'TWD',
+              ),
             ),
             if (widget.personalRagService != null)
               _LifeInsightsCard(onTap: _openLifeInsights),
