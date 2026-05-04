@@ -35,12 +35,15 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../controllers/wealth_controller.dart';
 import '../l10n/app_localizations.dart';
 
 import '../models/wealth_record.dart';
 
 import '../services/personal_rag_service.dart';
+
+import '../widgets/wealth/wealth_monthly_report_card.dart';
 
 import 'personal_query_screen.dart';
 
@@ -239,6 +242,32 @@ class _RecordsTab extends StatelessWidget {
     return Column(
       children: [
         WealthStatsCard(stats: stats),
+        WealthMonthlyReportCard(
+          controller: controller,
+          currency: currency,
+        ),
+        const SizedBox(height: 8),
+        // === CSV 匯出按鈕 ===
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.download),
+              label: Text(AppLocalizations.of(context).wealthExportCsv ?? '匯出 CSV'),
+              onPressed: () {
+                final csv = controller.exportToCsv();
+                // 先複製到剪貼簿（最簡單跨平台）
+                Clipboard.setData(ClipboardData(text: csv));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context).wealthCsvCopied ?? 'CSV 已複製到剪貼簿'),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
         if (onAiAdvisor != null)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
