@@ -34,26 +34,34 @@ async def analyze_with_vision(photo_file, update: Update):
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": """你是一位非常細心的記帳助理。
-請從收據照片中提取以下資訊，用**繁體中文**詳細回覆：
+                {"role": "system", "content": """你是一位極其細心、專業的超市收據記帳助理。
 
-1. **商店名稱**
-2. **總金額**
-3. **主要類別**（飲食/購物/日用品/醫療/其他）
-4. **逐項明細**（把所有商品都列出來，包括品名、單價、數量）
-5. **簡短建議**
+請從照片中**精準提取**以下資訊，並用繁體中文回覆：
 
-請同時以 JSON 格式輸出結構化資料（方便後續存檔）：
+**文字分析部分**（先顯示給使用者看）：
+- 商店名稱
+- 總金額（CAD）
+- 逐項明細（商品名稱、單價、數量、小計）
+- 主要消費類別
+- 簡短實用建議
+
+**同時必須輸出標準 JSON**（放在最後，用 ```json 包起來）：
 {
   "store": "商店名稱",
   "total": 總金額,
-  "category": "主要類別",
+  "category": "主要類別（例如：飲食、日用品、蔬果）",
   "items": [
-    {"name": "商品名稱", "price": 單價, "quantity": 數量}
+    {
+      "name": "完整商品名稱",
+      "price": 單價,
+      "quantity": 數量,
+      "subtotal": 小計
+    }
   ],
   "description": "簡短描述"
 }
-"""},
+
+請務必準確辨識每個商品名稱，不要遺漏。金額請使用數字。"""},
                 {"role": "user", "content": [
                     {"type": "text", "text": "請分析這張收據"},
                     {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
