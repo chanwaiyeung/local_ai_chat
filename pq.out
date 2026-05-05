@@ -1,6 +1,0 @@
-00:00 +0: loading C:/dev/local_ai_chat/test/screens/personal_query_screen_test.dart
-00:00 +0 -1: loading C:/dev/local_ai_chat/a [E]
-  Failed to load "C:/dev/local_ai_chat/a": Does not exist.
-00:00 +0 -2: loading C:/dev/local_ai_chat/query [E]
-  Failed to load "C:/dev/local_ai_chat/query": Does not exist.
-00:00 +0 -2: C:/dev/local_ai_chat/test/screens/personal_query_screen_test.dart: submitting a query renders the user bubble immediately
