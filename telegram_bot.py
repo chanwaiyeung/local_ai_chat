@@ -1,79 +1,87 @@
-import asyncio
-import base64
 import json
-import io
+import asyncio
+from datetime import datetime
 from pathlib import Path
+
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import google.generativeai as genai
-import PIL.Image
+from PIL import Image
+import io
 
+# ====================== 設定 ======================
 TOKEN = "8638032374:AAFmO_V0JM_nkBbHq16pbWgwIVHmUQtXoBU"
 
-# 載入 API Key
-config = {}
-config_path = Path("config.json")
-if config_path.exists():
-    config = json.loads(config_path.read_text(encoding="utf-8"))
+CONFIG_FILE = Path("config.json")
 
-google_api_key = config.get("google_api_key")
-if google_api_key:
-    genai.configure(api_key=google_api_key)
+def load_config():
+    if CONFIG_FILE.exists():
+        try:
+            return json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
+        except:
+            return {}
+    return {}
 
-async def analyze_with_vision(photo_file, update):
+config = load_config()
+
+# 設定 Gemini
+if config.get("google_api_key"):
+    genai.configure(api_key=config.get("google_api_key"))
+    model = genai.GenerativeModel('gemini-1.5-flash')
+else:
+    print("⚠️ 警告：config.json 中沒有 google_api_key")
+    model = None
+
+# ====================== Vision 分析 ======================
+async def analyze_with_vision(photo_file, update: Update):
+    if not model:
+        return "❌ Gemini API Key 未設定，請先在 Settings 頁面設定 Google Gemini API Key"
+
     try:
-        if not google_api_key:
-            return "❌ 系統錯誤：config.json 中沒有設定 google_api_key"
-
-        await update.message.reply_text("🔄 下載照片中...")
+        await update.message.reply_text("🔄 正在下載照片...")
         photo_bytes = await photo_file.download_as_bytearray()
+        
+        await update.message.reply_text("🔄 正在呼叫 Gemini 1.5 Flash 分析...")
 
-        await update.message.reply_text("🔄 呼叫 Gemini (1.5 Flash) 分析中 (附帶重試機制)...")
+        image = Image.open(io.BytesIO(photo_bytes))
 
-        image = PIL.Image.open(io.BytesIO(photo_bytes))
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        prompt = "你是一位專業的個人財務助理。用繁體中文分析照片，提取類別、金額並給建議。"
-
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                response = await model.generate_content_async([prompt, image])
-                break
-            except Exception as e:
-                if "429" in str(e) or "quota" in str(e).lower() or "rate limit" in str(e).lower():
-                    if attempt < max_retries - 1:
-                        wait_time = (attempt + 1) * 3
-                        await update.message.reply_text(f"⚠️ 觸發 Gemini API 限制，等待 {wait_time} 秒後重試...")
-                        await asyncio.sleep(wait_time)
-                        continue
-                raise e
+        response = model.generate_content([
+            "你是一位專業的生活與財務助理。請用繁體中文分析這張照片（食物、收據等），告訴我這是什麼、可能的金額、類別，並給實用建議。",
+            image
+        ])
 
         analysis = response.text
         return analysis
 
     except Exception as e:
-        return f"❌ 分析失敗：{str(e)}"
+        error_msg = f"❌ Gemini 分析失敗：{str(e)}"
+        print(error_msg)
+        return error_msg + "\n\n💡 請確認 Google Gemini API Key 是否正確設定"
 
 # ====================== 指令 ======================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("👋 **My Food Coach Bot (Gemini 版) 已上線！**\n\n📸 傳一張食物或收據照片給我試試看！")
+    await update.message.reply_text("👋 **My Food Coach Bot (Gemini 版) 已上線！**\n\n📸 傳照片給我試試看～")
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("📸 收到照片，正在處理...")
+
     photo_file = await context.bot.get_file(update.message.photo[-1].file_id)
     analysis = await analyze_with_vision(photo_file, update)
+    
     await update.message.reply_text(analysis)
-    await update.message.reply_text("✅ Gemini 流程執行完畢！")
+    await update.message.reply_text("✅ 分析完成！")
 
-# ====================== 主程式 ======================
+async def expense_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("💰 目前 Telegram 記錄功能開發中...")
+
 def main():
     app = Application.builder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("expense", expense_command))
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
-    print("🤖 My Food Coach Bot (Gemini 版) 運行中... (按 Ctrl+C 停止)")
+    print("🤖 My Food Coach Bot (Gemini 版) 運行中... (Ctrl+C 停止)")
     app.run_polling()
 
 if __name__ == "__main__":
-    if not google_api_key:
-        print("⚠️ 警告：config.json 中沒有 google_api_key！請先在設定檔補上金鑰。")
     main()
