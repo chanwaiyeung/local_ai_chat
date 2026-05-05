@@ -3,12 +3,11 @@ import base64
 from datetime import datetime
 from pathlib import Path
 
-from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from openai import OpenAI
 
 TOKEN = "8638032374:AAFmO_V0JM_nkBbHq16pbWgwIVHmUQtXoBU"
-
 CONFIG_FILE = Path("config.json")
 EXPENSE_FILE = Path("data/telegram_expenses.json")
 
@@ -26,10 +25,11 @@ client = OpenAI(api_key=config.get("openai_api_key"))
 # ====================== 自動解析 ======================
 async def analyze_with_vision(photo_file, update: Update):
     try:
-        await update.message.reply_text("🔄 正在分析收據...")
-        
+        await update.message.reply_text("🔄 正在下載照片...")
         photo_bytes = await photo_file.download_as_bytearray()
         base64_image = base64.b64encode(photo_bytes).decode('utf-8')
+
+        await update.message.reply_text("🔄 正在呼叫 GPT-4o-mini 分析...")
 
         response = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -63,43 +63,67 @@ async def analyze_with_vision(photo_file, update: Update):
 
 請務必準確辨識每個商品名稱，不要遺漏。金額請使用數字。"""},
                 {"role": "user", "content": [
-                    {"type": "text", "text": "請分析這張收據"},
+                    {"type": "text", "text": "請詳細分析這張照片並幫我記帳"},
                     {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
                 ]}
             ],
-            max_tokens=400
+            max_tokens=600
         )
 
         analysis = response.choices[0].message.content
         return analysis
 
     except Exception as e:
-        return f"❌ 分析失敗：{str(e)}"
+        error_msg = f"❌ 分析失敗：{str(e)}"
+        print(error_msg)
+        return error_msg + "\n\n💡 提示：請確認 API Key 額度是否足夠"
 
 # ====================== 主處理 ======================
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("📸 收到照片，正在智能分析...")
 
     photo_file = await context.bot.get_file(update.message.photo[-1].file_id)
-    result = await analyze_with_vision(photo_file, update)
+    analysis = await analyze_with_vision(photo_file, update)
 
-    await update.message.reply_text(result)
-    await update.message.reply_text("✅ 已分析完成！是否要記錄這筆支出？\n\n回覆「是」或「確認」即可記錄")
+    await update.message.reply_text(analysis)
+    await update.message.reply_text("✅ 分析完成！\n\n是否要記錄這筆支出？\n請回覆 **是** 或 **確認**")
 
-# ====================== 其他指令 ======================
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "👋 **My Food Coach Bot 已優化！**\n\n"
-        "📸 傳收據或食物照片給我\n"
-        "我會自動分析並幫你記帳"
-    )
+    # 把分析結果暫存到 user_data，等待確認
+    context.user_data['pending_expense'] = analysis
+
+async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text.strip().lower()
+    if text in ["是", "確認", "ok", "yes"]:
+        if 'pending_expense' in context.user_data:
+            expense = {
+                "date": datetime.now().isoformat(),
+                "source": "telegram",
+                "raw_analysis": context.user_data['pending_expense'],
+                "status": "confirmed"
+            }
+            
+            EXPENSE_FILE.parent.mkdir(parents=True, exist_ok=True)
+            expenses = json.loads(EXPENSE_FILE.read_text(encoding="utf-8")) if EXPENSE_FILE.exists() else []
+            expenses.append(expense)
+            EXPENSE_FILE.write_text(json.dumps(expenses, ensure_ascii=False, indent=2), encoding="utf-8")
+            
+            await update.message.reply_text("💾 已成功記錄這筆支出！\n你可以在 Streamlit Hub 查看所有記錄。")
+            del context.user_data['pending_expense']
+        else:
+            await update.message.reply_text("目前沒有待確認的支出。")
+    else:
+        # 非確認字眼，且有待確認項目，則取消
+        if 'pending_expense' in context.user_data:
+            await update.message.reply_text("已取消記錄。")
+            del context.user_data['pending_expense']
 
 def main():
     app = Application.builder().token(TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("start", lambda u,c: u.message.reply_text("👋 Bot 已上線！傳照片即可記帳")))
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
 
-    print("🤖 My Food Coach Bot (優化版) 運行中... (Ctrl+C 停止)")
+    print("🤖 My Food Coach Bot (自動記帳版) 運行中... (Ctrl+C 停止)")
     app.run_polling()
 
 if __name__ == "__main__":
