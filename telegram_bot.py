@@ -34,13 +34,26 @@ async def analyze_with_vision(photo_file, update: Update):
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": """你是一位專業的記帳助理。請從照片中提取以下資訊，用繁體中文回覆：
-1. 商店名稱
-2. 總金額（數字）
-3. 主要消費類別（飲食/交通/購物/醫療/其他）
-4. 簡短描述
-格式請嚴格使用 JSON：
-{"store": "", "total": 0, "category": "", "description": ""}"""},
+                {"role": "system", "content": """你是一位非常細心的記帳助理。
+請從收據照片中提取以下資訊，用**繁體中文**詳細回覆：
+
+1. **商店名稱**
+2. **總金額**
+3. **主要類別**（飲食/購物/日用品/醫療/其他）
+4. **逐項明細**（把所有商品都列出來，包括品名、單價、數量）
+5. **簡短建議**
+
+請同時以 JSON 格式輸出結構化資料（方便後續存檔）：
+{
+  "store": "商店名稱",
+  "total": 總金額,
+  "category": "主要類別",
+  "items": [
+    {"name": "商品名稱", "price": 單價, "quantity": 數量}
+  ],
+  "description": "簡短描述"
+}
+"""},
                 {"role": "user", "content": [
                     {"type": "text", "text": "請分析這張收據"},
                     {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
