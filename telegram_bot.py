@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import json
 from pathlib import Path
@@ -21,19 +22,31 @@ async def analyze_with_vision(photo_file, update):
         photo_bytes = await photo_file.download_as_bytearray()
         base64_image = base64.b64encode(photo_bytes).decode('utf-8')
 
-        await update.message.reply_text("🔄 呼叫 GPT-4o 分析中...")
+        await update.message.reply_text("🔄 呼叫 GPT-4o-mini 分析中 (附帶重試機制)...")
 
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": "用繁體中文分析照片，提取類別、金額並給建議。"},
-                {"role": "user", "content": [
-                    {"type": "text", "text": "請幫我分析這張照片並記帳"},
-                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
-                ]}
-            ],
-            max_tokens=400
-        )
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": "用繁體中文分析照片，提取類別、金額並給建議。"},
+                        {"role": "user", "content": [
+                            {"type": "text", "text": "請幫我分析這張照片並記帳"},
+                            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
+                        ]}
+                    ],
+                    max_tokens=400
+                )
+                break
+            except Exception as e:
+                if "429" in str(e) or "rate limit" in str(e).lower():
+                    if attempt < max_retries - 1:
+                        wait_time = (attempt + 1) * 3
+                        await update.message.reply_text(f"⚠️ 觸發速率限制 (Rate Limit 429)，等待 {wait_time} 秒後重試...")
+                        await asyncio.sleep(wait_time)
+                        continue
+                raise e
 
         analysis = response.choices[0].message.content
         return analysis
