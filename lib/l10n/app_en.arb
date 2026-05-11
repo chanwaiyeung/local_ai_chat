@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "en",
   "appTitle": "AI Library",
 
@@ -215,5 +215,55 @@
   "denseMode": "Dense: Vector Semantic Search",
   "sparseMode": "Sparse: BM25 Keyword Search",
   "hybridMode": "Hybrid: Dense + BM25 + RRF",
-  "applySettings": "Apply Settings"
+  "applySettings": "Apply Settings",
+
+  "wealthExportCsv": "Export CSV",
+  "wealthCsvCopied": "CSV copied to clipboard",
+
+  "personalHubHealthRecords": "Health records",
+  "personalHubThisMonthExpense": "This month's expenses",
+
+  "wealthMonthlyReport": "Monthly Report",
+  "wealthThisMonthTotal": "This month",
+  "wealthLastMonthTotal": "Last month",
+  "wealthChange": "Change",
+
+  "records": "records",
+
+  "insightTitle": "One-tap Life Insight",
+  "insightSubtitle": "Combined Health & Wealth analysis, your personal life guide.",
+
+  "personalQueryTitle": "Personal Hub AI Query",
+  "personalQueryHint": "Ask your Personal Hub",
+  "personalQueryHintSub": "Search across your expenses and contacts at once.",
+
+  "skillsSearchHint": "Search skills...",
+  "skillsEmpty": "No skill cards yet",
+  "skillsEmptyHint": "After an AI reply, tap '⭐ Save as Skill'\nor tap the cloud button at top right to generate",
+  "skillSaved": "Saved as skill!",
+  "saveAsSkill": "Save as Skill",
+  "querySample1": "How much did I spend dining with Manager Wang?",
+  "querySample2": "How much did I spend at 7-11 this month?",
+  "querySample3": "Who are the contacts at Acme Corp?",
+
+  "addManually": "Add Manually",
+  "skillsSubtitle": "AI Learning Library",
+
+  "settingsApiKeyRequired": "Please enter an API Key first",
+  "settingsTestingConnection": "Testing connection...",
+  "settingsCloudAiTitle": "Cloud AI Service (Gemini)",
+  "settingsCloudAiDesc": "Set your API Key to enable cloud AI features and Wealth module photo scanning. This will be stored securely on your device.",
+  "settingsTestConnection": "Test Connection",
+  "settingsTelegramTitle": "Telegram Integration",
+  "settingsTelegramDesc": "Set your Telegram Bot Token to make Local AI your personal assistant. Get it from @BotFather.",
+  "changeCurrency": "Change currency",
+  "chatTitle": "Chat",
+  "libraryTitle": "Library",
+  "libraryEmpty": "No items yet",
+  "chatInputHint": "Type a message...",
+  "readingModeTitle": "Reading Mode",
+  "churchHubTitle": "Church Members",
+  "churchNoMembers": "No members yet",
+  "churchAddMember": "Add Member",
+  "churchSearchHint": "Search name/phone"
 }

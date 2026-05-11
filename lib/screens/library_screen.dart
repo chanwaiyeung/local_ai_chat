@@ -1,5 +1,6 @@
-// lib/screens/library_screen.dart
+﻿// lib/screens/library_screen.dart
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 import '../services/api_client.dart';
 import '../services/network_service.dart';
@@ -127,9 +128,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('智讀館'),
+        title: Text(l10n.libraryTitle),
         actions: [
           IconButton(
             tooltip: '實機 IP',
@@ -148,7 +150,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
           : _error != null
               ? Center(child: Text('錯誤：$_error'))
               : _docs.isEmpty
-                  ? const Center(child: Text('目前沒有書籍'))
+                  ? Center(child: Text(l10n.libraryEmpty))
                   : ListView.builder(
                       itemCount: _docs.length,
                       itemBuilder: (context, index) {
@@ -185,3 +187,4 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 }
+

@@ -450,4 +450,120 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get applySettings => 'Apply Settings';
+
+  @override
+  String get wealthExportCsv => 'Export CSV';
+
+  @override
+  String get wealthCsvCopied => 'CSV copied to clipboard';
+
+  @override
+  String get personalHubHealthRecords => 'Health records';
+
+  @override
+  String get personalHubThisMonthExpense => 'This month\'s expenses';
+
+  @override
+  String get wealthMonthlyReport => 'Monthly Report';
+
+  @override
+  String get wealthThisMonthTotal => 'This month';
+
+  @override
+  String get wealthLastMonthTotal => 'Last month';
+
+  @override
+  String get wealthChange => 'Change';
+
+  @override
+  String get records => 'records';
+
+  @override
+  String get insightTitle => 'One-tap Life Insight';
+
+  @override
+  String get insightSubtitle =>
+      'Combined Health & Wealth analysis, your personal life guide.';
+
+  @override
+  String get personalQueryTitle => 'Personal Hub AI Query';
+
+  @override
+  String get personalQueryHint => 'Ask your Personal Hub';
+
+  @override
+  String get personalQueryHintSub =>
+      'Search across your expenses and contacts at once.';
+
+  @override
+  String get skillsSearchHint => 'Search skills...';
+
+  @override
+  String get skillsEmpty => 'No skill cards yet';
+
+  @override
+  String get skillsEmptyHint =>
+      'After an AI reply, tap \'⭐ Save as Skill\'\nor tap the cloud button at top right to generate';
+
+  @override
+  String get skillSaved => 'Saved as skill!';
+
+  @override
+  String get saveAsSkill => 'Save as Skill';
+
+  @override
+  String get querySample1 => 'How much did I spend dining with Manager Wang?';
+
+  @override
+  String get querySample2 => 'How much did I spend at 7-11 this month?';
+
+  @override
+  String get querySample3 => 'Who are the contacts at Acme Corp?';
+
+  @override
+  String get addManually => 'Add Manually';
+
+  @override
+  String get skillsSubtitle => 'AI Learning Library';
+
+  @override
+  String get settingsApiKeyRequired => 'Please enter an API Key first';
+
+  @override
+  String get settingsTestingConnection => 'Testing connection...';
+
+  @override
+  String get settingsCloudAiTitle => 'Cloud AI Service (Gemini)';
+
+  @override
+  String get settingsCloudAiDesc =>
+      'Set your API Key to enable cloud AI features and Wealth module photo scanning. This will be stored securely on your device.';
+
+  @override
+  String get settingsTestConnection => 'Test Connection';
+
+  @override
+  String get settingsTelegramTitle => 'Telegram Integration';
+
+  @override
+  String get settingsTelegramDesc =>
+      'Set your Telegram Bot Token to make Local AI your personal assistant. Get it from @BotFather.';
+
+  @override
+  String get changeCurrency => 'Change currency';
+
+  @override
+  String get chatTitle => 'Chat';
+
+  @override
+  String get libraryTitle => 'Library';
+
+  @override
+  String get libraryEmpty => 'No items yet';
+
+  @override
+  String get chatInputHint => 'Type a message...';
+
+  @override
+  String get readingModeTitle => 'Reading Mode';
 }

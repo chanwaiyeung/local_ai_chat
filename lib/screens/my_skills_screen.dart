@@ -207,13 +207,13 @@ class _MySkillsScreenState extends State<MySkillsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final filtered = _filteredSkills;
     final domains = _availableDomains.toList()..sort();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('🧠 ${loc.mySkills}'),
+        title: Text('🧠 ${l10n.mySkills}'),
         actions: [
           IconButton(
             icon: const Icon(Icons.cloud_download_outlined),
@@ -229,7 +229,7 @@ class _MySkillsScreenState extends State<MySkillsScreen> {
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               decoration: InputDecoration(
-                hintText: '搜尋技能...',
+                hintText: l10n.skillsSearchHint,
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -287,12 +287,12 @@ class _MySkillsScreenState extends State<MySkillsScreen> {
                             Icon(Icons.psychology_outlined, size: 80, color: Colors.grey.shade400),
                             const SizedBox(height: 16),
                             Text(
-                              '尚無技能卡',
+                              l10n.skillsEmpty,
                               style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.grey.shade600),
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              '使用 AI 回答後點擊「⭐ 儲存為技能」\n或點擊右上角雲端按鈕來生成',
+                              l10n.skillsEmptyHint,
                               textAlign: TextAlign.center,
                               style: TextStyle(color: Colors.grey.shade500),
                             ),

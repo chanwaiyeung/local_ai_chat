@@ -1,4 +1,4 @@
-// lib/screens/expense_screen.dart
+﻿// lib/screens/expense_screen.dart
 //
 // Phase 6.2' (base) + Phase 6.6 enhancements.
 //
@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import '../controllers/expense_controller.dart';
 import '../l10n/app_localizations.dart';
 import '../models/expense.dart';
+import '../services/currency_service.dart';
 
 class ExpenseScreen extends StatefulWidget {
   const ExpenseScreen({super.key, required this.controller});
@@ -379,7 +380,7 @@ class _ExpenseFormState extends State<_ExpenseForm> {
   late String _paymentMethod;
   late DateTime _date;
 
-  static const List<String> _currencies = ['TWD', 'HKD', 'CAD', 'USD', 'JPY'];
+  static const List<String> _currencies = ['USD', 'EUR', 'GBP', 'HKD', 'TWD', 'CAD', 'JPY', 'CNY', 'AUD'];
   static const List<String> _defaultCategories = [
     '餐飲',
     '交通',
@@ -414,7 +415,7 @@ class _ExpenseFormState extends State<_ExpenseForm> {
         TextEditingController(text: e == null ? '' : e.amount.toString());
     _merchantCtrl = TextEditingController(text: e?.merchant ?? '');
     _notesCtrl = TextEditingController(text: e?.notes ?? '');
-    _currency = e?.currency ?? 'TWD';
+    _currency = e?.currency ?? CurrencyService.instance.code;
     _category = e?.category ?? '餐飲';
     // If existing.category isn't in the predefined list (e.g. user typed a
     // custom one), still show it as the selected value via _categoryOptions.
@@ -507,7 +508,7 @@ class _ExpenseFormState extends State<_ExpenseForm> {
                       for (final c in _currencies)
                         DropdownMenuItem(value: c, child: Text(c))
                     ],
-                    onChanged: (v) => setState(() => _currency = v ?? 'TWD'),
+                    onChanged: (v) => setState(() => _currency = v ?? CurrencyService.instance.code),
                   ),
                 ),
               ],
@@ -569,3 +570,6 @@ class _ExpenseFormState extends State<_ExpenseForm> {
     );
   }
 }
+
+
+

@@ -1,4 +1,4 @@
-// lib/screens/personal_hub_screen.dart
+﻿// lib/screens/personal_hub_screen.dart
 //
 // Phase 6.3'a + 6.4'b + 6.5 — Personal Hub entry + Dashboard UI.
 //
@@ -43,6 +43,7 @@ import '../l10n/app_localizations.dart';
 import '../main.dart';
 import '../models/app_settings.dart';
 import '../services/app_settings_service.dart';
+import '../services/currency_service.dart';
 import '../services/personal_rag_service.dart';
 import '../widgets/expense/expense_summary_card.dart';
 import '../widgets/health/health_summary_card.dart';
@@ -54,6 +55,8 @@ import 'my_skills_screen.dart';
 import 'personal_query_screen.dart';
 import 'settings_screen.dart';
 import 'wealth_screen.dart';
+import '../controllers/book_controller.dart';
+import 'book_screen.dart';
 
 class PersonalHubScreen extends StatefulWidget {
   const PersonalHubScreen({
@@ -62,12 +65,14 @@ class PersonalHubScreen extends StatefulWidget {
     required this.contactController,
     required this.healthController,
     required this.wealthController,
+    required this.bookController,
     this.personalRagService,
   });
   final ExpenseController expenseController;
   final ContactController contactController;
   final HealthController healthController;
   final WealthController wealthController;
+  final BookController bookController;
 
   /// Optional. When provided, the AI quick-query button opens
   /// [PersonalQueryScreen]. When null, the button shows a stub snackbar.
@@ -229,11 +234,28 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
             // === 新增：Wealth 月報卡（Personal Hub 首頁重點強化） ===
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-              child: WealthMonthlyReportCard(
-                controller: widget.wealthController,
-                currency: widget.wealthController.getCurrencies().isNotEmpty
-                    ? widget.wealthController.getCurrencies().first
-                    : 'TWD',
+              child: ListenableBuilder(
+                listenable: CurrencyService.instance,
+                builder: (context, _) {
+                  final wealthCurrency = CurrencyService.instance.code;
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: WealthReportCard(
+                          controller: widget.wealthController,
+                          currency: wealthCurrency,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: WealthMonthlyReportCard(
+                          controller: widget.wealthController,
+                          currency: wealthCurrency,
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
             // === Expense & Health Summary Cards ===
@@ -269,6 +291,7 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
               onContactsTap: _openContacts,
               healthController: widget.healthController,
               wealthController: widget.wealthController,
+              bookController: widget.bookController,
               ragService: widget.personalRagService,
             ),
             const SizedBox(height: 16),
@@ -398,6 +421,7 @@ class _LifeInsightsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -433,9 +457,9 @@ class _LifeInsightsCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        '🧠 一鍵生活洞察',
-                        style: TextStyle(
+                      Text(
+                        '🧠 ${l10n.insightTitle}',
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -443,9 +467,9 @@ class _LifeInsightsCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '結合 Health 與 Wealth 雙核分析，打造您的專屬生活指南。',
+                        l10n.insightSubtitle,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           fontSize: 13,
                         ),
                       ),
@@ -531,6 +555,7 @@ class _ModulesGrid extends StatelessWidget {
     required this.onContactsTap,
     required this.healthController,
     required this.wealthController,
+    required this.bookController,
     this.ragService,
   });
   final int expenseCount;
@@ -541,6 +566,7 @@ class _ModulesGrid extends StatelessWidget {
   final VoidCallback onContactsTap;
   final HealthController healthController;
   final WealthController wealthController;
+  final BookController bookController;
   final PersonalRagService? ragService;
 
   @override
@@ -605,7 +631,7 @@ class _ModulesGrid extends StatelessWidget {
       _ModuleData(
         icon: Icons.psychology_outlined,
         label: loc.mySkills,
-        subtitle: 'AI 學習記憶庫',
+        subtitle: loc.skillsSubtitle,
         color: Colors.teal,
         enabled: ragService?.skillsService != null,
         onTap: () {
@@ -619,6 +645,18 @@ class _ModulesGrid extends StatelessWidget {
             );
           }
         },
+      ),
+      _ModuleData(
+        icon: Icons.menu_book_outlined,
+        label: 'Library',
+        subtitle: '${bookController.count} books',
+        color: Colors.brown,
+        enabled: true,
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => BookScreen(controller: bookController),
+          ),
+        ),
       ),
     ];
 
@@ -728,3 +766,5 @@ class _ContactListScreen extends StatelessWidget {
     );
   }
 }
+
+

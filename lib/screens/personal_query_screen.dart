@@ -18,6 +18,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/skill_card.dart';
 import '../services/personal_rag_service.dart';
 import '../services/vector_store.dart';
@@ -160,8 +161,9 @@ class _PersonalQueryScreenState extends State<PersonalQueryScreen> {
       );
       if (mounted) {
         setState(() => _extractedSkill = skill);
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('已手動儲存為技能！')),
+          SnackBar(content: Text(l10n.skillSaved)),
         );
       }
     } catch (e) {
@@ -177,15 +179,16 @@ class _PersonalQueryScreenState extends State<PersonalQueryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Personal Hub AI 查詢'),
+        title: Text(l10n.personalQueryTitle),
       ),
       body: Column(
         children: [
           Expanded(
             child: _currentQuery == null
-                ? const _PlaceholderHints()
+                ? _PlaceholderHints()
                 : SingleChildScrollView(
                     controller: _scrollCtrl,
                     padding: const EdgeInsets.all(16),
@@ -245,7 +248,7 @@ class _PersonalQueryScreenState extends State<PersonalQueryScreen> {
                                               child: CircularProgressIndicator(strokeWidth: 2),
                                             )
                                           : const Icon(Icons.star, size: 16),
-                                      label: const Text('儲存為技能'),
+                                      label: Text(l10n.saveAsSkill),
                                     ),
                             ),
                           ),
@@ -298,27 +301,28 @@ class _PlaceholderHints extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hint = Theme.of(context).hintColor;
+    final l10n = AppLocalizations.of(context)!;
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
         Icon(Icons.auto_awesome, size: 48, color: hint),
         const SizedBox(height: 12),
         Text(
-          '問問你的 Personal Hub',
+          l10n.personalQueryHint,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 8),
         Text(
-          '可以同時搜尋你的開支與名片紀錄。',
+          l10n.personalQueryHintSub,
           textAlign: TextAlign.center,
           style: TextStyle(color: hint),
         ),
         const SizedBox(height: 24),
-        for (final s in const [
-          '上次跟王經理吃飯花了多少？',
-          '我這個月在 7-11 花了多少？',
-          'Acme Corp 有哪些聯絡人？',
+        for (final s in [
+          l10n.querySample1,
+          l10n.querySample2,
+          l10n.querySample3,
         ])
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),

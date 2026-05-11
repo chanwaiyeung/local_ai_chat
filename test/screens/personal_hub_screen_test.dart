@@ -1,4 +1,4 @@
-// test/screens/personal_hub_screen_test.dart
+﻿// test/screens/personal_hub_screen_test.dart
 //
 // Phase 6.3'a + 6.4'b — Widget tests for PersonalHubScreen.
 // Updated for 6.4'b: Contacts module is enabled, dashboard shows real
@@ -7,6 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:local_ai_chat/controllers/book_controller.dart';
 import 'package:local_ai_chat/controllers/contact_controller.dart';
 import 'package:local_ai_chat/controllers/expense_controller.dart';
 import 'package:local_ai_chat/controllers/health_controller.dart';
@@ -24,6 +25,7 @@ void main() {
   late ContactController contactController;
   late HealthController healthController;
   late WealthController wealthController;
+  late BookController bookController;
 
   setUp(() {
     store = VectorStore();
@@ -31,6 +33,7 @@ void main() {
     contactController = ContactController(store: store);
     healthController = HealthController(store);
     wealthController = WealthController(store);
+    bookController = BookController(store);
   });
 
   Widget hostFor() => MaterialApp(
@@ -42,6 +45,7 @@ void main() {
           contactController: contactController,
           healthController: healthController,
           wealthController: wealthController,
+          bookController: bookController,
         ),
       );
 

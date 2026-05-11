@@ -441,6 +441,119 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get applySettings => '套用設定';
+
+  @override
+  String get wealthExportCsv => '匯出 CSV';
+
+  @override
+  String get wealthCsvCopied => 'CSV 已複製到剪貼簿';
+
+  @override
+  String get personalHubHealthRecords => '健康紀錄';
+
+  @override
+  String get personalHubThisMonthExpense => '本月開支';
+
+  @override
+  String get wealthMonthlyReport => '本月報告';
+
+  @override
+  String get wealthThisMonthTotal => '本月總值';
+
+  @override
+  String get wealthLastMonthTotal => '上月總值';
+
+  @override
+  String get wealthChange => '變化';
+
+  @override
+  String get records => '筆紀錄';
+
+  @override
+  String get insightTitle => '一鍵生活洞察';
+
+  @override
+  String get insightSubtitle => '結合 Health 與 Wealth 雙核分析，打造您的專屬生活指南。';
+
+  @override
+  String get personalQueryTitle => 'Personal Hub AI 查詢';
+
+  @override
+  String get personalQueryHint => '問問你的 Personal Hub';
+
+  @override
+  String get personalQueryHintSub => '可以同時搜尋你的開支與名片紀錄。';
+
+  @override
+  String get skillsSearchHint => '搜尋技能...';
+
+  @override
+  String get skillsEmpty => '尚無技能卡';
+
+  @override
+  String get skillsEmptyHint => '使用 AI 回答後點擊「⭐ 儲存為技能」\n或點擊右上角雲端按鈕來生成';
+
+  @override
+  String get skillSaved => '已手動儲存為技能！';
+
+  @override
+  String get saveAsSkill => '儲存為技能';
+
+  @override
+  String get querySample1 => '上次跟王經理吃飯花了多少？';
+
+  @override
+  String get querySample2 => '我這個月在 7-11 花了多少？';
+
+  @override
+  String get querySample3 => 'Acme Corp 有哪些聯絡人？';
+
+  @override
+  String get addManually => '手動新增';
+
+  @override
+  String get skillsSubtitle => 'AI 學習記憶庫';
+
+  @override
+  String get settingsApiKeyRequired => '請先輸入 API Key';
+
+  @override
+  String get settingsTestingConnection => '測試連線中...';
+
+  @override
+  String get settingsCloudAiTitle => 'Cloud AI 服務 (Gemini)';
+
+  @override
+  String get settingsCloudAiDesc =>
+      '設定您的 API Key 以啟用「雲端大模型教導本地小模型」與「Wealth 模組的照片掃描」功能。這將被妥善保存在本機。';
+
+  @override
+  String get settingsTestConnection => '測試連線';
+
+  @override
+  String get settingsTelegramTitle => 'Telegram 整合';
+
+  @override
+  String get settingsTelegramDesc =>
+      '設定您的 Telegram Bot Token，讓 Local AI 成為您的隨身助理。可從 @BotFather 取得。';
+
+  @override
+  String get changeCurrency => '切換幣別';
+
+  @override
+  String get chatTitle => '對話';
+
+  @override
+  String get libraryTitle => '圖書館';
+
+  @override
+  String get libraryEmpty => '尚無項目';
+
+  @override
+  String get chatInputHint => '輸入訊息...';
+
+  @override
+  String get readingModeTitle => '閱讀模式';
 }
 
 /// The translations for Chinese, as used in China (`zh_CN`).
@@ -880,6 +993,119 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get applySettings => '应用设置';
+
+  @override
+  String get wealthExportCsv => '导出 CSV';
+
+  @override
+  String get wealthCsvCopied => 'CSV 已复制到剪贴板';
+
+  @override
+  String get personalHubHealthRecords => '健康记录';
+
+  @override
+  String get personalHubThisMonthExpense => '本月开支';
+
+  @override
+  String get wealthMonthlyReport => '本月报告';
+
+  @override
+  String get wealthThisMonthTotal => '本月总值';
+
+  @override
+  String get wealthLastMonthTotal => '上月总值';
+
+  @override
+  String get wealthChange => '变化';
+
+  @override
+  String get records => '条记录';
+
+  @override
+  String get insightTitle => '一键生活洞察';
+
+  @override
+  String get insightSubtitle => '结合 Health 与 Wealth 双核分析，打造您的专属生活指南。';
+
+  @override
+  String get personalQueryTitle => 'Personal Hub AI 查询';
+
+  @override
+  String get personalQueryHint => '问问你的 Personal Hub';
+
+  @override
+  String get personalQueryHintSub => '可以同时搜索你的开支与名片记录。';
+
+  @override
+  String get skillsSearchHint => '搜索技能...';
+
+  @override
+  String get skillsEmpty => '尚无技能卡';
+
+  @override
+  String get skillsEmptyHint => '使用 AI 回答后点击「⭐ 保存为技能」\n或点击右上角云端按钮来生成';
+
+  @override
+  String get skillSaved => '已手动保存为技能！';
+
+  @override
+  String get saveAsSkill => '保存为技能';
+
+  @override
+  String get querySample1 => '上次和王经理吃饭花了多少？';
+
+  @override
+  String get querySample2 => '我这个月在 7-11 花了多少？';
+
+  @override
+  String get querySample3 => 'Acme Corp 有哪些联系人？';
+
+  @override
+  String get addManually => '手动新增';
+
+  @override
+  String get skillsSubtitle => 'AI 学习记忆库';
+
+  @override
+  String get settingsApiKeyRequired => '请先输入 API Key';
+
+  @override
+  String get settingsTestingConnection => '测试连接中...';
+
+  @override
+  String get settingsCloudAiTitle => 'Cloud AI 服务 (Gemini)';
+
+  @override
+  String get settingsCloudAiDesc =>
+      '设置您的 API Key 以启用“云端大模型教导本地小模型”与“Wealth 模组的照片扫描”功能。这将被妥善保存在本机。';
+
+  @override
+  String get settingsTestConnection => '测试连接';
+
+  @override
+  String get settingsTelegramTitle => 'Telegram 整合';
+
+  @override
+  String get settingsTelegramDesc =>
+      '设置您的 Telegram Bot Token，让 Local AI 成为您的随身助理。可从 @BotFather 获取。';
+
+  @override
+  String get changeCurrency => '切换币别';
+
+  @override
+  String get chatTitle => '对话';
+
+  @override
+  String get libraryTitle => '图书馆';
+
+  @override
+  String get libraryEmpty => '暂无项目';
+
+  @override
+  String get chatInputHint => '输入消息...';
+
+  @override
+  String get readingModeTitle => '阅读模式';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -1319,4 +1545,117 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get applySettings => '套用設定';
+
+  @override
+  String get wealthExportCsv => '匯出 CSV';
+
+  @override
+  String get wealthCsvCopied => 'CSV 已複製到剪貼簿';
+
+  @override
+  String get personalHubHealthRecords => '健康紀錄';
+
+  @override
+  String get personalHubThisMonthExpense => '本月開支';
+
+  @override
+  String get wealthMonthlyReport => '本月報告';
+
+  @override
+  String get wealthThisMonthTotal => '本月總值';
+
+  @override
+  String get wealthLastMonthTotal => '上月總值';
+
+  @override
+  String get wealthChange => '變化';
+
+  @override
+  String get records => '筆紀錄';
+
+  @override
+  String get insightTitle => '一鍵生活洞察';
+
+  @override
+  String get insightSubtitle => '結合 Health 與 Wealth 雙核分析，打造您的專屬生活指南。';
+
+  @override
+  String get personalQueryTitle => 'Personal Hub AI 查詢';
+
+  @override
+  String get personalQueryHint => '問問你的 Personal Hub';
+
+  @override
+  String get personalQueryHintSub => '可以同時搜尋你的開支與名片紀錄。';
+
+  @override
+  String get skillsSearchHint => '搜尋技能...';
+
+  @override
+  String get skillsEmpty => '尚無技能卡';
+
+  @override
+  String get skillsEmptyHint => '使用 AI 回答後點擊「⭐ 儲存為技能」\n或點擊右上角雲端按鈕來生成';
+
+  @override
+  String get skillSaved => '已手動儲存為技能！';
+
+  @override
+  String get saveAsSkill => '儲存為技能';
+
+  @override
+  String get querySample1 => '上次跟王經理吃飯花了多少？';
+
+  @override
+  String get querySample2 => '我這個月在 7-11 花了多少？';
+
+  @override
+  String get querySample3 => 'Acme Corp 有哪些聯絡人？';
+
+  @override
+  String get addManually => '手動新增';
+
+  @override
+  String get skillsSubtitle => 'AI 學習記憶庫';
+
+  @override
+  String get settingsApiKeyRequired => '請先輸入 API Key';
+
+  @override
+  String get settingsTestingConnection => '測試連線中...';
+
+  @override
+  String get settingsCloudAiTitle => 'Cloud AI 服務 (Gemini)';
+
+  @override
+  String get settingsCloudAiDesc =>
+      '設定您的 API Key 以啟用「雲端大模型教導本地小模型」與「Wealth 模組的照片掃描」功能。這將被妥善保存在本機。';
+
+  @override
+  String get settingsTestConnection => '測試連線';
+
+  @override
+  String get settingsTelegramTitle => 'Telegram 整合';
+
+  @override
+  String get settingsTelegramDesc =>
+      '設定您的 Telegram Bot Token，讓 Local AI 成為您的隨身助理。可從 @BotFather 取得。';
+
+  @override
+  String get changeCurrency => '切換幣別';
+
+  @override
+  String get chatTitle => '對話';
+
+  @override
+  String get libraryTitle => '圖書館';
+
+  @override
+  String get libraryEmpty => '尚無項目';
+
+  @override
+  String get chatInputHint => '輸入訊息...';
+
+  @override
+  String get readingModeTitle => '閱讀模式';
 }

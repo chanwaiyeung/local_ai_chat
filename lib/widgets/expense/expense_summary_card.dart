@@ -29,7 +29,10 @@ class ExpenseSummaryCard extends StatelessWidget {
               NumberFormat("#,###.##").format(total),
               style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
-            Text("本月總開支", style: Theme.of(context).textTheme.bodyMedium),
+            Text(
+              l10n.totalExpensesThisMonth,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
           ],
         ),
       ),

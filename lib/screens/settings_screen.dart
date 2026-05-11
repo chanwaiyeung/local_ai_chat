@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../main.dart';
 import '../models/app_settings.dart';
 import '../services/ollama_service.dart';
+import '../services/currency_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({
@@ -91,12 +92,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _testGeminiConnection() async {
     final key = _geminiApiKeyController.text.trim();
     if (key.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('請先輸入 API Key')));
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.settingsApiKeyRequired)),
+      );
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('測試連線中...')));
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.settingsTestingConnection)),
+    );
     try {
-      final uri = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$key');
+      final uri = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$key');
       final response = await http.post(
         uri,
         headers: {'Content-Type': 'application/json'},
@@ -170,6 +177,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final currentModel =
         _useCustom ? _customController.text.trim() : _selectedPreset;
 
@@ -219,6 +227,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
               ),
             ),
+                        ListTile(
+              leading: const Icon(Icons.attach_money),
+              title: Text(AppLocalizations.of(context).currency),
+              trailing: ListenableBuilder(
+                listenable: CurrencyService.instance,
+                builder: (context, _) {
+                  return DropdownButton<String>(
+                    value: CurrencyService.instance.code,
+                    items: CurrencyService.supported.map((c) {
+                      final sym = CurrencyService.symbols[c] ?? c;
+                      return DropdownMenuItem(
+                        value: c,
+                        child: Text('$sym  ($c)'),
+                      );
+                    }).toList(),
+                    onChanged: (c) {
+                      if (c != null) CurrencyService.instance.setCode(c);
+                    },
+                  );
+                },
+              ),
+            ),
+            const Divider(),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.palette),
@@ -247,12 +278,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const Divider(),
             const SizedBox(height: 8),
             Text(
-              'Cloud AI 服務 (Gemini)',
+              l10n.settingsCloudAiTitle,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 4),
             Text(
-              '設定您的 API Key 以啟用「雲端大模型教導本地小模型」與「Wealth 模組的照片掃描」功能。這將被妥善保存在本機。',
+              l10n.settingsCloudAiDesc,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 12),
@@ -282,8 +313,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         Expanded(
                           child: OutlinedButton.icon(
-                            icon: const Icon(Icons.test_pipe),
-                            label: const Text('測試連線'),
+                            icon: const Icon(Icons.network_check),
+                            label: Text(l10n.settingsTestConnection),
                             onPressed: _testGeminiConnection,
                           ),
                         ),
@@ -291,7 +322,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         Expanded(
                           child: FilledButton.icon(
                             icon: const Icon(Icons.save),
-                            label: const Text('儲存'),
+                            label: Text(l10n.saveButton),
                             onPressed: _submit,
                           ),
                         ),
@@ -305,12 +336,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const Divider(),
             const SizedBox(height: 8),
             Text(
-              'Telegram 整合',
+              l10n.settingsTelegramTitle,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 4),
             Text(
-              '設定您的 Telegram Bot Token，讓 Local AI 成為您的隨身助理。可從 @BotFather 取得。',
+              l10n.settingsTelegramDesc,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 12),
@@ -478,3 +509,5 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 }
+
+

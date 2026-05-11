@@ -1,4 +1,4 @@
-// lib/main.dart
+﻿// lib/main.dart
 import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
@@ -8,6 +8,7 @@ import 'controllers/contact_controller.dart';
 import 'controllers/expense_controller.dart';
 import 'controllers/health_controller.dart';
 import 'controllers/wealth_controller.dart';
+import 'controllers/book_controller.dart';
 import 'l10n/app_localizations.dart';
 import 'screens/personal_hub_screen.dart';
 import 'server/api_server.dart';
@@ -19,6 +20,7 @@ import 'services/rag_service.dart';
 import 'services/skills_service.dart';
 import 'services/telegram_bot_service.dart';
 import 'services/vector_store.dart';
+import 'services/currency_service.dart';
 
 // ----------------------------- dart-define config -----------------------------
 //
@@ -45,6 +47,7 @@ late final ExpenseController globalExpenseController;
 late final ContactController globalContactController;
 late final HealthController globalHealthController;
 late final WealthController globalWealthController;
+late final BookController globalBookController;
 late final PersonalRagService globalPersonalRagService;
 late final SkillsService globalSkillsService;
 late final OllamaClient globalOllama;
@@ -76,9 +79,11 @@ Future<void> main() async {
   globalContactController = ContactController(store: globalStore);
   globalHealthController = HealthController(globalStore);
   globalWealthController = WealthController(globalStore);
+  globalBookController = BookController(globalStore);
   await globalExpenseController.getAllExpenses();
   await globalContactController.getAllContacts();
   await globalWealthController.loadAll();
+  await globalBookController.loadAll();
   // HealthController loads synchronously from VectorStore so no await needed here for all records,
   // but if needed, we can call getAllRecords().
 
@@ -104,6 +109,7 @@ Future<void> main() async {
   await restartTelegramBot(settings.telegramBotToken);
 
   await _startServerForDesktop();
+  await CurrencyService.instance.load();
   runApp(const MyApp());
 }
 
@@ -166,7 +172,7 @@ class MyApp extends StatefulWidget {
 }
 
 class MyAppState extends State<MyApp> {
-  Locale? _locale;
+  Locale? _locale = const Locale('en');
   ThemeMode _themeMode = ThemeMode.system;
 
   ThemeMode get themeMode => _themeMode;
@@ -208,8 +214,17 @@ class MyAppState extends State<MyApp> {
         contactController: globalContactController,
         healthController: globalHealthController,
         wealthController: globalWealthController,
+        bookController: globalBookController,
+        
         personalRagService: globalPersonalRagService,
       ),
     );
   }
 }
+
+
+
+
+
+
+

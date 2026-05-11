@@ -861,6 +861,228 @@ abstract class AppLocalizations {
   /// In zh_TW, this message translates to:
   /// **'套用設定'**
   String get applySettings;
+
+  /// No description provided for @wealthExportCsv.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'匯出 CSV'**
+  String get wealthExportCsv;
+
+  /// No description provided for @wealthCsvCopied.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'CSV 已複製到剪貼簿'**
+  String get wealthCsvCopied;
+
+  /// No description provided for @personalHubHealthRecords.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'健康紀錄'**
+  String get personalHubHealthRecords;
+
+  /// No description provided for @personalHubThisMonthExpense.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'本月開支'**
+  String get personalHubThisMonthExpense;
+
+  /// No description provided for @wealthMonthlyReport.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'本月報告'**
+  String get wealthMonthlyReport;
+
+  /// No description provided for @wealthThisMonthTotal.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'本月總值'**
+  String get wealthThisMonthTotal;
+
+  /// No description provided for @wealthLastMonthTotal.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'上月總值'**
+  String get wealthLastMonthTotal;
+
+  /// No description provided for @wealthChange.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'變化'**
+  String get wealthChange;
+
+  /// No description provided for @records.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'筆紀錄'**
+  String get records;
+
+  /// No description provided for @insightTitle.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'一鍵生活洞察'**
+  String get insightTitle;
+
+  /// No description provided for @insightSubtitle.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'結合 Health 與 Wealth 雙核分析，打造您的專屬生活指南。'**
+  String get insightSubtitle;
+
+  /// No description provided for @personalQueryTitle.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'Personal Hub AI 查詢'**
+  String get personalQueryTitle;
+
+  /// No description provided for @personalQueryHint.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'問問你的 Personal Hub'**
+  String get personalQueryHint;
+
+  /// No description provided for @personalQueryHintSub.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'可以同時搜尋你的開支與名片紀錄。'**
+  String get personalQueryHintSub;
+
+  /// No description provided for @skillsSearchHint.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'搜尋技能...'**
+  String get skillsSearchHint;
+
+  /// No description provided for @skillsEmpty.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'尚無技能卡'**
+  String get skillsEmpty;
+
+  /// No description provided for @skillsEmptyHint.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'使用 AI 回答後點擊「⭐ 儲存為技能」\n或點擊右上角雲端按鈕來生成'**
+  String get skillsEmptyHint;
+
+  /// No description provided for @skillSaved.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'已手動儲存為技能！'**
+  String get skillSaved;
+
+  /// No description provided for @saveAsSkill.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'儲存為技能'**
+  String get saveAsSkill;
+
+  /// No description provided for @querySample1.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'上次跟王經理吃飯花了多少？'**
+  String get querySample1;
+
+  /// No description provided for @querySample2.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'我這個月在 7-11 花了多少？'**
+  String get querySample2;
+
+  /// No description provided for @querySample3.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'Acme Corp 有哪些聯絡人？'**
+  String get querySample3;
+
+  /// No description provided for @addManually.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'手動新增'**
+  String get addManually;
+
+  /// No description provided for @skillsSubtitle.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'AI 學習記憶庫'**
+  String get skillsSubtitle;
+
+  /// No description provided for @settingsApiKeyRequired.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'請先輸入 API Key'**
+  String get settingsApiKeyRequired;
+
+  /// No description provided for @settingsTestingConnection.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'測試連線中...'**
+  String get settingsTestingConnection;
+
+  /// No description provided for @settingsCloudAiTitle.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'Cloud AI 服務 (Gemini)'**
+  String get settingsCloudAiTitle;
+
+  /// No description provided for @settingsCloudAiDesc.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'設定您的 API Key 以啟用「雲端大模型教導本地小模型」與「Wealth 模組的照片掃描」功能。這將被妥善保存在本機。'**
+  String get settingsCloudAiDesc;
+
+  /// No description provided for @settingsTestConnection.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'測試連線'**
+  String get settingsTestConnection;
+
+  /// No description provided for @settingsTelegramTitle.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'Telegram 整合'**
+  String get settingsTelegramTitle;
+
+  /// No description provided for @settingsTelegramDesc.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'設定您的 Telegram Bot Token，讓 Local AI 成為您的隨身助理。可從 @BotFather 取得。'**
+  String get settingsTelegramDesc;
+
+  /// No description provided for @changeCurrency.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'切換幣別'**
+  String get changeCurrency;
+
+  /// No description provided for @chatTitle.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'對話'**
+  String get chatTitle;
+
+  /// No description provided for @libraryTitle.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'圖書館'**
+  String get libraryTitle;
+
+  /// No description provided for @libraryEmpty.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'尚無項目'**
+  String get libraryEmpty;
+
+  /// No description provided for @chatInputHint.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'輸入訊息...'**
+  String get chatInputHint;
+
+  /// No description provided for @readingModeTitle.
+  ///
+  /// In zh_TW, this message translates to:
+  /// **'閱讀模式'**
+  String get readingModeTitle;
 }
 
 class _AppLocalizationsDelegate

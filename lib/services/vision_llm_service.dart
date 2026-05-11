@@ -1,9 +1,10 @@
-// lib/services/vision_llm_service.dart
+﻿// lib/services/vision_llm_service.dart
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import '../models/wealth_record.dart';
+import 'currency_service.dart';
 
 class VisionLlmException implements Exception {
   const VisionLlmException(this.message, {this.statusCode});
@@ -43,7 +44,7 @@ class VisionLLMService {
 無法辨識請回傳 null。
 ''';
 
-        final uri = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey');
+        final uri = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey');
 
         final response = await _http.post(
           uri,
@@ -72,10 +73,12 @@ class VisionLLMService {
             id: '',
             assetType: (data['assetType'] ?? 'other').toString(),
             assetName: (data['assetName'] ?? '未知資產').toString(),
-            currency: (data['currency'] ?? 'TWD').toString(),
+            currency: (data['currency'] ?? CurrencyService.instance.code).toString(),
             amount: (data['amount'] as num?)?.toDouble() ?? 0.0,
             date: DateTime.now(),
-            note: (data['note'] ?? 'AI Vision 自動辨識').toString(),
+            notes: (data['note'] ?? data['notes'] ?? 'AI Vision 自動辨識')
+                .toString(),
+            source: 'ai_extracted',
           );
         }
       } catch (e) {
@@ -99,3 +102,5 @@ class VisionLLMService {
 
   void close() => _http.close();
 }
+
+

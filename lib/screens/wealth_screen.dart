@@ -1,4 +1,4 @@
-// lib/screens/wealth_screen.dart
+﻿// lib/screens/wealth_screen.dart
 
 //
 
@@ -42,6 +42,7 @@ import '../l10n/app_localizations.dart';
 import '../models/wealth_record.dart';
 
 import '../services/personal_rag_service.dart';
+import '../services/currency_service.dart';
 import '../services/vision_llm_service.dart';
 import '../services/app_settings_service.dart';
 import 'package:image_picker/image_picker.dart';
@@ -84,6 +85,7 @@ class _WealthScreenState extends State<WealthScreen>
     _tabCtrl = TabController(length: 2, vsync: this);
 
     widget.controller.addListener(_onChanged);
+    CurrencyService.instance.addListener(_onCurrencyChanged);
   }
 
   @override
@@ -91,6 +93,7 @@ class _WealthScreenState extends State<WealthScreen>
     _tabCtrl.dispose();
 
     widget.controller.removeListener(_onChanged);
+    CurrencyService.instance.removeListener(_onCurrencyChanged);
 
     super.dispose();
   }
@@ -99,27 +102,18 @@ class _WealthScreenState extends State<WealthScreen>
     if (mounted) setState(() {});
   }
 
+  void _onCurrencyChanged() {
+    if (!mounted) return;
+    setState(() => _selectedCurrency = null);
+  }
+
   String _resolveCurrency() {
     final available = widget.controller.getCurrencies();
 
     if (_selectedCurrency != null && available.contains(_selectedCurrency)) {
       return _selectedCurrency!;
     }
-
-    if (available.isEmpty) return 'TWD';
-
-    // Pick the currency with the most records as default.
-
-    final byCurrency = <String, int>{};
-
-    for (final r in widget.controller.getAllRecords()) {
-      byCurrency.update(r.currency, (v) => v + 1, ifAbsent: () => 1);
-    }
-
-    final sorted = byCurrency.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-
-    return sorted.first.key;
+    return CurrencyService.instance.code;
   }
 
   Future<void> _openForm({WealthRecord? existing}) async {
@@ -156,6 +150,7 @@ class _WealthScreenState extends State<WealthScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final currency = _resolveCurrency();
 
     final currencies = widget.controller.getCurrencies();
@@ -195,7 +190,7 @@ class _WealthScreenState extends State<WealthScreen>
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(),
         icon: const Icon(Icons.add),
-        label: const Text('手動新增'),
+        label: Text(l10n.addManually),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       // 新增第二個按鈕（右下角）
@@ -356,14 +351,14 @@ class _RecordsTab extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: OutlinedButton.icon(
               icon: const Icon(Icons.download),
-              label: Text(AppLocalizations.of(context).wealthExportCsv ?? '匯出 CSV'),
+              label: Text(AppLocalizations.of(context).wealthExportCsv),
               onPressed: () {
                 final csv = controller.exportToCsv();
                 // 先複製到剪貼簿（最簡單跨平台）
                 Clipboard.setData(ClipboardData(text: csv));
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(AppLocalizations.of(context).wealthCsvCopied ?? 'CSV 已複製到剪貼簿'),
+                    content: Text(AppLocalizations.of(context).wealthCsvCopied),
                   ),
                 );
               },

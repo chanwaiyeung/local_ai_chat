@@ -40,17 +40,20 @@ dependencies:
   intl: ^0.20.2
   markdown: ^7.3.0
   # Path manipulation (basename, join) for the indexing CLI / RAG.
+  ollama_dart: ^2.1.0
   path: ^1.9.1
   # Cross-platform application support directory (used by VectorStore for vector_store.json).
   path_provider: ^2.1.0
   # HTTP server stack.
+  shared_preferences: ^2.5.5
   shelf: ^1.4.2
   shelf_cors_headers: ^0.1.5
   shelf_router: ^1.1.4
   speech_to_text: ^7.3.0
   syncfusion_flutter_pdf: ^33.2.4
-  teledart: ^1.0.0
+  # teledart: ^0.6.1  # FIXME: version not on pub.dev
   url_launcher: ^6.3.1
+  uuid: ^4.5.3
 
 dev_dependencies:
   flutter_lints: ^5.0.0

@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 import '../controllers/reader_controller.dart';
 import '../services/api_client.dart';
@@ -47,6 +48,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(title: Text(widget.bookTitle)),
       body: ValueListenableBuilder<ReaderState>(
@@ -138,14 +140,15 @@ class _ReaderScreenState extends State<ReaderScreen> {
   }
 
   Widget _buildInputArea(ReaderState state) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
           child: TextField(
             controller: _controller.questionController,
-            decoration: const InputDecoration(
-              hintText: '輸入問題...',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              hintText: l10n.chatInputHint,
+              border: const OutlineInputBorder(),
             ),
             minLines: 1,
             maxLines: 3,
@@ -241,3 +244,4 @@ class _CitationRow extends StatelessWidget {
     );
   }
 }
+

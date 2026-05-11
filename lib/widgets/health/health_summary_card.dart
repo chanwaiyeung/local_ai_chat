@@ -26,7 +26,7 @@ class HealthSummaryCard extends StatelessWidget {
               children: [
                 Text(count.toString(), style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
                 const SizedBox(width: 8),
-                Text("筆紀錄", style: Theme.of(context).textTheme.titleMedium),
+                Text(l10n.records, style: Theme.of(context).textTheme.titleMedium),
               ],
             ),
           ],

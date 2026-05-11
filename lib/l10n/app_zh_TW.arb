@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "zh_TW",
   "appTitle": "智讀館",
   "@appTitle": { "description": "App title shown in OS task switcher" },
@@ -216,5 +216,55 @@
   "denseMode": "Dense：向量語意搜尋",
   "sparseMode": "Sparse：BM25 關鍵字搜尋",
   "hybridMode": "Hybrid：Dense + BM25 + RRF",
-  "applySettings": "套用設定"
+  "applySettings": "套用設定",
+
+  "wealthExportCsv": "匯出 CSV",
+  "wealthCsvCopied": "CSV 已複製到剪貼簿",
+
+  "personalHubHealthRecords": "健康紀錄",
+  "personalHubThisMonthExpense": "本月開支",
+
+  "wealthMonthlyReport": "本月報告",
+  "wealthThisMonthTotal": "本月總值",
+  "wealthLastMonthTotal": "上月總值",
+  "wealthChange": "變化",
+
+  "records": "筆紀錄",
+
+  "insightTitle": "一鍵生活洞察",
+  "insightSubtitle": "結合 Health 與 Wealth 雙核分析，打造您的專屬生活指南。",
+
+  "personalQueryTitle": "Personal Hub AI 查詢",
+  "personalQueryHint": "問問你的 Personal Hub",
+  "personalQueryHintSub": "可以同時搜尋你的開支與名片紀錄。",
+
+  "skillsSearchHint": "搜尋技能...",
+  "skillsEmpty": "尚無技能卡",
+  "skillsEmptyHint": "使用 AI 回答後點擊「⭐ 儲存為技能」\n或點擊右上角雲端按鈕來生成",
+  "skillSaved": "已手動儲存為技能！",
+  "saveAsSkill": "儲存為技能",
+  "querySample1": "上次跟王經理吃飯花了多少？",
+  "querySample2": "我這個月在 7-11 花了多少？",
+  "querySample3": "Acme Corp 有哪些聯絡人？",
+
+  "addManually": "手動新增",
+  "skillsSubtitle": "AI 學習記憶庫",
+
+  "settingsApiKeyRequired": "請先輸入 API Key",
+  "settingsTestingConnection": "測試連線中...",
+  "settingsCloudAiTitle": "Cloud AI 服務 (Gemini)",
+  "settingsCloudAiDesc": "設定您的 API Key 以啟用「雲端大模型教導本地小模型」與「Wealth 模組的照片掃描」功能。這將被妥善保存在本機。",
+  "settingsTestConnection": "測試連線",
+  "settingsTelegramTitle": "Telegram 整合",
+  "settingsTelegramDesc": "設定您的 Telegram Bot Token，讓 Local AI 成為您的隨身助理。可從 @BotFather 取得。",
+  "changeCurrency": "切換幣別",
+  "chatTitle": "對話",
+  "libraryTitle": "圖書館",
+  "libraryEmpty": "尚無項目",
+  "chatInputHint": "輸入訊息...",
+  "readingModeTitle": "閱讀模式",
+  "churchHubTitle": "會友管理",
+  "churchNoMembers": "目前尚無會友資料",
+  "churchAddMember": "新增會友",
+  "churchSearchHint": "搜尋姓名 / 電話"
 }

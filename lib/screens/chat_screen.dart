@@ -1,4 +1,4 @@
-// lib/screens/chat_screen.dart
+﻿// lib/screens/chat_screen.dart
 import 'dart:async';
 import 'dart:io' show File;
 
@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../l10n/app_localizations.dart';
 
 import '../controllers/chat_send_controller.dart';
 import '../controllers/rag_chat_controller.dart';
@@ -951,8 +952,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final visible = _messages.where((m) => m.role != Role.system).toList();
-    final title = _currentSession?.title ?? 'AI 語音圖書館';
+    final title = _currentSession?.title ?? l10n.chatTitle;
 
     return Scaffold(
       drawer: ChatSessionDrawer(
@@ -1039,3 +1041,4 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 }
+
