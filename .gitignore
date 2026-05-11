@@ -54,3 +54,13 @@ local_ai_chat_architecture_review_*/
 # Other scratch dumps that have appeared at root over time.
 apis.txt
 
+
+# ==================== 2026-05-11 housekeeping ====================
+# -bak variant (existing *.bak only catches dot-bak files)
+*-bak
+
+# Flutter codegen output
+/lib/generated/
+
+# Runtime data (vectors.ndjson already ignored above)
+data/telegram_expenses.json
