@@ -252,9 +252,140 @@ class CareController extends ChangeNotifier {
     await loadAll();
   }
 
+  // ---------- person-centric history (B3) ----------
+
+  /// Unique persons across all cases (active + closed), sorted by last
+  /// visit date desc; never-visited persons go to the end.
+  List<PersonSummary> personHistorySorted() {
+    final byName = <String, _PersonAccum>{};
+
+    for (final c in _cases) {
+      final name = c.memberName.trim();
+      if (name.isEmpty) continue;
+
+      final visits = visitsForCase(c.id);
+      final caseLastVisit = visits.isEmpty
+          ? null
+          : visits.reduce(
+              (a, b) => a.visitDate.isAfter(b.visitDate) ? a : b);
+
+      final accum = byName.putIfAbsent(name, () => _PersonAccum(name: name));
+      if (accum.phone.isEmpty && c.memberPhone.isNotEmpty) {
+        accum.phone = c.memberPhone;
+      }
+      accum.caseIds.add(c.id);
+      accum.caseTypes.add(c.caseType);
+      accum.totalVisits += visits.length;
+      if (c.status == CareStatus.active) accum.activeCaseCount++;
+      if (caseLastVisit != null) {
+        if (accum.lastVisit == null ||
+            caseLastVisit.visitDate.isAfter(accum.lastVisit!.visitDate)) {
+          accum.lastVisit = caseLastVisit;
+        }
+      }
+      if (accum.earliestCaseAt == null ||
+          c.createdAt.isBefore(accum.earliestCaseAt!)) {
+        accum.earliestCaseAt = c.createdAt;
+      }
+    }
+
+    final list = byName.values
+        .map((a) => PersonSummary(
+              name: a.name,
+              phone: a.phone,
+              caseIds: List.unmodifiable(a.caseIds),
+              caseTypes: Set.unmodifiable(a.caseTypes),
+              lastVisit: a.lastVisit,
+              totalVisits: a.totalVisits,
+              activeCaseCount: a.activeCaseCount,
+              earliestCaseAt: a.earliestCaseAt ?? DateTime.now(),
+            ))
+        .toList();
+
+    list.sort((a, b) {
+      if (a.lastVisit == null && b.lastVisit == null) {
+        return b.earliestCaseAt.compareTo(a.earliestCaseAt);
+      }
+      if (a.lastVisit == null) return 1;
+      if (b.lastVisit == null) return -1;
+      return b.lastVisit!.visitDate.compareTo(a.lastVisit!.visitDate);
+    });
+
+    return list;
+  }
+
+  /// All visits for a given person name (across all their cases).
+  List<VisitLog> visitsForPerson(String name) {
+    final trimmed = name.trim();
+    final caseIds = _cases
+        .where((c) => c.memberName.trim() == trimmed)
+        .map((c) => c.id)
+        .toSet();
+    final result =
+        _visits.where((v) => caseIds.contains(v.caseId)).toList();
+    result.sort((a, b) => b.visitDate.compareTo(a.visitDate));
+    return result;
+  }
+
+  /// All cases (active + closed) for a given person name.
+  List<CareCase> casesForPerson(String name) {
+    final trimmed = name.trim();
+    return _cases.where((c) => c.memberName.trim() == trimmed).toList();
+  }
+
+  int get personHistoryCount => personHistorySorted().length;
+
   // ---------- id generation ----------
   String _generateCaseId() =>
       'care_case_${DateTime.now().microsecondsSinceEpoch}';
   String _generateVisitId() =>
       'visit_log_${DateTime.now().microsecondsSinceEpoch}';
+}
+
+// ============================================================================
+// Person-centric history (B3) data classes
+// ============================================================================
+
+class _PersonAccum {
+  _PersonAccum({required this.name});
+  final String name;
+  String phone = '';
+  final List<String> caseIds = [];
+  final Set<String> caseTypes = {};
+  VisitLog? lastVisit;
+  int totalVisits = 0;
+  int activeCaseCount = 0;
+  DateTime? earliestCaseAt;
+}
+
+/// Aggregate view of one person across all their cases (active + closed).
+class PersonSummary {
+  const PersonSummary({
+    required this.name,
+    required this.phone,
+    required this.caseIds,
+    required this.caseTypes,
+    required this.lastVisit,
+    required this.totalVisits,
+    required this.activeCaseCount,
+    required this.earliestCaseAt,
+  });
+
+  final String name;
+  final String phone;
+  final List<String> caseIds;
+  final Set<String> caseTypes;
+  final VisitLog? lastVisit;
+  final int totalVisits;
+  final int activeCaseCount;
+  final DateTime earliestCaseAt;
+
+  bool get hasActiveCase => activeCaseCount > 0;
+  bool get hasMultipleTypes => caseTypes.length > 1;
+
+  String get primaryCaseType {
+    if (caseTypes.contains(CaseType.member)) return CaseType.member;
+    if (caseTypes.contains(CaseType.newcomer)) return CaseType.newcomer;
+    return CaseType.member;
+  }
 }

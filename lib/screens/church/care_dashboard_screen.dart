@@ -6,6 +6,7 @@ import '../../models/church/visit_log.dart';
 import '../../widgets/church/case_form_dialog.dart';
 import '../../widgets/church/visit_log_dialog.dart';
 import 'case_detail_screen.dart';
+import 'person_history_screen.dart';
 
 /// Pastoral Care Coordination Dashboard.
 /// Top tabs split active cases by [CaseType] (member / newcomer);
@@ -130,7 +131,7 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
           tabs: [
             Tab(text: '會友 (${ctl.activeCountByType(CaseType.member)})'),
             Tab(text: '新朋友 (${ctl.activeCountByType(CaseType.newcomer)})'),
-            Tab(text: '已探訪者 (${ctl.closedCount})'),
+            Tab(text: '已探訪者 (${ctl.personHistorySorted().length})'),
           ],
         ),
       ),
@@ -160,7 +161,7 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
                           searching: searching),
                       _buildTypeTab(ctl, CaseType.newcomer,
                           searching: searching),
-                      _buildClosedTab(ctl, searching: searching),
+                      _buildPersonHistoryTab(ctl, searching: searching),
                     ],
                   ),
                 ),
@@ -245,42 +246,57 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
     );
   }
 
-  Widget _buildClosedTab(CareController ctl, {required bool searching}) {
-    final cases = searching
-        ? ctl
-            .searchCases(_searchQuery)
-            .where((c) => c.status == CareStatus.closed)
-            .toList()
-        : ctl.closedCases;
+  Widget _buildPersonHistoryTab(CareController ctl, {required bool searching}) {
+    var persons = ctl.personHistorySorted();
 
-    if (cases.isEmpty) {
+    if (searching) {
+      final q = _searchQuery.toLowerCase();
+      persons = persons
+          .where((p) =>
+              p.name.toLowerCase().contains(q) ||
+              p.phone.toLowerCase().contains(q))
+          .toList();
+    }
+
+    if (persons.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.history, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
-            const Text('尚無已結案紀錄', style: TextStyle(fontSize: 16)),
-            const SizedBox(height: 4),
-            Text('結案後的關懷紀錄會出現在這裡',
-                style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+            Text(
+              searching ? '沒有符合的人' : '暫無探訪歷史',
+              style: const TextStyle(fontSize: 16),
+            ),
+            if (!searching) ...[
+              const SizedBox(height: 4),
+              Text('在會友 / 新朋友 tab 開新案件並記錄探訪後,會出現喺度',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+            ],
           ],
         ),
       );
     }
 
-    return ListView.builder(
+    return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      itemCount: cases.length,
-      itemBuilder: (ctx, i) => _CaseRow(
-        caseObj: cases[i],
-        controller: ctl,
-        onEdit: () => _openCaseForm(existing: cases[i]),
-        onVisit: () => _todoVisit(cases[i]),
-        onDetail: () => _todoDetail(cases[i]),
-        onClose: null,
+      itemCount: persons.length,
+      separatorBuilder: (_, __) => const Divider(height: 1, indent: 16),
+      itemBuilder: (ctx, i) => _PersonRow(
+        person: persons[i],
+        onTap: () => _openPersonHistory(persons[i].name),
       ),
     );
+  }
+
+  void _openPersonHistory(String name) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (ctx) => PersonHistoryScreen(
+        controller: widget.controller,
+        personName: name,
+      ),
+    ));
   }
 
   Widget _searchList(List<CareCase> matches, CareController ctl) {
@@ -502,4 +518,108 @@ class _CaseRow extends StatelessWidget {
 
   static String _truncate(String s, int max) =>
       s.length <= max ? s : '${s.substring(0, max)}...';
+}
+
+// ============================================================================
+// Person row for the 已探訪者 (history) tab
+// ============================================================================
+
+class _PersonRow extends StatelessWidget {
+  const _PersonRow({required this.person, required this.onTap});
+
+  final PersonSummary person;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final lastVisit = person.lastVisit;
+    final daysSince = lastVisit == null
+        ? null
+        : DateTime.now().difference(lastVisit.visitDate).inDays;
+
+    return ListTile(
+      title: Row(
+        children: [
+          Flexible(
+            child: Text(person.name,
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis),
+          ),
+          const SizedBox(width: 6),
+          if (person.hasActiveCase)
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+              decoration: BoxDecoration(
+                color: Colors.deepPurple.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Text(
+                '進行中',
+                style: TextStyle(
+                    color: Colors.deepPurple,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10),
+              ),
+            ),
+        ],
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (lastVisit != null)
+            Text(
+              '上次:${lastVisit.visitedBy} · ${VisitMethod.label(lastVisit.method)} · ${_fmtShort(lastVisit.visitDate)}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: Colors.grey[700], fontSize: 12),
+            )
+          else
+            Text(
+              '尚未探訪過',
+              style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic),
+            ),
+          const SizedBox(height: 2),
+          Text(
+            '共 ${person.totalVisits} 次探訪 · ${person.caseIds.length} 個案件',
+            style: TextStyle(color: Colors.grey[600], fontSize: 11),
+          ),
+        ],
+      ),
+      trailing: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (daysSince != null)
+            Text(
+              _agoLabel(daysSince),
+              style: TextStyle(
+                color: daysSince > 30
+                    ? Colors.red.shade400
+                    : Colors.grey[700],
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+        ],
+      ),
+      onTap: onTap,
+    );
+  }
+
+  static String _fmtShort(DateTime d) =>
+      '${d.month}/${d.day.toString().padLeft(2, '0')}';
+
+  static String _agoLabel(int days) {
+    if (days == 0) return '今天';
+    if (days < 7) return '$days 天前';
+    if (days < 30) return '${(days / 7).floor()} 週前';
+    if (days < 365) return '${(days / 30).floor()} 個月前';
+    return '${(days / 365).floor()} 年前';
+  }
 }

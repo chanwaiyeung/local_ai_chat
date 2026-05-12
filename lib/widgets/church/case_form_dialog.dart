@@ -44,6 +44,12 @@ class _CaseFormDialogState extends State<CaseFormDialog> {
     _notesCtrl = TextEditingController(text: e?.notes ?? '');
     _urgency = e?.urgency ?? CareUrgency.medium;
     _caseType = e?.caseType ?? widget.defaultType ?? CaseType.member;
+    // Auto-fill reason for brand-new newcomer cases.
+    if (e == null &&
+        _caseType == CaseType.newcomer &&
+        _reasonCtrl.text.isEmpty) {
+      _reasonCtrl.text = '新朋友';
+    }
   }
 
   @override
@@ -121,7 +127,11 @@ class _CaseFormDialogState extends State<CaseFormDialog> {
               children: [
                 TextFormField(
                   controller: _nameCtrl,
-                  decoration: const InputDecoration(labelText: '會友姓名 *'),
+                  decoration: InputDecoration(
+                    labelText: _caseType == CaseType.newcomer
+                        ? '新朋友姓名 *'
+                        : '會友姓名 *',
+                  ),
                   validator: (v) =>
                       (v == null || v.trim().isEmpty) ? '請輸入姓名' : null,
                 ),
@@ -148,7 +158,23 @@ class _CaseFormDialogState extends State<CaseFormDialog> {
                             label: Text(CaseType.label(t)),
                             selected: _caseType == t,
                             onSelected: (sel) {
-                              if (sel) setState(() => _caseType = t);
+                              if (!sel) return;
+                              setState(() {
+                                final wasNewcomer =
+                                    _caseType == CaseType.newcomer;
+                                _caseType = t;
+                                final isNewcomer =
+                                    _caseType == CaseType.newcomer;
+                                if (isNewcomer &&
+                                    !wasNewcomer &&
+                                    _reasonCtrl.text.isEmpty) {
+                                  _reasonCtrl.text = '新朋友';
+                                } else if (!isNewcomer &&
+                                    wasNewcomer &&
+                                    _reasonCtrl.text == '新朋友') {
+                                  _reasonCtrl.text = '';
+                                }
+                              });
                             },
                           ))
                       .toList(),
