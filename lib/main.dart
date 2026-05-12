@@ -9,6 +9,7 @@ import 'controllers/expense_controller.dart';
 import 'controllers/health_controller.dart';
 import 'controllers/wealth_controller.dart';
 import 'controllers/book_controller.dart';
+import 'controllers/church/care_controller.dart';
 import 'l10n/app_localizations.dart';
 import 'screens/personal_hub_screen.dart';
 import 'server/api_server.dart';
@@ -48,6 +49,7 @@ late final ContactController globalContactController;
 late final HealthController globalHealthController;
 late final WealthController globalWealthController;
 late final BookController globalBookController;
+late final CareController globalCareController;
 late final PersonalRagService globalPersonalRagService;
 late final SkillsService globalSkillsService;
 late final OllamaClient globalOllama;
@@ -80,10 +82,12 @@ Future<void> main() async {
   globalHealthController = HealthController(globalStore);
   globalWealthController = WealthController(globalStore);
   globalBookController = BookController(globalStore);
+  globalCareController = CareController(globalStore);
   await globalExpenseController.getAllExpenses();
   await globalContactController.getAllContacts();
   await globalWealthController.loadAll();
   await globalBookController.loadAll();
+  await globalCareController.loadAll();
   // HealthController loads synchronously from VectorStore so no await needed here for all records,
   // but if needed, we can call getAllRecords().
 

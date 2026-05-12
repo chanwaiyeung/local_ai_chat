@@ -57,6 +57,7 @@ import 'settings_screen.dart';
 import 'wealth_screen.dart';
 import '../controllers/book_controller.dart';
 import 'book_screen.dart';
+import 'church/care_dashboard_screen.dart';
 
 class PersonalHubScreen extends StatefulWidget {
   const PersonalHubScreen({
@@ -88,6 +89,7 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
     super.initState();
     widget.expenseController.addListener(_onChanged);
     widget.contactController.addListener(_onChanged);
+    globalCareController.addListener(_onChanged);
     widget.healthController.addListener(_onChanged);
     widget.wealthController.addListener(_onChanged);
   }
@@ -98,6 +100,7 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
     widget.contactController.removeListener(_onChanged);
     widget.healthController.removeListener(_onChanged);
     widget.wealthController.removeListener(_onChanged);
+    globalCareController.removeListener(_onChanged);
     super.dispose();
   }
 
@@ -655,6 +658,18 @@ class _ModulesGrid extends StatelessWidget {
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => BookScreen(controller: bookController),
+          ),
+        ),
+      ),
+      _ModuleData(
+        icon: Icons.favorite_outline,
+        label: '教會關懷',
+        subtitle: '${globalCareController.activeCount} 案件 · ${globalCareController.redCount} 紅燈',
+        color: Colors.deepPurple,
+        enabled: true,
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => CareDashboardScreen(controller: globalCareController),
           ),
         ),
       ),
