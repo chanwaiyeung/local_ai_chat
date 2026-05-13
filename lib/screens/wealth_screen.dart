@@ -1,4 +1,4 @@
-﻿// lib/screens/wealth_screen.dart
+// lib/screens/wealth_screen.dart
 
 //
 
@@ -36,19 +36,16 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../controllers/wealth_controller.dart';
-import '../l10n/app_localizations.dart';
-
-import '../models/wealth_record.dart';
-
-import '../services/personal_rag_service.dart';
-import '../services/currency_service.dart';
-import '../services/vision_llm_service.dart';
-import '../services/app_settings_service.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../controllers/wealth_controller.dart';
+import '../l10n/app_localizations.dart';
+import '../models/wealth_record.dart';
+import '../services/app_settings_service.dart';
+import '../services/currency_service.dart';
+import '../services/personal_rag_service.dart';
+import '../services/vision_llm_service.dart';
 import '../widgets/wealth/wealth_monthly_report_card.dart';
-
 import 'personal_query_screen.dart';
 
 class WealthScreen extends StatefulWidget {
@@ -150,7 +147,7 @@ class _WealthScreenState extends State<WealthScreen>
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final currency = _resolveCurrency();
 
     final currencies = widget.controller.getCurrencies();
@@ -161,8 +158,12 @@ class _WealthScreenState extends State<WealthScreen>
         bottom: TabBar(
           controller: _tabCtrl,
           tabs: [
-            Tab(text: AppLocalizations.of(context).tabRecords, icon: const Icon(Icons.list)),
-            Tab(text: AppLocalizations.of(context).tabAllocation, icon: const Icon(Icons.pie_chart_outline)),
+            Tab(
+                text: AppLocalizations.of(context).tabRecords,
+                icon: const Icon(Icons.list)),
+            Tab(
+                text: AppLocalizations.of(context).tabAllocation,
+                icon: const Icon(Icons.pie_chart_outline)),
           ],
         ),
       ),
@@ -193,15 +194,17 @@ class _WealthScreenState extends State<WealthScreen>
         label: Text(l10n.addManually),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      // 新增第二個按鈕（右下角）
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            FloatingActionButton(
-              heroTag: 'vision',
-              backgroundColor: Theme.of(context).colorScheme.secondary,
+            IconButton.filled(
+              tooltip: '掃描資產',
+              style: IconButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.secondary,
+                foregroundColor: Theme.of(context).colorScheme.onSecondary,
+              ),
               onPressed: () async {
                 final settings = await AppSettingsService().load();
                 final apiKey = settings.geminiApiKey?.trim();
@@ -209,7 +212,8 @@ class _WealthScreenState extends State<WealthScreen>
                 if (apiKey == null || apiKey.isEmpty) {
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('請先前往 Settings 設定 Gemini API Key')),
+                    const SnackBar(
+                        content: Text('請先前往 Settings 設定 Gemini API Key')),
                   );
                   return;
                 }
@@ -223,14 +227,22 @@ class _WealthScreenState extends State<WealthScreen>
                     title: const Text('掃描資產'),
                     content: const Text('請選擇圖片來源'),
                     actions: [
-                      TextButton.icon(icon: const Icon(Icons.camera_alt), label: const Text('拍照'), onPressed: () async {
-                        final img = await picker.pickImage(source: ImageSource.camera, imageQuality: 90);
-                        if (context.mounted) Navigator.pop(context, img);
-                      }),
-                      TextButton.icon(icon: const Icon(Icons.photo_library), label: const Text('從相簿選擇'), onPressed: () async {
-                        final img = await picker.pickImage(source: ImageSource.gallery, imageQuality: 90);
-                        if (context.mounted) Navigator.pop(context, img);
-                      }),
+                      TextButton.icon(
+                          icon: const Icon(Icons.camera_alt),
+                          label: const Text('拍照'),
+                          onPressed: () async {
+                            final img = await picker.pickImage(
+                                source: ImageSource.camera, imageQuality: 90);
+                            if (context.mounted) Navigator.pop(context, img);
+                          }),
+                      TextButton.icon(
+                          icon: const Icon(Icons.photo_library),
+                          label: const Text('從相簿選擇'),
+                          onPressed: () async {
+                            final img = await picker.pickImage(
+                                source: ImageSource.gallery, imageQuality: 90);
+                            if (context.mounted) Navigator.pop(context, img);
+                          }),
                     ],
                   ),
                 );
@@ -262,7 +274,8 @@ class _WealthScreenState extends State<WealthScreen>
 
                 try {
                   final visionService = VisionLLMService();
-                  final record = await visionService.scanWealthFromImage(image.path, apiKey: apiKey);
+                  final record = await visionService
+                      .scanWealthFromImage(image.path, apiKey: apiKey);
 
                   if (!context.mounted) return;
                   Navigator.pop(context); // 關閉 Loading Dialog
@@ -274,18 +287,21 @@ class _WealthScreenState extends State<WealthScreen>
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('AI 無法辨識清晰資產，請換張更清楚的圖片或手動輸入')),
+                      const SnackBar(
+                          content: Text('AI 無法辨識清晰資產，請換張更清楚的圖片或手動輸入')),
                     );
                   }
                 } catch (e) {
                   if (!context.mounted) return;
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('掃描失敗：${e.toString().replaceAll('VisionLlmException: ', '')}')),
+                    SnackBar(
+                        content: Text(
+                            '掃描失敗：${e.toString().replaceAll('VisionLlmException: ', '')}')),
                   );
                 }
               },
-              child: const Icon(Icons.camera_alt),
+              icon: const Icon(Icons.camera_alt),
             ),
           ],
         ),
@@ -336,83 +352,89 @@ class _RecordsTab extends StatelessWidget {
 
     final stats = controller.getStats(currency: currency);
 
-    return Column(
-      children: [
-        WealthStatsCard(stats: stats),
-        WealthMonthlyReportCard(
-          controller: controller,
-          currency: currency,
-        ),
-        const SizedBox(height: 8),
-        // === CSV 匯出按鈕 ===
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: OutlinedButton.icon(
-              icon: const Icon(Icons.download),
-              label: Text(AppLocalizations.of(context).wealthExportCsv),
-              onPressed: () {
-                final csv = controller.exportToCsv();
-                // 先複製到剪貼簿（最簡單跨平台）
-                Clipboard.setData(ClipboardData(text: csv));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(AppLocalizations.of(context).wealthCsvCopied),
-                  ),
-                );
-              },
-            ),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(bottom: 96),
+      child: Column(
+        children: [
+          WealthStatsCard(stats: stats),
+          WealthMonthlyReportCard(
+            controller: controller,
+            currency: currency,
           ),
-        ),
-        if (onAiAdvisor != null)
+          const SizedBox(height: 8),
+          // === CSV 匯出按鈕 ===
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                icon: const Icon(Icons.auto_awesome),
-                label: Text(AppLocalizations.of(context).aiFinancialAdvisor),
-                onPressed: onAiAdvisor,
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.download),
+                label: Text(AppLocalizations.of(context).wealthExportCsv),
+                onPressed: () {
+                  final csv = controller.exportToCsv();
+                  // 先複製到剪貼簿（最簡單跨平台）
+                  Clipboard.setData(ClipboardData(text: csv));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content:
+                          Text(AppLocalizations.of(context).wealthCsvCopied),
+                    ),
+                  );
+                },
               ),
             ),
           ),
-        if (currencies.length > 1)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: _CurrencyPicker(
-              current: currency,
-              available: currencies,
-              onChanged: onCurrencyChanged,
-            ),
-          ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: AppLocalizations.of(context).searchAssetHint,
-              prefixIcon: const Icon(Icons.search),
-              isDense: true,
-              border: const OutlineInputBorder(),
-            ),
-            onChanged: onQueryChanged,
-          ),
-        ),
-        Expanded(
-          child: records.isEmpty
-              ? Center(child: Text(AppLocalizations.of(context).noInvestmentRecords))
-              : ListView.separated(
-                  itemCount: records.length,
-                  separatorBuilder: (_, __) =>
-                      const Divider(height: 1, indent: 16, endIndent: 16),
-                  itemBuilder: (context, i) => WealthRecordCard(
-                    record: records[i],
-                    onTap: () => onEdit(records[i]),
-                    onDelete: () => controller.deleteRecord(records[i].id),
-                  ),
+          if (onAiAdvisor != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  icon: const Icon(Icons.auto_awesome),
+                  label: Text(AppLocalizations.of(context).aiFinancialAdvisor),
+                  onPressed: onAiAdvisor,
                 ),
-        ),
-      ],
+              ),
+            ),
+          if (currencies.length > 1)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: _CurrencyPicker(
+                current: currency,
+                available: currencies,
+                onChanged: onCurrencyChanged,
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context).searchAssetHint,
+                prefixIcon: const Icon(Icons.search),
+                isDense: true,
+                border: const OutlineInputBorder(),
+              ),
+              onChanged: onQueryChanged,
+            ),
+          ),
+          if (records.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 48),
+              child: Center(
+                child: Text(AppLocalizations.of(context).noInvestmentRecords),
+              ),
+            )
+          else
+            for (var i = 0; i < records.length; i++) ...[
+              if (i > 0) const Divider(height: 1, indent: 16, endIndent: 16),
+              WealthRecordCard(
+                record: records[i],
+                onTap: () => onEdit(records[i]),
+                onDelete: () => controller.deleteRecord(records[i].id),
+              ),
+            ],
+        ],
+      ),
     );
   }
 }
@@ -505,7 +527,9 @@ class WealthStatsCard extends StatelessWidget {
     if (stats.isEmpty) {
       return Card(
         margin: const EdgeInsets.all(16),
-        child: Padding(padding: const EdgeInsets.all(16), child: Text(AppLocalizations.of(context).noInvestmentRecords)),
+        child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(AppLocalizations.of(context).noInvestmentRecords)),
       );
     }
 
@@ -519,10 +543,13 @@ class WealthStatsCard extends StatelessWidget {
             Row(children: [
               const Icon(Icons.account_balance_outlined),
               const SizedBox(width: 8),
-              Text('${AppLocalizations.of(context).netWorthOverview}（${stats.currency}）',
+              Text(
+                  '${AppLocalizations.of(context).netWorthOverview}（${stats.currency}）',
                   style: Theme.of(context).textTheme.titleMedium),
               const Spacer(),
-              Text(AppLocalizations.of(context).assetCountLabel(stats.assetCount),
+              Text(
+                  AppLocalizations.of(context)
+                      .assetCountLabel(stats.assetCount),
                   style: TextStyle(color: Theme.of(context).hintColor)),
             ]),
             const Divider(),
@@ -606,7 +633,8 @@ class _CurrencyPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(children: [
-      Text(AppLocalizations.of(context).currencyLabel, style: TextStyle(color: Theme.of(context).hintColor)),
+      Text(AppLocalizations.of(context).currencyLabel,
+          style: TextStyle(color: Theme.of(context).hintColor)),
       const SizedBox(width: 8),
       Expanded(
         child: Wrap(
@@ -814,7 +842,8 @@ class NetWorthHistoryCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(children: [
-              Text(AppLocalizations.of(context).netWorthTrend, style: Theme.of(context).textTheme.titleMedium),
+              Text(AppLocalizations.of(context).netWorthTrend,
+                  style: Theme.of(context).textTheme.titleMedium),
               const Spacer(),
               Text(currency,
                   style: TextStyle(color: Theme.of(context).hintColor)),
@@ -823,7 +852,9 @@ class NetWorthHistoryCard extends StatelessWidget {
             if (history.length < 2)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24),
-                child: Center(child: Text(AppLocalizations.of(context).needTwoDatesForChart)),
+                child: Center(
+                    child: Text(
+                        AppLocalizations.of(context).needTwoDatesForChart)),
               )
             else
               SizedBox(
@@ -1056,7 +1087,10 @@ class _WealthRecordFormDialogState extends State<WealthRecordFormDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(widget.existing == null ? AppLocalizations.of(context).addInvestmentRecord : AppLocalizations.of(context).editInvestmentRecord,
+            Text(
+                widget.existing == null
+                    ? AppLocalizations.of(context).addInvestmentRecord
+                    : AppLocalizations.of(context).editInvestmentRecord,
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
             ListTile(
@@ -1069,7 +1103,8 @@ class _WealthRecordFormDialogState extends State<WealthRecordFormDialog> {
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               initialValue: _assetType,
-              decoration: InputDecoration(labelText: AppLocalizations.of(context).assetClass),
+              decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context).assetClass),
               items: [
                 for (final t in WealthAssetType.all)
                   DropdownMenuItem(
@@ -1091,13 +1126,16 @@ class _WealthRecordFormDialogState extends State<WealthRecordFormDialog> {
                 flex: 3,
                 child: TextFormField(
                   controller: _amountCtrl,
-                  decoration: InputDecoration(labelText: AppLocalizations.of(context).amount),
+                  decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context).amount),
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                   validator: (v) {
                     final n = double.tryParse(v ?? '');
 
-                    if (n == null || n <= 0) return AppLocalizations.of(context).invalidAmountError;
+                    if (n == null || n <= 0) {
+                      return AppLocalizations.of(context).invalidAmountError;
+                    }
 
                     return null;
                   },
@@ -1108,7 +1146,8 @@ class _WealthRecordFormDialogState extends State<WealthRecordFormDialog> {
                 flex: 1,
                 child: DropdownButtonFormField<String>(
                   initialValue: _currency,
-                  decoration: InputDecoration(labelText: AppLocalizations.of(context).currency),
+                  decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context).currency),
                   items: [
                     for (final c in _currencies)
                       DropdownMenuItem(value: c, child: Text(c)),
@@ -1120,7 +1159,8 @@ class _WealthRecordFormDialogState extends State<WealthRecordFormDialog> {
             const SizedBox(height: 8),
             TextFormField(
               controller: _notesCtrl,
-              decoration: InputDecoration(labelText: AppLocalizations.of(context).notes),
+              decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context).notes),
               maxLines: 2,
             ),
             const SizedBox(height: 8),
@@ -1131,7 +1171,9 @@ class _WealthRecordFormDialogState extends State<WealthRecordFormDialog> {
               ),
             ),
             const SizedBox(height: 24),
-            FilledButton(onPressed: _submit, child: Text(AppLocalizations.of(context).saveButton)),
+            FilledButton(
+                onPressed: _submit,
+                child: Text(AppLocalizations.of(context).saveButton)),
             const SizedBox(height: 8),
           ],
         ),
