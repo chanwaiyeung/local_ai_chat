@@ -44,14 +44,33 @@ import 'services/vector_store.dart';
 const _aiLibLan = bool.fromEnvironment('AI_LIB_LAN', defaultValue: false);
 const _aiLibToken = String.fromEnvironment('AI_LIB_TOKEN', defaultValue: '');
 
-late final VectorStore globalStore;
+VectorStore? _globalStore;
+VectorStore get globalStore => _globalStore ??= VectorStore();
+
+@visibleForTesting
+set globalStore(VectorStore store) => _globalStore = store;
+
 late final ExpenseController globalExpenseController;
 late final ContactController globalContactController;
 late final HealthController globalHealthController;
 late final WealthController globalWealthController;
 late final BookController globalBookController;
-late final CareController globalCareController;
-late final PersonController globalPersonController;
+CareController? _globalCareController;
+CareController get globalCareController =>
+    _globalCareController ??= CareController(globalStore);
+
+@visibleForTesting
+set globalCareController(CareController controller) =>
+    _globalCareController = controller;
+
+PersonController? _globalPersonController;
+PersonController get globalPersonController =>
+    _globalPersonController ??= PersonController(globalStore);
+
+@visibleForTesting
+set globalPersonController(PersonController controller) =>
+    _globalPersonController = controller;
+
 late final PersonalRagService globalPersonalRagService;
 late final SkillsService globalSkillsService;
 late final OllamaClient globalOllama;
@@ -223,16 +242,8 @@ class MyAppState extends State<MyApp> {
         healthController: globalHealthController,
         wealthController: globalWealthController,
         bookController: globalBookController,
-        
         personalRagService: globalPersonalRagService,
       ),
     );
   }
 }
-
-
-
-
-
-
-

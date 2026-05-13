@@ -10,6 +10,25 @@ import 'package:local_ai_chat/services/embedding_service.dart';
 import 'package:local_ai_chat/services/personal_rag_service.dart';
 import 'package:local_ai_chat/services/skills_service.dart';
 import 'package:local_ai_chat/services/vector_store.dart';
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+
+class _FakePathProviderPlatform extends Fake
+    with MockPlatformInterfaceMixin
+    implements PathProviderPlatform {
+  _FakePathProviderPlatform(this.tempDir);
+
+  final Directory tempDir;
+
+  @override
+  Future<String?> getApplicationSupportPath() async => tempDir.path;
+
+  @override
+  Future<String?> getApplicationDocumentsPath() async => tempDir.path;
+
+  @override
+  Future<String?> getTemporaryPath() async => tempDir.path;
+}
 
 Future<List<double>> keywordEmbed(String text) async {
   final lower = text.toLowerCase();
@@ -23,6 +42,8 @@ Future<List<double>> keywordEmbed(String text) async {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late Directory tempDir;
   late VectorStore store;
   late EmbeddingService embedder;
@@ -31,6 +52,7 @@ void main() {
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('personal_rag_');
+    PathProviderPlatform.instance = _FakePathProviderPlatform(tempDir);
     store = VectorStore(
       storagePath: '${tempDir.path}${Platform.pathSeparator}vstore.json',
     );
@@ -345,7 +367,8 @@ void main() {
       expect(capturedUser, contains('使用者問題'));
     });
 
-    test('injects skills into system prompt when skillsService is provided', () async {
+    test('injects skills into system prompt when skillsService is provided',
+        () async {
       String? capturedSystem;
       final skillsService = SkillsService(store: store, embedder: embedder);
       await skillsService.extractAndSaveSkill(
