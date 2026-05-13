@@ -1,13 +1,23 @@
+// Scratch script for Gemini API smoke testing.
+// Lint suppressions: print() is legitimate CLI output.
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 
 Future<void> main() async {
-  final apiKey = 'AIzaSyByD3cMsY-5o4CnGyfxRDXyl9F4y5Dp8Bw';
+  final apiKey = const String.fromEnvironment('GEMINI_API_KEY');
+  if (apiKey.isEmpty) {
+    throw StateError(
+      'Set GEMINI_API_KEY env var: dart --define=GEMINI_API_KEY=xxx ...',
+    );
+  }
   final model = 'gemini-2.5-flash';
   final topic = '如何做好長期投資組合管理';
 
   final prompt = '''
-你是一個專業的 AI 導師。使用者想學習一個主題：「\$topic」。
+你是一個專業的 AI 導師。使用者想學習一個主題：「$topic」。
 請為這個主題提供一個簡明扼要的高品質回答，並且萃取出適用的「思考路徑 (Reasoning Path)」。
 回覆請嚴格遵循以下 JSON 格式（不要加上任何 Markdown 標記，只要純 JSON）：
 {

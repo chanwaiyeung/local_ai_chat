@@ -662,7 +662,7 @@ class _HealthTrendsCard extends StatelessWidget {
             dotData: FlDotData(show: data.length == 1),
             belowBarData: BarAreaData(
               show: true,
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
             ),
           ),
         ],

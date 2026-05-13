@@ -48,7 +48,6 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(widget.bookTitle)),
       body: ValueListenableBuilder<ReaderState>(
