@@ -7,7 +7,7 @@ Future<void> main() async {
   final response = await http.get(uri);
   final data = jsonDecode(response.body) as Map<String, dynamic>;
   final models = data['models'] as List<dynamic>;
-  for (var m in models) {
+  for (final m in models) {
     if (m['name'].toString().contains('gemini')) {
       print(m['name']);
     }

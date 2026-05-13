@@ -161,7 +161,7 @@ class _PersonalQueryScreenState extends State<PersonalQueryScreen> {
       );
       if (mounted) {
         setState(() => _extractedSkill = skill);
-        final l10n = AppLocalizations.of(context)!;
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.skillSaved)),
         );
@@ -179,7 +179,7 @@ class _PersonalQueryScreenState extends State<PersonalQueryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.personalQueryTitle),
@@ -301,7 +301,7 @@ class _PlaceholderHints extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hint = Theme.of(context).hintColor;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [

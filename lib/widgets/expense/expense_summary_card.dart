@@ -10,7 +10,7 @@ class ExpenseSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final now = DateTime.now();
     final summary = controller.getMonthlySummary(now.year, now.month);
     final total = summary.values.fold<double>(0, (sum, v) => sum + v);

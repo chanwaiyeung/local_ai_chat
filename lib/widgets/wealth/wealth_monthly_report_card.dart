@@ -1,4 +1,4 @@
-﻿// lib/widgets/wealth/wealth_monthly_report_card.dart
+// lib/widgets/wealth/wealth_monthly_report_card.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../controllers/wealth_controller.dart';
@@ -17,7 +17,7 @@ class WealthMonthlyReportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final now = DateTime.now();
     final report = controller.getMonthlyReport(
       currency: currency,

@@ -1,7 +1,8 @@
-﻿// lib/widgets/currency_picker_button.dart
+// lib/widgets/currency_picker_button.dart
 import 'package:flutter/material.dart';
-import '../services/currency_service.dart';
+
 import '../l10n/app_localizations.dart';
+import '../services/currency_service.dart';
 
 /// Compact picker. Renders as a small icon-row that opens a popup menu
 /// listing all supported currencies. Tapping persists the choice and

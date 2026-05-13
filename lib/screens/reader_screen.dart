@@ -1,7 +1,7 @@
-﻿import 'package:flutter/material.dart';
-import '../l10n/app_localizations.dart';
+import 'package:flutter/material.dart';
 
 import '../controllers/reader_controller.dart';
+import '../l10n/app_localizations.dart';
 import '../services/api_client.dart';
 import '../services/ocr_service.dart';
 
@@ -48,7 +48,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(widget.bookTitle)),
       body: ValueListenableBuilder<ReaderState>(
@@ -140,7 +140,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
   }
 
   Widget _buildInputArea(ReaderState state) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return Row(
       children: [
         Expanded(

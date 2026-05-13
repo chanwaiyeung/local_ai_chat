@@ -1,4 +1,4 @@
-﻿// lib/screens/reading_mode_screen.dart
+// lib/screens/reading_mode_screen.dart
 //
 // Phase 1C: Reading Mode — full-text view of a single doc, with an
 // in-book search bar that calls the retrieve-first `/rag/retrieve`
@@ -9,9 +9,9 @@
 // `ReaderController` in Phase 1B but were so far only exposed by tests.
 
 import 'package:flutter/material.dart';
-import '../l10n/app_localizations.dart';
 
 import '../controllers/reader_controller.dart';
+import '../l10n/app_localizations.dart';
 import '../services/api_client.dart';
 
 class ReadingModeScreen extends StatefulWidget {
@@ -81,7 +81,7 @@ class _ReadingModeScreenState extends State<ReadingModeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(title: Text('${l10n.readingModeTitle}：${widget.bookTitle}')),
       body: ValueListenableBuilder<ReaderState>(

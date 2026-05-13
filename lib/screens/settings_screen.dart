@@ -1,12 +1,13 @@
-﻿import 'dart:convert';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../l10n/app_localizations.dart';
 import '../main.dart';
 import '../models/app_settings.dart';
-import '../services/ollama_service.dart';
 import '../services/currency_service.dart';
+import '../services/ollama_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({
@@ -92,13 +93,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _testGeminiConnection() async {
     final key = _geminiApiKeyController.text.trim();
     if (key.isEmpty) {
-      final l10n = AppLocalizations.of(context)!;
+      final l10n = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.settingsApiKeyRequired)),
       );
       return;
     }
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(l10n.settingsTestingConnection)),
     );
@@ -177,7 +178,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final currentModel =
         _useCustom ? _customController.text.trim() : _selectedPreset;
 

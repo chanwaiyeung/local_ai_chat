@@ -1,4 +1,4 @@
-﻿// lib/screens/personal_hub_screen.dart
+// lib/screens/personal_hub_screen.dart
 //
 // Phase 6.3'a + 6.4'b + 6.5 — Personal Hub entry + Dashboard UI.
 //
@@ -35,6 +35,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../controllers/book_controller.dart';
 import '../controllers/contact_controller.dart';
 import '../controllers/expense_controller.dart';
 import '../controllers/health_controller.dart';
@@ -49,15 +50,15 @@ import '../widgets/expense/expense_summary_card.dart';
 import '../widgets/health/health_summary_card.dart';
 import '../widgets/wealth/wealth_monthly_report_card.dart';
 import '../widgets/wealth/wealth_report_card.dart';
+import 'book_screen.dart';
+import 'church/care_dashboard_screen.dart';
+import 'church/person_directory_screen.dart';
 import 'expense_screen.dart';
 import 'health_screen.dart';
 import 'my_skills_screen.dart';
 import 'personal_query_screen.dart';
 import 'settings_screen.dart';
 import 'wealth_screen.dart';
-import '../controllers/book_controller.dart';
-import 'book_screen.dart';
-import 'church/care_dashboard_screen.dart';
 
 class PersonalHubScreen extends StatefulWidget {
   const PersonalHubScreen({
@@ -90,6 +91,7 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
     widget.expenseController.addListener(_onChanged);
     widget.contactController.addListener(_onChanged);
     globalCareController.addListener(_onChanged);
+    globalPersonController.addListener(_onChanged);
     widget.healthController.addListener(_onChanged);
     widget.wealthController.addListener(_onChanged);
   }
@@ -101,6 +103,7 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
     widget.healthController.removeListener(_onChanged);
     widget.wealthController.removeListener(_onChanged);
     globalCareController.removeListener(_onChanged);
+    globalPersonController.removeListener(_onChanged);
     super.dispose();
   }
 
@@ -160,7 +163,7 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
     prompt += '[健康狀態 (近30天)]\n';
     if (hStats.avgWeight != null) prompt += '- 平均體重：${hStats.avgWeight!.toStringAsFixed(1)} kg\n';
     if (hStats.avgSystolic != null) prompt += '- 平均血壓：${hStats.avgSystolic!.toStringAsFixed(0)}/${hStats.avgDiastolic?.toStringAsFixed(0) ?? '?'} mmHg\n';
-    if (hStats.totalSteps != null && hStats.totalSteps! > 0) prompt += '- 近期總步數：${hStats.totalSteps} 步\n';
+    if (hStats.totalSteps > 0) prompt += '- 近期總步數：${hStats.totalSteps} 步\n';
     if (hStats.avgSleepHours != null) prompt += '- 平均睡眠：${hStats.avgSleepHours!.toStringAsFixed(1)} 小時\n';
     
     prompt += '\n[財務狀態 ($ccy)]\n';
@@ -424,7 +427,7 @@ class _LifeInsightsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -670,6 +673,18 @@ class _ModulesGrid extends StatelessWidget {
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => CareDashboardScreen(controller: globalCareController),
+          ),
+        ),
+      ),
+      _ModuleData(
+        icon: Icons.contacts_outlined,
+        label: '會友通訊錄',
+        subtitle: '${globalPersonController.totalCount} 位 · ${globalPersonController.inactiveCount} 久未出席',
+        color: Colors.teal,
+        enabled: true,
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => PersonDirectoryScreen(controller: globalPersonController),
           ),
         ),
       ),

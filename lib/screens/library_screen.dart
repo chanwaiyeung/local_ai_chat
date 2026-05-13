@@ -1,4 +1,4 @@
-﻿// lib/screens/library_screen.dart
+// lib/screens/library_screen.dart
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 
@@ -128,7 +128,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.libraryTitle),

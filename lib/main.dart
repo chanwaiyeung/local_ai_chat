@@ -1,27 +1,28 @@
-﻿// lib/main.dart
+// lib/main.dart
 import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import 'controllers/book_controller.dart';
+import 'controllers/church/care_controller.dart';
+import 'controllers/church/person_controller.dart';
 import 'controllers/contact_controller.dart';
 import 'controllers/expense_controller.dart';
 import 'controllers/health_controller.dart';
 import 'controllers/wealth_controller.dart';
-import 'controllers/book_controller.dart';
-import 'controllers/church/care_controller.dart';
 import 'l10n/app_localizations.dart';
 import 'screens/personal_hub_screen.dart';
 import 'server/api_server.dart';
 import 'server/ollama_client.dart';
 import 'services/app_settings_service.dart';
+import 'services/currency_service.dart';
 import 'services/embedding_service.dart';
 import 'services/personal_rag_service.dart';
 import 'services/rag_service.dart';
 import 'services/skills_service.dart';
 import 'services/telegram_bot_service.dart';
 import 'services/vector_store.dart';
-import 'services/currency_service.dart';
 
 // ----------------------------- dart-define config -----------------------------
 //
@@ -50,6 +51,7 @@ late final HealthController globalHealthController;
 late final WealthController globalWealthController;
 late final BookController globalBookController;
 late final CareController globalCareController;
+late final PersonController globalPersonController;
 late final PersonalRagService globalPersonalRagService;
 late final SkillsService globalSkillsService;
 late final OllamaClient globalOllama;
@@ -83,11 +85,13 @@ Future<void> main() async {
   globalWealthController = WealthController(globalStore);
   globalBookController = BookController(globalStore);
   globalCareController = CareController(globalStore);
+  globalPersonController = PersonController(globalStore);
   await globalExpenseController.getAllExpenses();
   await globalContactController.getAllContacts();
   await globalWealthController.loadAll();
   await globalBookController.loadAll();
   await globalCareController.loadAll();
+  await globalPersonController.loadAll();
   // HealthController loads synchronously from VectorStore so no await needed here for all records,
   // but if needed, we can call getAllRecords().
 

@@ -207,7 +207,7 @@ class _MySkillsScreenState extends State<MySkillsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final filtered = _filteredSkills;
     final domains = _availableDomains.toList()..sort();
 

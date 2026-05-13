@@ -1,4 +1,4 @@
-﻿// lib/screens/health_screen.dart
+// lib/screens/health_screen.dart
 //
 // Phase 6.7 (v2.3) — Health module UI.
 // Layout:
@@ -99,7 +99,7 @@ class _HealthScreenState extends State<HealthScreen> {
                           String prompt = '請根據我過去 30 天的健康數據總結，給我一些生活與飲食上的建議：\n';
                           if (stats.avgWeight != null) prompt += '- 平均體重：${stats.avgWeight!.toStringAsFixed(1)} kg\n';
                           if (stats.avgSystolic != null) prompt += '- 平均血壓：${stats.avgSystolic!.toStringAsFixed(0)}/${stats.avgDiastolic?.toStringAsFixed(0) ?? '?'} mmHg\n';
-                          if (stats.totalSteps != null && stats.totalSteps! > 0) prompt += '- 近期總步數：${stats.totalSteps} 步\n';
+                          if (stats.totalSteps > 0) prompt += '- 近期總步數：${stats.totalSteps} 步\n';
                           if (stats.avgSleepHours != null) prompt += '- 平均睡眠：${stats.avgSleepHours!.toStringAsFixed(1)} 小時\n';
                           prompt += '\n請告訴我目前的健康狀態如何，以及需要注意什麼？';
 
