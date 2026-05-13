@@ -4,9 +4,13 @@
 // Embedding is faked via EmbeddingService(embedFn: ...). LLM is faked via
 // LlmCompletionStream so tests stay offline.
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:local_ai_chat/l10n/app_localizations.dart';
+import 'package:local_ai_chat/models/app_settings.dart';
 import 'package:local_ai_chat/models/contact.dart';
 import 'package:local_ai_chat/models/expense.dart';
 import 'package:local_ai_chat/screens/personal_query_screen.dart';
@@ -14,6 +18,25 @@ import 'package:local_ai_chat/services/embedding_service.dart';
 import 'package:local_ai_chat/services/personal_rag_service.dart';
 import 'package:local_ai_chat/services/skills_service.dart';
 import 'package:local_ai_chat/services/vector_store.dart';
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+
+class _FakePathProviderPlatform extends Fake
+    with MockPlatformInterfaceMixin
+    implements PathProviderPlatform {
+  _FakePathProviderPlatform(this.tempDir);
+
+  final Directory tempDir;
+
+  @override
+  Future<String?> getApplicationSupportPath() async => tempDir.path;
+
+  @override
+  Future<String?> getApplicationDocumentsPath() async => tempDir.path;
+
+  @override
+  Future<String?> getTemporaryPath() async => tempDir.path;
+}
 
 Future<List<double>> keywordEmbed(String text) async {
   final lower = text.toLowerCase();
@@ -26,12 +49,23 @@ Future<List<double>> keywordEmbed(String text) async {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  late Directory tempDir;
   late VectorStore store;
   late EmbeddingService embedder;
 
   setUp(() async {
+    tempDir = await Directory.systemTemp.createTemp('personal_query_');
+    PathProviderPlatform.instance = _FakePathProviderPlatform(tempDir);
     store = VectorStore();
     embedder = EmbeddingService(embedFn: keywordEmbed);
+  });
+
+  tearDown(() async {
+    if (await tempDir.exists()) {
+      await tempDir.delete(recursive: true);
+    }
   });
 
   Future<void> seed() async {
@@ -78,11 +112,27 @@ void main() {
     );
   }
 
-  Widget hostFor(PersonalRagService svc) =>
-      MaterialApp(home: PersonalQueryScreen(ragService: svc));
+  Widget hostFor(PersonalRagService svc) => MaterialApp(
+        locale: const Locale('zh', 'TW'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: PersonalQueryScreen(ragService: svc),
+      );
+
+  Future<void> pumpQueryFrames(WidgetTester tester) async {
+    await tester.pump(); // mount the loading state
+    for (var i = 0; i < 30; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    await tester.pump(); // final flush
+  }
 
   testWidgets('shows placeholder hints before any submission', (tester) async {
-    final svc = PersonalRagService(embedder: embedder, store: store);
+    final svc = PersonalRagService(
+      embedder: embedder,
+      store: store,
+      retrievalModeOverride: RetrievalMode.hybrid,
+    );
     await tester.pumpWidget(hostFor(svc));
     expect(find.text('問問你的 Personal Hub'), findsOneWidget);
     expect(
@@ -96,6 +146,7 @@ void main() {
     final svc = PersonalRagService(
       embedder: embedder,
       store: store,
+      retrievalModeOverride: RetrievalMode.hybrid,
       llmCompleteStream: ({
         required String systemPrompt,
         required String userPrompt,
@@ -118,6 +169,7 @@ void main() {
     final svc = PersonalRagService(
       embedder: embedder,
       store: store,
+      retrievalModeOverride: RetrievalMode.hybrid,
       llmCompleteStream: ({
         required String systemPrompt,
         required String userPrompt,
@@ -140,6 +192,7 @@ void main() {
     final svc = PersonalRagService(
       embedder: embedder,
       store: store,
+      retrievalModeOverride: RetrievalMode.hybrid,
       llmCompleteStream: ({
         required String systemPrompt,
         required String userPrompt,
@@ -154,7 +207,7 @@ void main() {
     await tester.pumpWidget(hostFor(svc));
     await tester.enterText(find.byType(TextField), 'Wang lunch');
     await tester.tap(find.byIcon(Icons.send));
-    await tester.pumpAndSettle();
+    await pumpQueryFrames(tester);
 
     expect(find.textContaining('王經理那次午餐'), findsOneWidget);
     expect(find.textContaining('250 TWD'), findsOneWidget);
@@ -164,6 +217,7 @@ void main() {
     final svc = PersonalRagService(
       embedder: embedder,
       store: store,
+      retrievalModeOverride: RetrievalMode.hybrid,
       llmCompleteStream: ({
         required String systemPrompt,
         required String userPrompt,
@@ -176,7 +230,7 @@ void main() {
     await tester.pumpWidget(hostFor(svc));
     await tester.enterText(find.byType(TextField), 'Wang lunch');
     await tester.tap(find.byIcon(Icons.send));
-    await tester.pumpAndSettle();
+    await pumpQueryFrames(tester);
 
     expect(find.text('參考資料'), findsOneWidget);
     expect(find.textContaining('[1]'), findsOneWidget);
@@ -186,6 +240,7 @@ void main() {
     final svc = PersonalRagService(
       embedder: embedder,
       store: store,
+      retrievalModeOverride: RetrievalMode.hybrid,
       llmCompleteStream: ({
         required String systemPrompt,
         required String userPrompt,
@@ -198,7 +253,7 @@ void main() {
     await tester.pumpWidget(hostFor(svc));
     await tester.enterText(find.byType(TextField), 'anything');
     await tester.tap(find.byIcon(Icons.send));
-    await tester.pumpAndSettle();
+    await pumpQueryFrames(tester);
 
     expect(find.textContaining('找不到相關資料'), findsOneWidget);
     // 參考資料 panel should not appear.
@@ -209,6 +264,7 @@ void main() {
     final svc = PersonalRagService(
       embedder: embedder,
       store: store,
+      retrievalModeOverride: RetrievalMode.hybrid,
       llmCompleteStream: ({
         required String systemPrompt,
         required String userPrompt,
@@ -221,17 +277,20 @@ void main() {
     await tester.pumpWidget(hostFor(svc));
     await tester.enterText(find.byType(TextField), 'Wang lunch');
     await tester.tap(find.byIcon(Icons.send));
-    await tester.pumpAndSettle();
+    await pumpQueryFrames(tester);
 
     expect(find.textContaining('查詢失敗'), findsOneWidget);
   });
 
-  testWidgets('shows Save as Skill button after streaming and saves successfully', (tester) async {
+  testWidgets(
+      'shows Save as Skill button after streaming and saves successfully',
+      (tester) async {
     final skillsService = SkillsService(store: store, embedder: embedder);
     final svc = PersonalRagService(
       embedder: embedder,
       store: store,
       skillsService: skillsService,
+      retrievalModeOverride: RetrievalMode.hybrid,
       llmCompleteStream: ({
         required String systemPrompt,
         required String userPrompt,
@@ -244,7 +303,7 @@ void main() {
     await tester.pumpWidget(hostFor(svc));
     await tester.enterText(find.byType(TextField), 'Wang lunch');
     await tester.tap(find.byIcon(Icons.send));
-    await tester.pumpAndSettle();
+    await pumpQueryFrames(tester);
 
     // Verify button appears
     final saveButton = find.text('儲存為技能');
@@ -252,7 +311,7 @@ void main() {
 
     // Tap button
     await tester.tap(saveButton);
-    await tester.pumpAndSettle();
+    await pumpQueryFrames(tester);
 
     // Verify snackbar
     expect(find.text('已手動儲存為技能！'), findsOneWidget);
