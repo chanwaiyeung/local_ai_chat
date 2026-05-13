@@ -216,6 +216,9 @@ void main() {
   // In Phase 6.8, Health is enabled, so we no longer expect the disabled snackbar
   // Let's test navigation to HealthScreen instead or simply test it exists.
   testWidgets('health module navigates to HealthScreen', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
     await tester.pumpWidget(hostFor());
     await tester.tap(find.text('健康紀錄').last);
     await tester.pumpAndSettle();
