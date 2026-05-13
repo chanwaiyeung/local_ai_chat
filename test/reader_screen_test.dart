@@ -14,6 +14,8 @@ import 'package:local_ai_chat/screens/reader_screen.dart';
 import 'package:local_ai_chat/services/api_client.dart';
 import 'package:local_ai_chat/services/ocr_service.dart';
 
+import 'helpers/test_app.dart';
+
 class _FakeApiClient extends Fake implements ReaderApi {
   _FakeApiClient({
     this.answer = '範例 AI 回答',
@@ -71,8 +73,8 @@ class _FakeOcrService extends OcrService {
 
 void main() {
   testWidgets('renders book title in AppBar', (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      home: ReaderScreen(
+    await tester.pumpWidget(TestApp(
+      child: ReaderScreen(
         bookTitle: '哈姆雷特',
         apiClient: _FakeApiClient(),
       ),
@@ -82,8 +84,8 @@ void main() {
   });
 
   testWidgets('shows initial question prompt', (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      home: ReaderScreen(bookTitle: '書', apiClient: _FakeApiClient()),
+    await tester.pumpWidget(TestApp(
+      child: ReaderScreen(bookTitle: '書', apiClient: _FakeApiClient()),
     ));
 
     expect(find.text('請輸入問題，我會根據書籍內容回答。'), findsOneWidget);
@@ -92,8 +94,8 @@ void main() {
 
   testWidgets('submitting a question renders the AI answer', (tester) async {
     final fake = _FakeApiClient(answer: '這是根據書籍內容產生的回答。');
-    await tester.pumpWidget(MaterialApp(
-      home: ReaderScreen(bookTitle: '書', apiClient: fake),
+    await tester.pumpWidget(TestApp(
+      child: ReaderScreen(bookTitle: '書', apiClient: fake),
     ));
 
     await tester.enterText(find.byType(TextField), '這本書在說什麼？');
@@ -124,8 +126,8 @@ void main() {
         },
       ],
     );
-    await tester.pumpWidget(MaterialApp(
-      home: ReaderScreen(bookTitle: 'rag_concepts.md', apiClient: fake),
+    await tester.pumpWidget(TestApp(
+      child: ReaderScreen(bookTitle: 'rag_concepts.md', apiClient: fake),
     ));
 
     await tester.enterText(find.byType(TextField), 'Why does RAG work?');
@@ -143,8 +145,8 @@ void main() {
   });
 
   testWidgets('shows TTS speak control', (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      home: ReaderScreen(bookTitle: '書', apiClient: _FakeApiClient()),
+    await tester.pumpWidget(TestApp(
+      child: ReaderScreen(bookTitle: '書', apiClient: _FakeApiClient()),
     ));
 
     expect(find.widgetWithText(ElevatedButton, '朗讀回答'), findsOneWidget);
@@ -155,8 +157,8 @@ void main() {
       (tester) async {
     final fake =
         _FakeApiClient(answer: 'According to context, latency matters.');
-    await tester.pumpWidget(MaterialApp(
-      home: ReaderScreen(bookTitle: '書', apiClient: fake),
+    await tester.pumpWidget(TestApp(
+      child: ReaderScreen(bookTitle: '書', apiClient: fake),
     ));
 
     await tester.enterText(find.byType(TextField), '這段在說什麼？');
@@ -175,8 +177,8 @@ void main() {
   });
 
   testWidgets('OCR action is hidden by default', (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      home: ReaderScreen(bookTitle: '書', apiClient: _FakeApiClient()),
+    await tester.pumpWidget(TestApp(
+      child: ReaderScreen(bookTitle: '書', apiClient: _FakeApiClient()),
     ));
 
     expect(find.widgetWithText(OutlinedButton, 'OCR 問 AI'), findsNothing);
@@ -186,8 +188,8 @@ void main() {
       (tester) async {
     final fakeApi = _FakeApiClient(answer: 'OCR 後的 AI 回答');
     final fakeOcr = _FakeOcrService();
-    await tester.pumpWidget(MaterialApp(
-      home: ReaderScreen(
+    await tester.pumpWidget(TestApp(
+      child: ReaderScreen(
         bookTitle: '漫畫.cbz',
         apiClient: fakeApi,
         ocrService: fakeOcr,

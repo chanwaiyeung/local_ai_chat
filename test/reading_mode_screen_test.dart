@@ -10,6 +10,8 @@ import 'package:local_ai_chat/screens/library_screen.dart';
 import 'package:local_ai_chat/screens/reading_mode_screen.dart';
 import 'package:local_ai_chat/services/api_client.dart';
 
+import 'helpers/test_app.dart';
+
 class _FakeApi extends Fake implements ReaderApi {
   _FakeApi({
     this.docs = const [],
@@ -57,8 +59,8 @@ void main() {
         {'docName': 'b', 'chunkIndex': 0, 'text': 'first paragraph'},
         {'docName': 'b', 'chunkIndex': 1, 'text': 'second paragraph'},
       ]);
-      await tester.pumpWidget(MaterialApp(
-        home: ReadingModeScreen(bookTitle: 'b', apiClient: api),
+      await tester.pumpWidget(TestApp(
+        child: ReadingModeScreen(bookTitle: 'b', apiClient: api),
       ));
       await tester.pumpAndSettle();
 
@@ -71,8 +73,8 @@ void main() {
     testWidgets('shows placeholder when book has no indexed chunks',
         (tester) async {
       final api = _FakeApi(chunks: const []);
-      await tester.pumpWidget(MaterialApp(
-        home: ReadingModeScreen(bookTitle: 'b', apiClient: api),
+      await tester.pumpWidget(TestApp(
+        child: ReadingModeScreen(bookTitle: 'b', apiClient: api),
       ));
       await tester.pumpAndSettle();
 
@@ -81,8 +83,8 @@ void main() {
 
     testWidgets('renders load error from server', (tester) async {
       final api = _FakeApi(throwOnLoad: true);
-      await tester.pumpWidget(MaterialApp(
-        home: ReadingModeScreen(bookTitle: 'b', apiClient: api),
+      await tester.pumpWidget(TestApp(
+        child: ReadingModeScreen(bookTitle: 'b', apiClient: api),
       ));
       await tester.pumpAndSettle();
 
@@ -104,8 +106,8 @@ void main() {
           },
         ],
       );
-      await tester.pumpWidget(MaterialApp(
-        home: ReadingModeScreen(bookTitle: 'b', apiClient: api),
+      await tester.pumpWidget(TestApp(
+        child: ReadingModeScreen(bookTitle: 'b', apiClient: api),
       ));
       await tester.pumpAndSettle();
 
@@ -126,8 +128,8 @@ void main() {
         {'chunkIndex': 0, 'text': 'real'},
         {'chunkIndex': 1, 'text': ''},
       ]);
-      await tester.pumpWidget(MaterialApp(
-        home: ReadingModeScreen(bookTitle: 'b', apiClient: api),
+      await tester.pumpWidget(TestApp(
+        child: ReadingModeScreen(bookTitle: 'b', apiClient: api),
       ));
       await tester.pumpAndSettle();
 
@@ -141,8 +143,8 @@ void main() {
   group('LibraryScreen → ReadingModeScreen long-press route', () {
     testWidgets('long-press on a book opens ReadingModeScreen', (tester) async {
       final api = _FakeApi(docs: const ['rag_concepts.md']);
-      await tester.pumpWidget(MaterialApp(
-        home: LibraryScreen(apiClient: api),
+      await tester.pumpWidget(TestApp(
+        child: LibraryScreen(apiClient: api),
       ));
       await tester.pumpAndSettle();
 
@@ -151,15 +153,15 @@ void main() {
 
       expect(find.byType(ReadingModeScreen), findsOneWidget);
       // The pushed screen's AppBar shows the book title.
-      expect(find.text('閱讀：rag_concepts.md'), findsOneWidget);
+      expect(find.text('閱讀模式：rag_concepts.md'), findsOneWidget);
     });
 
     testWidgets(
         'regular tap still opens the Q&A ReaderScreen, not Reading Mode',
         (tester) async {
       final api = _FakeApi(docs: const ['rag_concepts.md']);
-      await tester.pumpWidget(MaterialApp(
-        home: LibraryScreen(apiClient: api),
+      await tester.pumpWidget(TestApp(
+        child: LibraryScreen(apiClient: api),
       ));
       await tester.pumpAndSettle();
 

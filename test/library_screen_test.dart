@@ -11,6 +11,8 @@ import 'package:local_ai_chat/screens/library_screen.dart';
 import 'package:local_ai_chat/screens/reader_screen.dart';
 import 'package:local_ai_chat/services/api_client.dart';
 
+import 'helpers/test_app.dart';
+
 class _FakeApiClient extends Fake implements ReaderApi {
   _FakeApiClient(this._docs, {this.delay = Duration.zero});
   final List<String> _docs;
@@ -42,8 +44,8 @@ class _FakeApiClient extends Fake implements ReaderApi {
 
 void main() {
   testWidgets('renders book titles from ApiClient', (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      home: LibraryScreen(
+    await tester.pumpWidget(TestApp(
+      child: LibraryScreen(
         apiClient: _FakeApiClient(['哈姆雷特', '老人與海']),
       ),
     ));
@@ -55,18 +57,18 @@ void main() {
   });
 
   testWidgets('shows placeholder when library is empty', (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      home: LibraryScreen(apiClient: _FakeApiClient(const [])),
+    await tester.pumpWidget(TestApp(
+      child: LibraryScreen(apiClient: _FakeApiClient(const [])),
     ));
     await tester.pumpAndSettle();
 
-    expect(find.text('目前沒有書籍'), findsOneWidget);
+    expect(find.text('尚無項目'), findsOneWidget);
   });
 
   testWidgets('tapping a book pushes ReaderScreen with that title',
       (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      home: LibraryScreen(apiClient: _FakeApiClient(['哈姆雷特'])),
+    await tester.pumpWidget(TestApp(
+      child: LibraryScreen(apiClient: _FakeApiClient(['哈姆雷特'])),
     ));
     await tester.pumpAndSettle();
 
@@ -80,8 +82,8 @@ void main() {
   });
 
   testWidgets('shows progress indicator while loading', (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      home: LibraryScreen(
+    await tester.pumpWidget(TestApp(
+      child: LibraryScreen(
         apiClient: _FakeApiClient(
           ['書'],
           delay: const Duration(milliseconds: 200),
@@ -98,8 +100,8 @@ void main() {
   });
 
   testWidgets('shows real-device IP dialog', (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      home: LibraryScreen(apiClient: _FakeApiClient(['書'])),
+    await tester.pumpWidget(TestApp(
+      child: LibraryScreen(apiClient: _FakeApiClient(['書'])),
     ));
     await tester.pumpAndSettle();
 
