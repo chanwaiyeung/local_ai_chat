@@ -145,6 +145,112 @@ class _WealthScreenState extends State<WealthScreen>
     );
   }
 
+  Future<void> _scanAsset() async {
+    final settings = await AppSettingsService().load();
+    final apiKey = settings.geminiApiKey?.trim();
+
+    if (apiKey == null || apiKey.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('請先前往 Settings 設定 Gemini API Key')),
+      );
+      return;
+    }
+
+    final picker = ImagePicker();
+    if (!mounted) return;
+    final image = await showDialog<XFile?>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('掃描資產'),
+        content: const Text('請選擇圖片來源'),
+        actions: [
+          TextButton.icon(
+            icon: const Icon(Icons.camera_alt),
+            label: const Text('拍照'),
+            onPressed: () async {
+              final img = await picker.pickImage(
+                source: ImageSource.camera,
+                imageQuality: 90,
+              );
+              if (dialogContext.mounted) {
+                Navigator.pop(dialogContext, img);
+              }
+            },
+          ),
+          TextButton.icon(
+            icon: const Icon(Icons.photo_library),
+            label: const Text('從相簿選擇'),
+            onPressed: () async {
+              final img = await picker.pickImage(
+                source: ImageSource.gallery,
+                imageQuality: 90,
+              );
+              if (dialogContext.mounted) {
+                Navigator.pop(dialogContext, img);
+              }
+            },
+          ),
+        ],
+      ),
+    );
+
+    if (image == null || !mounted) return;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('AI 正在分析圖片...\n這可能需要幾秒鐘'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('取消'),
+          ),
+        ],
+      ),
+    );
+
+    try {
+      final visionService = VisionLLMService();
+      final record = await visionService.scanWealthFromImage(
+        image.path,
+        apiKey: apiKey,
+      );
+
+      if (!mounted) return;
+      Navigator.pop(context);
+
+      if (record != null) {
+        _openForm(existing: record);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('AI 已成功辨識資產，請確認後儲存')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('AI 無法辨識清晰資產，請換張更清楚的圖片或手動輸入')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '掃描失敗：${e.toString().replaceAll('VisionLlmException: ', '')}',
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -197,7 +303,6 @@ class _WealthScreenState extends State<WealthScreen>
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
           children: [
             IconButton.filled(
               tooltip: '掃描資產',
@@ -205,102 +310,7 @@ class _WealthScreenState extends State<WealthScreen>
                 backgroundColor: Theme.of(context).colorScheme.secondary,
                 foregroundColor: Theme.of(context).colorScheme.onSecondary,
               ),
-              onPressed: () async {
-                final settings = await AppSettingsService().load();
-                final apiKey = settings.geminiApiKey?.trim();
-
-                if (apiKey == null || apiKey.isEmpty) {
-                  if (!context.mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('請先前往 Settings 設定 Gemini API Key')),
-                  );
-                  return;
-                }
-
-                // 選擇圖片
-                final ImagePicker picker = ImagePicker();
-                if (!context.mounted) return;
-                final XFile? image = await showDialog<XFile?>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('掃描資產'),
-                    content: const Text('請選擇圖片來源'),
-                    actions: [
-                      TextButton.icon(
-                          icon: const Icon(Icons.camera_alt),
-                          label: const Text('拍照'),
-                          onPressed: () async {
-                            final img = await picker.pickImage(
-                                source: ImageSource.camera, imageQuality: 90);
-                            if (context.mounted) Navigator.pop(context, img);
-                          }),
-                      TextButton.icon(
-                          icon: const Icon(Icons.photo_library),
-                          label: const Text('從相簿選擇'),
-                          onPressed: () async {
-                            final img = await picker.pickImage(
-                                source: ImageSource.gallery, imageQuality: 90);
-                            if (context.mounted) Navigator.pop(context, img);
-                          }),
-                    ],
-                  ),
-                );
-
-                if (image == null) return;
-
-                // === 阻擋式 Loading Dialog ===
-                if (!context.mounted) return;
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (context) => AlertDialog(
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        CircularProgressIndicator(),
-                        SizedBox(height: 16),
-                        Text('AI 正在分析圖片...\n這可能需要幾秒鐘'),
-                      ],
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('取消'),
-                      ),
-                    ],
-                  ),
-                );
-
-                try {
-                  final visionService = VisionLLMService();
-                  final record = await visionService
-                      .scanWealthFromImage(image.path, apiKey: apiKey);
-
-                  if (!context.mounted) return;
-                  Navigator.pop(context); // 關閉 Loading Dialog
-
-                  if (record != null) {
-                    _openForm(existing: record);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('✅ AI 已成功辨識資產，請確認後儲存')),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('AI 無法辨識清晰資產，請換張更清楚的圖片或手動輸入')),
-                    );
-                  }
-                } catch (e) {
-                  if (!context.mounted) return;
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(
-                            '掃描失敗：${e.toString().replaceAll('VisionLlmException: ', '')}')),
-                  );
-                }
-              },
+              onPressed: _scanAsset,
               icon: const Icon(Icons.camera_alt),
             ),
           ],
