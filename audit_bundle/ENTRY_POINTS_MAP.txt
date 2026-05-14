@@ -1,0 +1,47 @@
+local_ai_chat — 主要入口與模組地圖（給 AI / 審閱用）
+================================================
+
+應用入口
+--------
+- lib/main.dart — MaterialApp、路由、Deep link、Provider 樹、主題。
+- lib/app_router.dart — GoRouter 路由表（含 church 子路由）。
+- lib/home_shell.dart — 底部導覽與各 Tab 容器。
+
+生活 / Personal Hub 核心
+------------------------
+- lib/services/personal_rag_service.dart — RAG、Embedding、LLM（stream）、語音（Windows 停用）。
+- lib/services/personal_hub_store.dart — Hive 持久化、案例/人物/書/筆記。
+- lib/services/personal_hub_ai_orchestrator.dart — 對話編排。
+- lib/screens/personal_hub_screen.dart — 主畫面。
+- lib/screens/personal_hub_chat_screen.dart — 聊天。
+- lib/screens/personal_hub_settings_screen.dart — 設定（含 API Key）。
+- lib/widgets/personal_hub_import_watcher.dart — 匯入目錄監看（已加入 dispose 取消訂閱）。
+
+教會模組（church）
+------------------
+- lib/features/church/church_shell.dart — 教會區塊外殼。
+- lib/features/church/church_router.dart — 教會內子路由。
+- lib/features/church/screens/* — 各教會畫面。
+- lib/features/church/services/* — 教會服務與資料層。
+- lib/features/church/models/* — 教會模型（含 person.dart；注意與 lib/models/person_and_case.dart 命名重疊風險）。
+
+國際化
+------
+- lib/l10n/app_*.arb — 翻譯源（匯出 .txt 時刻意排除 .arb）。
+- lib/l10n/app_localizations.dart — 產生檔。
+
+設定與資產
+-----------
+- pubspec.yaml — 依賴與 assets。
+- assets/personal_hub_seed.json — 種子資料。
+
+匯出程式為 .txt（不含 .arb）
+----------------------------
+在專案根目錄執行 PowerShell：
+  .\tools\export_code_txt_to_folder.ps1 -Destination "C:\Users\Albert Chan\Desktop\ai report\code_txt_export"
+可選壓縮：
+  Compress-Archive -Path "C:\Users\Albert Chan\Desktop\ai report\code_txt_export\*" -DestinationPath "C:\Users\Albert Chan\Desktop\ai report\code_txt_export.zip"
+
+外部工作空間（給其他 AI）
+-------------------------
+見同資料夾 AI_EXTERNAL_WORKSPACE_NOTE.txt（F:\ 已格式化可用）。

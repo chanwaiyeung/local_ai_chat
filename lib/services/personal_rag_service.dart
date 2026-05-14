@@ -75,6 +75,7 @@ class PersonalRagService {
     this.llmComplete,
     this.llmCompleteStream,
     this.collections = const [kExpensesCollection, kContactsCollection],
+    this.retrievalModeOverride,
     String? defaultSystemPrompt,
   }) : defaultSystemPrompt = defaultSystemPrompt ?? _defaultSystemPromptText;
 
@@ -95,6 +96,7 @@ class PersonalRagService {
   /// Collections this service searches by default. Defaults to
   /// Expenses + Contacts; callers can pass an override per call.
   final List<String> collections;
+  final RetrievalMode? retrievalModeOverride;
 
   final String defaultSystemPrompt;
 
@@ -251,8 +253,8 @@ class PersonalRagService {
     if (query.trim().isEmpty) return const [];
     final cols = collectionsOverride ?? collections;
 
-    final settings = await AppSettingsService().load();
-    final mode = settings.retrievalMode;
+    final mode = retrievalModeOverride ??
+        (await AppSettingsService().load()).retrievalMode;
 
     final semanticHits = <ScoredChunk>[];
     if (mode != RetrievalMode.sparse) {
@@ -276,7 +278,8 @@ class PersonalRagService {
       );
       for (final col in cols) {
         final pool = store.chunksInCollection(col);
-        final colHits = RagService.bm25Rank(sparseQuery, pool, k: perCollectionPool);
+        final colHits =
+            RagService.bm25Rank(sparseQuery, pool, k: perCollectionPool);
         keywordHits.addAll(colHits);
       }
       keywordHits.sort((a, b) => b.score.compareTo(a.score));
@@ -341,8 +344,9 @@ class PersonalRagService {
           }
           return '- 類似問題: ${s.query}\n  回答: ${s.answer}';
         }).join('\n\n');
-        
-        finalSystemPrompt += '\n\n【技能卡 (過去成功的經驗)】\n你應該參考以下過去你曾經正確回答過的類似問題來保持一致性：\n$skillsText';
+
+        finalSystemPrompt +=
+            '\n\n【技能卡 (過去成功的經驗)】\n你應該參考以下過去你曾經正確回答過的類似問題來保持一致性：\n$skillsText';
       }
     }
 
@@ -391,8 +395,9 @@ class PersonalRagService {
           }
           return '- 類似問題: ${s.query}\n  回答: ${s.answer}';
         }).join('\n\n');
-        
-        finalSystemPrompt += '\n\n【技能卡 (過去成功的經驗)】\n你應該參考以下過去你曾經正確回答過的類似問題來保持一致性：\n$skillsText';
+
+        finalSystemPrompt +=
+            '\n\n【技能卡 (過去成功的經驗)】\n你應該參考以下過去你曾經正確回答過的類似問題來保持一致性：\n$skillsText';
       }
     }
 
@@ -410,7 +415,8 @@ class PersonalRagService {
     String domain = 'general',
   }) async {
     if (skillsService == null) {
-      throw StateError('PersonalRagService.extractAndSaveSkill requires skillsService.');
+      throw StateError(
+          'PersonalRagService.extractAndSaveSkill requires skillsService.');
     }
 
     String finalReasoningPath = reasoningPath;

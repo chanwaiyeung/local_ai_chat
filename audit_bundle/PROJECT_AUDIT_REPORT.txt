@@ -1,0 +1,148 @@
+================================================================================
+LOCAL_AI_CHAT — PROJECT & ARCHITECTURE AUDIT (life app + church module)
+Generated: 2026-05-08 (assistant run; re-run analyzer locally to refresh)
+================================================================================
+
+------------------------------------------------------------------------------
+0) TELL OTHER AIs — EXTERNAL SSD
+------------------------------------------------------------------------------
+The user has a formatted external SSD mounted as:
+
+  F:\
+
+Use F:\ for heavy artifacts, alternate worktrees, or long-path clones when
+advising disk layout. Primary audited repo path used here:
+
+  C:\dev\local_ai_chat
+
+------------------------------------------------------------------------------
+1) WHAT THIS REPOSITORY IS
+------------------------------------------------------------------------------
+Single Flutter app "local_ai_chat" (智讀館 / AI Library) version ~2.5.x.
+
+It combines:
+  A) LIFE / PERSONAL HUB — expenses, contacts, health, wealth, books,
+     personal RAG query, skills, reader, library, chat, settings, Telegram bot.
+  B) CHURCH MODULE — under lib/screens/church, lib/controllers/church,
+     lib/models/church, lib/widgets/church (person directory, care cases,
+     visit logs, dashboards).
+
+Entry point: lib/main.dart
+  - Initializes VectorStore, controllers (expense, contact, health, wealth,
+    book, church care & person), PersonalRagService, SkillsService, optional
+    Telegram bot, desktop ApiServer, CurrencyService.load().
+  - home: PersonalHubScreen (wires bookController + personalRagService).
+
+Data pattern: most domain objects persist via VectorStore + DocChunk metadata
+(Pattern A, same idea as books/wealth).
+
+------------------------------------------------------------------------------
+2) DIRECTORY MAP (high level)
+------------------------------------------------------------------------------
+lib/
+  main.dart                 — app bootstrap, globals, server on desktop
+  config/                   — e.g. telegram bot config
+  controllers/              — expense, contact, health, wealth, book, chat,
+                              church/* …
+  models/                   — book, wealth, health, app_settings, church/*,
+                              person_and_case (generic), message, …
+  screens/                  — personal_hub, settings, wealth, expense, health,
+                              personal_query, library, reader, chat, church/*
+  services/                 — embedding, vector_store, personal_rag, telegram,
+                              vision/book ISBN, currency, …
+  widgets/                  — feature UI chunks (book, church, wealth, chat…)
+  l10n/                     — *.arb + hand-maintained app_localizations*.dart
+  server/                   — api_server, ollama_client (desktop companion)
+test/                       — widget + unit tests
+tools/                      — export_code_txt_to_folder.ps1 (this audit bundle)
+
+Archived / backup artifacts (if present on your machine):
+  - Historically *.bak / .swap-bak copies appeared under lib/**/church during
+    iterative edits. They should NOT ship to production; delete or gitignore.
+
+------------------------------------------------------------------------------
+3) PATH / IMPORT SANITY ("sandbox")
+------------------------------------------------------------------------------
+  - Dart package name: local_ai_chat (see pubspec.yaml).
+  - Imports should use package:local_ai_chat/... or relative lib/ paths; avoid
+    broken package: after rename.
+  - Windows paths: prefer forward slashes in strings or Uri.file; watch for
+    UNC vs mapped drives when moving project to F:\ .
+  - test_gemini*.dart at repo root: scratch scripts; keys must NEVER be in git
+    history (rotate keys if ever committed).
+
+Automated check: run on your machine
+  cd C:\dev\local_ai_chat
+  flutter pub get
+  flutter analyze
+  flutter test
+
+(This environment did not return analyzer stdout; treat local analyze as
+authoritative before push.)
+
+------------------------------------------------------------------------------
+4) SUSPECTED BUGS / RISKS (recorded)
+------------------------------------------------------------------------------
+B1) Git history & secrets
+    If Gemini API keys ever existed in tracked commits, assume compromised;
+    revoke keys in Google Cloud / AI Studio. Scrub history (BFG / git filter-repo)
+    before public push.
+
+B2) Duplicate "Person" concepts
+    church.Person (lib/models/church/person.dart) vs generic Person
+    (lib/models/person_and_case.dart if used). Name collision if both imported
+    without prefix — use import … as … when needed.
+
+B3) Book reading state vs counters
+    Book gained isReading / isTbr / startedReadingAt; BookController.readCount
+    / unreadCount may still be based on isRead only — verify UX matches intent.
+
+B4) PersonalRagService LLM wiring drift
+    Confirm main.dart provides both llmComplete and llmCompleteStream if any
+    code path calls answer() vs answerStream(); mismatch causes runtime errors.
+
+B5) Church *.bak files
+    If still in tree: noise for reviewers and accidental inclusion in builds.
+
+B6) Localization drift
+    Manual app_localizations*.dart must stay in sync with ARB edits; easy to
+    miss keys across en/zh/zh_CN.
+
+B7) Windows speech
+    SpeechService disables STT on Windows by design — UI should hide mic or
+    disable when !isAvailable.
+
+B8) CurrencyService vs Book startedReadingAt
+    Ensure all forms persist fields so edits do not wipe startedReadingAt.
+
+------------------------------------------------------------------------------
+5) HOW TO PRODUCE .TXT CODE EXPORT (no .arb) + ZIP
+------------------------------------------------------------------------------
+From repo root, PowerShell:
+
+  .\tools\export_code_txt_to_folder.ps1 `
+    -Destination "C:\Users\Albert Chan\Desktop\ai report\code_txt_export"
+
+Then zip:
+
+  Compress-Archive -Path "C:\Users\Albert Chan\Desktop\ai report\code_txt_export" `
+    -DestinationPath "C:\Users\Albert Chan\Desktop\ai report\local_ai_chat_code_txt.zip" `
+    -Force
+
+Copy also:
+  - this audit_bundle\PROJECT_AUDIT_REPORT.txt (this file)
+  - audit_bundle\AI_EXTERNAL_WORKSPACE_NOTE.txt
+
+into the same Desktop\ai report folder before zipping if you want one bundle.
+
+------------------------------------------------------------------------------
+6) RECOMMENDED NEXT STEPS BEFORE GITHUB PUSH
+------------------------------------------------------------------------------
+  1) flutter analyze + flutter test — all green
+  2) git status — ensure no secrets, no *.bak
+  3) Secret scan / rotate any exposed API keys
+  4) Optional: move heavy build/ to F:\ via junction or change build dir policy
+
+================================================================================
+END OF REPORT
+================================================================================

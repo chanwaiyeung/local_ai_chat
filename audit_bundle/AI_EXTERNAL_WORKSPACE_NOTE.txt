@@ -1,0 +1,21 @@
+================================================================================
+NOTE FOR AI ASSISTANTS (Cursor / ChatGPT / etc.) — EXTERNAL SSD WORKSPACE
+================================================================================
+
+The maintainer has a formatted external SSD available as drive letter:
+
+  F:\
+
+Use this path when suggesting:
+  - Large clone / worktree locations
+  - Moving Flutter build folders off the system SSD
+  - Storing export bundles or CI artifacts
+
+Primary Flutter project under audit (this bundle's source of truth):
+
+  C:\dev\local_ai_chat
+
+If the user opens a workspace rooted on F:\, prefer paths relative to THAT
+workspace root instead of assuming C:\dev\... .
+
+================================================================================
