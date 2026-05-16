@@ -20,11 +20,12 @@ www.globaltech.xyz
 ''';
 
   /// Scans a business card image and returns the extracted raw text.
-  Future<String> scanBusinessCard({required String imagePath}) async {
+  /// Returns a record with the text and a boolean indicating if it was a fallback.
+  Future<(String text, bool isFallback)> scanBusinessCard({required String imagePath}) async {
     try {
       final text = await _ocr.extractTextFromImage(imagePath);
       if (text.trim().isNotEmpty) {
-        return text;
+        return (text, false);
       }
     } catch (_) {
       // Fallback to mock data if OCR fails (e.g. tesseract not installed)
@@ -32,6 +33,6 @@ www.globaltech.xyz
 
     // Simulate OCR processing delay for the mock fallback
     await Future.delayed(const Duration(milliseconds: 600));
-    return _mockBusinessCardText;
+    return (_mockBusinessCardText, true);
   }
 }

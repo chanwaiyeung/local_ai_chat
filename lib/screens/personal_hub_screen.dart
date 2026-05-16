@@ -780,6 +780,7 @@ class _ContactListScreen extends StatefulWidget {
 
 class _ContactListScreenState extends State<_ContactListScreen> {
   final _ocrService = ContactOcrService();
+  bool _isScanning = false;
 
   final _nameCtrl = TextEditingController();
   final _companyCtrl = TextEditingController();
@@ -847,42 +848,70 @@ class _ContactListScreenState extends State<_ContactListScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
-                            onPressed: () async {
-                              final messenger = ScaffoldMessenger.of(context);
+                            onPressed: _isScanning
+                                ? null
+                                : () async {
+                                    final messenger = ScaffoldMessenger.of(context);
 
-                              final result = await FilePicker.platform.pickFiles(
-                                type: FileType.image,
-                                allowMultiple: false,
-                              );
-                              
-                              if (result == null || result.files.isEmpty) {
-                                return; // User canceled
-                              }
-                              
-                              final imagePath = result.files.single.path;
-                              if (imagePath == null) return;
-                              
-                              // Delegate scanning to the boundary service
-                              final scannedText = await _ocrService.scanBusinessCard(imagePath: imagePath);
-                              if (!mounted) return;
-                              
-                              // Delegate parsing to the controller logic
-                              final contact = widget.controller.parseOcrText(scannedText);
-                              
-                              setState(() {
-                                _nameCtrl.text = contact.name;
-                                _companyCtrl.text = contact.company;
-                                _phoneCtrl.text = contact.phone;
-                                _emailCtrl.text = contact.email;
-                                _notesCtrl.text = 'Title: ${contact.title}\nWebsite: ${contact.website}\n(Scanned via Mock OCR)';
-                              });
+                                    final result = await FilePicker.platform.pickFiles(
+                                      type: FileType.image,
+                                      allowMultiple: false,
+                                    );
 
-                              messenger.showSnackBar(
-                                const SnackBar(content: Text('Fields auto-filled from sample OCR')),
-                              );
-                            },
-                            icon: const Icon(Icons.document_scanner),
-                            label: const Text('Scan Business Card'),
+                                    if (result == null || result.files.isEmpty) {
+                                      return; // User canceled
+                                    }
+
+                                    final imagePath = result.files.single.path;
+                                    if (imagePath == null) return;
+
+                                    setState(() {
+                                      _isScanning = true;
+                                    });
+                                    messenger.showSnackBar(
+                                      const SnackBar(content: Text('Scanning business card...')),
+                                    );
+
+                                    try {
+                                      // Delegate scanning to the boundary service
+                                      final (scannedText, isFallback) = await _ocrService.scanBusinessCard(imagePath: imagePath);
+                                      if (!mounted) return;
+
+                                      // Delegate parsing to the controller logic
+                                      final contact = widget.controller.parseOcrText(scannedText);
+
+                                      setState(() {
+                                        _nameCtrl.text = contact.name;
+                                        _companyCtrl.text = contact.company;
+                                        _phoneCtrl.text = contact.phone;
+                                        _emailCtrl.text = contact.email;
+                                        final sourceStr = isFallback ? '(Fallback Mock Data)' : '(Real OCR)';
+                                        _notesCtrl.text = 'Title: ${contact.title}\nWebsite: ${contact.website}\n$sourceStr';
+                                      });
+
+                                      messenger.showSnackBar(
+                                        SnackBar(
+                                          content: Text(isFallback 
+                                            ? 'OCR unavailable, using sample data' 
+                                            : 'Fields auto-filled from OCR'),
+                                        ),
+                                      );
+                                    } finally {
+                                      if (mounted) {
+                                        setState(() {
+                                          _isScanning = false;
+                                        });
+                                      }
+                                    }
+                                  },
+                            icon: _isScanning
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : const Icon(Icons.document_scanner),
+                            label: Text(_isScanning ? 'Scanning...' : 'Scan Business Card'),
                           ),
                         ),
                         const SizedBox(height: 16),
