@@ -844,8 +844,26 @@ class _ContactListScreenState extends State<_ContactListScreen> {
                           width: double.infinity,
                           child: OutlinedButton.icon(
                             onPressed: () {
+                              const sampleCardText = '''
+Global Tech Innovations
+John Doe
+Senior Software Architect
++1 (555) 123-4567
+john.doe@globaltech.xyz
+www.globaltech.xyz
+''';
+                              final contact = widget.controller.parseOcrText(sampleCardText);
+                              
+                              setState(() {
+                                _nameCtrl.text = contact.name;
+                                _companyCtrl.text = contact.company;
+                                _phoneCtrl.text = contact.phone;
+                                _emailCtrl.text = contact.email;
+                                _notesCtrl.text = 'Title: ${contact.title}\nWebsite: ${contact.website}\n(Scanned via Mock OCR)';
+                              });
+
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Business card scan coming soon')),
+                                const SnackBar(content: Text('Fields auto-filled from sample OCR')),
                               );
                             },
                             icon: const Icon(Icons.document_scanner),
