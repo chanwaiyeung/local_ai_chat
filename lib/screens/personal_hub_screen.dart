@@ -33,6 +33,7 @@
 //     personalRagService:   personalRagService,
 //   )
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../controllers/book_controller.dart';
@@ -848,9 +849,21 @@ class _ContactListScreenState extends State<_ContactListScreen> {
                           child: OutlinedButton.icon(
                             onPressed: () async {
                               final messenger = ScaffoldMessenger.of(context);
+
+                              final result = await FilePicker.platform.pickFiles(
+                                type: FileType.image,
+                                allowMultiple: false,
+                              );
+                              
+                              if (result == null || result.files.isEmpty) {
+                                return; // User canceled
+                              }
+                              
+                              final imagePath = result.files.single.path;
+                              if (imagePath == null) return;
                               
                               // Delegate scanning to the boundary service
-                              final scannedText = await _ocrService.scanBusinessCard();
+                              final scannedText = await _ocrService.scanBusinessCard(imagePath: imagePath);
                               if (!mounted) return;
                               
                               // Delegate parsing to the controller logic
