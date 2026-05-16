@@ -1,36 +1,74 @@
-# Contacts OCR Alpha Test
+# Contact OCR Alpha Test Log
 
-Baseline: contacts-ocr-v1
-Branch: main
-Date: 2026-05-15
+## 01\_english\_clean.jpg
 
-## Test Matrix
+* OCR Result: Good / Medium / Bad / Fallback
+* Parse Result: Good / Partial / Bad
+* Re-parse Needed: Yes / No
+* Saved: Yes / No
+* Persistence: Yes / No
+* Notes:
 
-| # | Image | OCR Result | Parse Result | Re-parse Needed | Saved | Persistence | Notes |
-|---|-------|------------|--------------|-----------------|-------|-------------|-------|
-| 1 | 01_english_clean.jpg | | | | | | |
-| 2 | 02_chinese.jpg | | | | | | |
-| 3 | 03_mixed_language.jpg | | | | | | |
-| 4 | 04_low_light.jpg | | | | | | |
-| 5 | 05_blurry.jpg | | | | | | |
-| 6 | 06_rotated.jpg | | | | | | |
-| 7 | 07_vertical.jpg | | | | | | |
-| 8 | 08_small_font.jpg | | | | | | |
+## 02\_chinese.jpg
 
-## OCR Issues
+* OCR Result: Good / Medium / Bad / Fallback
+* Parse Result: Good / Partial / Bad
+* Re-parse Needed: Yes / No
+* Saved: Yes / No
+* Persistence: Yes / No
+* Notes:
 
--
+## 03\_mixed\_language.jpg
 
-## Parsing Issues
+* OCR Result: Good / Medium / Bad / Fallback
+* Parse Result: Good / Partial / Bad
+* Re-parse Needed: Yes / No
+* Saved: Yes / No
+* Persistence: Yes / No
+* Notes:
 
--
+## 04\_low\_light.jpg
 
-## UX Issues
+* OCR Result: Good / Medium / Bad / Fallback
+* Parse Result: Good / Partial / Bad
+* Re-parse Needed: Yes / No
+* Saved: Yes / No
+* Persistence: Yes / No
+* Notes:
 
--
+## 05\_blurry.jpg
 
-## Decision
+* OCR Result: Good / Medium / Bad / Fallback
+* Parse Result: Good / Partial / Bad
+* Re-parse Needed: Yes / No
+* Saved: Yes / No
+* Persistence: Yes / No
+* Notes:
 
-- OCR weak points:
-- Parsing weak points:
-- Recommended next task:
+## 06\_rotated.jpg
+
+* OCR Result: Good / Medium / Bad / Fallback
+* Parse Result: Good / Partial / Bad
+* Re-parse Needed: Yes / No
+* Saved: Yes / No
+* Persistence: Yes / No
+* Notes:
+
+## 07\_vertical.jpg
+
+* OCR Result: Good / Medium / Bad / Fallback
+* Parse Result: Good / Partial / Bad
+* Re-parse Needed: Yes / No
+* Saved: Yes / No
+* Persistence: Yes / No
+* Notes:
+
+## 08\_small\_font.jpg
+
+* OCR Result: Good / Medium / Bad / Fallback
+* Parse Result: Good / Partial / Bad
+* Re-parse Needed: Yes / No
+* Saved: Yes / No
+* Persistence: Yes / No
+* Notes:
+
