@@ -802,6 +802,30 @@ class _ContactListScreenState extends State<_ContactListScreen> {
                       leading: const Icon(Icons.contacts_outlined),
                       title: Text(contact.name),
                       subtitle: subtitle.isEmpty ? null : Text(subtitle),
+                      onTap: () {
+                        showDialog<void>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text(contact.name),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (contact.company.isNotEmpty) Text('Company: ${contact.company}'),
+                                if (contact.phone.isNotEmpty) Text('Phone: ${contact.phone}'),
+                                if (contact.email.isNotEmpty) Text('Email: ${contact.email}'),
+                                if (contact.notes.isNotEmpty) Text('Notes: ${contact.notes}'),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('Close'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     );
                   },
                 ),
