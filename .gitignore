@@ -73,3 +73,7 @@ logs/
 windows/flutter/generated_plugin_registrant.cc
 windows/flutter/generated_plugin_registrant.h
 windows/flutter/generated_plugins.cmake
+
+# Inline backup files
+*-bak
+*.bak
