@@ -45,6 +45,7 @@ import '../main.dart';
 import '../models/app_settings.dart';
 import '../models/contact.dart';
 import '../services/app_settings_service.dart';
+import '../services/contact_ocr_service.dart';
 import '../services/currency_service.dart';
 import '../services/personal_rag_service.dart';
 import '../widgets/expense/expense_summary_card.dart';
@@ -777,6 +778,8 @@ class _ContactListScreen extends StatefulWidget {
 }
 
 class _ContactListScreenState extends State<_ContactListScreen> {
+  final _ocrService = ContactOcrService();
+
   final _nameCtrl = TextEditingController();
   final _companyCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
@@ -843,16 +846,15 @@ class _ContactListScreenState extends State<_ContactListScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
-                            onPressed: () {
-                              const sampleCardText = '''
-Global Tech Innovations
-John Doe
-Senior Software Architect
-+1 (555) 123-4567
-john.doe@globaltech.xyz
-www.globaltech.xyz
-''';
-                              final contact = widget.controller.parseOcrText(sampleCardText);
+                            onPressed: () async {
+                              final messenger = ScaffoldMessenger.of(context);
+                              
+                              // Delegate scanning to the boundary service
+                              final scannedText = await _ocrService.scanBusinessCard();
+                              if (!mounted) return;
+                              
+                              // Delegate parsing to the controller logic
+                              final contact = widget.controller.parseOcrText(scannedText);
                               
                               setState(() {
                                 _nameCtrl.text = contact.name;
@@ -862,7 +864,7 @@ www.globaltech.xyz
                                 _notesCtrl.text = 'Title: ${contact.title}\nWebsite: ${contact.website}\n(Scanned via Mock OCR)';
                               });
 
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              messenger.showSnackBar(
                                 const SnackBar(content: Text('Fields auto-filled from sample OCR')),
                               );
                             },
