@@ -147,14 +147,56 @@ class Contact {
     var name = '';
     var title = '';
     var company = '';
+
+    final titleKeywords = [
+      'manager', 'director', 'engineer', 'architect', 'consultant', 'president', 'ceo', 'cto',
+      'developer', 'lead', 'senior', 'vp', 'representative', 'specialist', 'executive', 'officer', 'head', 'founder', 'supervisor',
+      '總監', '經理', '工程師', '顧問', '專員', '代表', '董事', '主管', '負責人', '助理', '設計師', '執行長', '總經理', '分析師', '架構師'
+    ];
+    
+    final companyKeywords = [
+      'inc', 'corp', 'llc', 'co', 'ltd', 'technologies', 'innovations', 'group', 'systems', 'agency', 'studio', 'bank', 'university', 'company', 'solutions', 'partners',
+      '公司', '企業', '實業', '科技', '銀行', '工作室', '團隊', '集團', '廠', '局', '處', '部'
+    ];
+
+    List<String> unassigned = [];
+
+    // First pass: Identify Title and Company using keywords
     for (final line in identityLines) {
+      final lower = line.toLowerCase();
+      bool assigned = false;
+
+      if (title.isEmpty && titleKeywords.any((kw) => lower.contains(kw))) {
+        title = line;
+        assigned = true;
+      } else if (company.isEmpty && companyKeywords.any((kw) => lower.contains(kw))) {
+        company = line;
+        assigned = true;
+      }
+
+      if (!assigned) {
+        unassigned.add(line);
+      }
+    }
+
+    // Second pass: The first short unassigned line is probably the name
+    for (final line in unassigned.toList()) {
       final wordCount = line.split(RegExp(r'\s+')).length;
       if (name.isEmpty && wordCount <= 4) {
         name = line;
-      } else if (title.isEmpty && wordCount <= 6) {
-        title = line;
-      } else if (company.isEmpty) {
+        unassigned.remove(line);
+        break;
+      }
+    }
+
+    // Third pass: Assign any remaining lines
+    for (final line in unassigned) {
+      if (company.isEmpty) {
         company = line;
+      } else if (title.isEmpty) {
+        title = line;
+      } else if (name.isEmpty) {
+        name = line;
       }
     }
 
