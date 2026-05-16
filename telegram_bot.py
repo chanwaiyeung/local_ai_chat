@@ -1,5 +1,6 @@
 import json
 import base64
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -7,7 +8,9 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from openai import OpenAI
 
-TOKEN = "8638032374:AAFmO_V0JM_nkBbHq16pbWgwIVHmUQtXoBU"
+TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+if not TOKEN:
+    raise SystemExit("TELEGRAM_BOT_TOKEN env var required")
 CONFIG_FILE = Path("config.json")
 EXPENSE_FILE = Path("data/telegram_expenses.json")
 
