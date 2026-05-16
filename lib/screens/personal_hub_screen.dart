@@ -43,6 +43,7 @@ import '../controllers/wealth_controller.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
 import '../models/app_settings.dart';
+import '../models/contact.dart';
 import '../services/app_settings_service.dart';
 import '../services/currency_service.dart';
 import '../services/personal_rag_service.dart';
@@ -766,33 +767,167 @@ class _ModuleCard extends StatelessWidget {
 }
 
 
-class _ContactListScreen extends StatelessWidget {
+class _ContactListScreen extends StatefulWidget {
   const _ContactListScreen({required this.controller});
 
   final ContactController controller;
 
   @override
+  State<_ContactListScreen> createState() => _ContactListScreenState();
+}
+
+class _ContactListScreenState extends State<_ContactListScreen> {
+  final _nameCtrl = TextEditingController();
+  final _companyCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _notesCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _companyCtrl.dispose();
+    _phoneCtrl.dispose();
+    _emailCtrl.dispose();
+    _notesCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    final contacts = controller.contacts;
-    return Scaffold(
-      appBar: AppBar(title: Text(loc.moduleContacts)),
-      body: contacts.isEmpty
-          ? Center(child: Text(loc.noContactsYet))
-          : ListView.builder(
-              itemCount: contacts.length,
-              itemBuilder: (context, index) {
-                final contact = contacts[index];
-                final subtitle = [contact.title, contact.company]
-                    .where((value) => value.trim().isNotEmpty)
-                    .join(' · ');
-                return ListTile(
-                  leading: const Icon(Icons.contacts_outlined),
-                  title: Text(contact.name),
-                  subtitle: subtitle.isEmpty ? null : Text(subtitle),
-                );
-              },
-            ),
+
+    return ListenableBuilder(
+      listenable: widget.controller,
+      builder: (context, _) {
+        final serverContacts = widget.controller.contacts;
+        final totalCount = serverContacts.length;
+
+        return Scaffold(
+          appBar: AppBar(title: Text(loc.moduleContacts)),
+          body: totalCount == 0
+              ? Center(child: Text(loc.noContactsYet))
+              : ListView.builder(
+                  itemCount: totalCount,
+                  itemBuilder: (context, index) {
+                    final contact = serverContacts[index];
+                    final subtitle = [contact.title, contact.company]
+                        .where((value) => value.trim().isNotEmpty)
+                        .join(' · ');
+                    return ListTile(
+                      leading: const Icon(Icons.contacts_outlined),
+                      title: Text(contact.name),
+                      subtitle: subtitle.isEmpty ? null : Text(subtitle),
+                    );
+                  },
+                ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () {
+              _nameCtrl.clear();
+              _companyCtrl.clear();
+              _phoneCtrl.clear();
+              _emailCtrl.clear();
+              _notesCtrl.clear();
+              showDialog<void>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Add Contact'),
+                  insetPadding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 24,
+                  ),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Business card scan coming soon')),
+                              );
+                            },
+                            icon: const Icon(Icons.document_scanner),
+                            label: const Text('Scan Business Card'),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(controller: _nameCtrl, decoration: const InputDecoration(labelText: 'Name')),
+                        TextField(controller: _companyCtrl, decoration: const InputDecoration(labelText: 'Company')),
+                        TextField(controller: _phoneCtrl, decoration: const InputDecoration(labelText: 'Phone')),
+                        TextField(controller: _emailCtrl, decoration: const InputDecoration(labelText: 'Email')),
+                        TextField(
+                          controller: _notesCtrl,
+                          decoration: const InputDecoration(labelText: 'Notes'),
+                          maxLines: 2,
+                        ),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Cancel'),
+                    ),
+                    FilledButton(
+                      onPressed: () async {
+                        final name = _nameCtrl.text.trim();
+                        final phone = _phoneCtrl.text.trim();
+                        final email = _emailCtrl.text.trim();
+
+                        if (name.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Name is required')),
+                          );
+                          return;
+                        }
+                        if (phone.isEmpty && email.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Phone or Email is required')),
+                          );
+                          return;
+                        }
+
+                        Navigator.of(context).pop();
+
+                        final newContact = Contact(
+                          id: DateTime.now().microsecondsSinceEpoch.toString(),
+                          name: name,
+                          company: _companyCtrl.text.trim(),
+                          phone: phone,
+                          email: email,
+                          notes: _notesCtrl.text.trim(),
+                        );
+
+                        final messenger = ScaffoldMessenger.of(context);
+
+                        try {
+                          await widget.controller.saveContact(newContact);
+                          if (mounted) {
+                            messenger.showSnackBar(
+                              SnackBar(content: Text('Added: $name')),
+                            );
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            messenger.showSnackBar(
+                              SnackBar(content: Text('Failed to save contact: $e')),
+                            );
+                          }
+                        }
+                      },
+                      child: const Text('Save'),
+                    ),
+                  ],
+                ),
+              );
+            },
+            icon: const Icon(Icons.add),
+            label: const Text('Add Contact'),
+          ),
+        );
+      },
     );
   }
 }
