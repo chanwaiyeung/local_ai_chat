@@ -77,3 +77,6 @@ windows/flutter/generated_plugins.cmake
 # Inline backup files
 *-bak
 *.bak
+
+# Flutter gen-l10n output (we maintain lib/l10n/ manually)
+lib/generated/
