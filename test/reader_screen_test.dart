@@ -63,13 +63,17 @@ class _FakeApiClient extends Fake implements ReaderApi {
 
 class _FakeOcrService extends OcrService {
   int callCount = 0;
+  String? lastImagePath;
 
   @override
   Future<String> extractTextFromImage(String imagePath) async {
     callCount++;
+    lastImagePath = imagePath;
     return 'OCR extracted text from sample page';
   }
 }
+
+Future<String?> _fakePickImage() async => 'test_assets/sample.jpg';
 
 void main() {
   testWidgets('renders book title in AppBar', (tester) async {
@@ -194,6 +198,7 @@ void main() {
         apiClient: fakeApi,
         ocrService: fakeOcr,
         enableOcr: true,
+        pickImage: _fakePickImage,
       ),
     ));
 
@@ -201,6 +206,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(fakeOcr.callCount, 1);
+    expect(fakeOcr.lastImagePath, 'test_assets/sample.jpg');
     expect(fakeApi.callCount, 1);
     expect(fakeApi.lastQuery, 'OCR extracted text from sample page');
     expect(fakeApi.lastDocName, '漫畫.cbz');

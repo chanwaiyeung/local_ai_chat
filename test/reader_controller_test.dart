@@ -338,7 +338,7 @@ void main() {
       );
       c.value = c.value.copyWith(answer: 'previous LLM answer');
 
-      final future = c.extractAndAsk();
+      final future = c.extractAndAsk('assets/sample_page.jpg');
       await Future<void>.delayed(Duration.zero);
 
       expect(c.value.answer, 'previous LLM answer');
@@ -356,7 +356,7 @@ void main() {
       final ocr = _FakeOcrService(text: 'extracted words');
       final c = ReaderController(bookTitle: 'book.md', api: api, ocr: ocr);
 
-      await c.extractAndAsk();
+      await c.extractAndAsk('assets/sample_page.jpg');
 
       expect(ocr.lastImagePath, 'assets/sample_page.jpg');
       expect(api.lastQuery, 'extracted words');
@@ -375,7 +375,7 @@ void main() {
         ocr: _FakeOcrService(),
       );
 
-      await c.extractAndAsk();
+      await c.extractAndAsk('assets/sample_page.jpg');
 
       expect(c.value.answer, 'OCR 後無法取得回答');
       expect(c.value.statusBanner, 'OCR 文字提取完成。');
@@ -390,7 +390,7 @@ void main() {
       );
       c.value = c.value.copyWith(answer: 'previous answer');
 
-      await c.extractAndAsk();
+      await c.extractAndAsk('assets/sample_page.jpg');
 
       expect(c.value.answer, 'previous answer');
       expect(c.value.statusBanner, contains('OCR 失敗：'));
@@ -408,7 +408,7 @@ void main() {
       );
       c.value = c.value.copyWith(answer: 'grounded old answer');
 
-      await c.extractAndAsk();
+      await c.extractAndAsk('assets/sample_page.jpg');
 
       expect(c.value.answer, 'grounded old answer');
       expect(c.value.statusBanner, contains('OCR 失敗：'));
@@ -427,7 +427,7 @@ void main() {
         {'doc': 'old', 'chunkIndex': 9},
       ]);
 
-      await c.extractAndAsk();
+      await c.extractAndAsk('assets/sample_page.jpg');
 
       expect(c.value.citations, isEmpty);
       c.dispose();
@@ -444,7 +444,7 @@ void main() {
         languageNote: 'note',
       );
 
-      await c.extractAndAsk();
+      await c.extractAndAsk('assets/sample_page.jpg');
 
       expect(c.value.selectedText, isNull);
       expect(c.value.languageNote, isNull);
@@ -460,7 +460,7 @@ void main() {
       );
       c.value = c.value.copyWith(isLoading: true, answer: 'current answer');
 
-      await c.extractAndAsk();
+      await c.extractAndAsk('assets/sample_page.jpg');
 
       expect(api.lastQuery, isNull);
       expect(c.value.answer, 'current answer');

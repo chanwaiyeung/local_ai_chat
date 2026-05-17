@@ -321,7 +321,7 @@ class ReaderController extends ValueNotifier<ReaderState> {
     }
   }
 
-  Future<void> extractAndAsk() async {
+  Future<void> extractAndAsk(String imagePath) async {
     if (value.isLoading) return;
 
     await _querySub?.cancel();
@@ -337,8 +337,7 @@ class ReaderController extends ValueNotifier<ReaderState> {
     );
 
     try {
-      final extractedText =
-          await _ocr.extractTextFromImage('assets/sample_page.jpg');
+      final extractedText = await _ocr.extractTextFromImage(imagePath);
       final result = await _api.query(
         query: extractedText,
         docName: bookTitle,

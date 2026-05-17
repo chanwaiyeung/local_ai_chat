@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../controllers/reader_controller.dart';
@@ -12,6 +13,7 @@ class ReaderScreen extends StatefulWidget {
     this.apiClient,
     this.ocrService,
     this.enableOcr = false,
+    this.pickImage,
   });
 
   final String bookTitle;
@@ -21,6 +23,10 @@ class ReaderScreen extends StatefulWidget {
   final ReaderApi? apiClient;
   final OcrService? ocrService;
   final bool enableOcr;
+
+  /// Optional image picker for OCR. Tests inject a fake; production uses
+  /// [FilePicker] when null.
+  final Future<String?> Function()? pickImage;
 
   @override
   State<ReaderScreen> createState() => _ReaderScreenState();
@@ -169,11 +175,26 @@ class _ReaderScreenState extends State<ReaderScreen> {
     );
   }
 
+  Future<void> _pickImageAndExtract() async {
+    String? path;
+    if (widget.pickImage != null) {
+      path = await widget.pickImage!();
+    } else {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+      );
+      path = result?.files.single.path;
+    }
+    if (path == null) return;
+    await _controller.extractAndAsk(path);
+  }
+
   Widget _buildOcrButton(ReaderState state) {
     return OutlinedButton.icon(
       icon: const Icon(Icons.document_scanner),
       label: const Text('OCR 問 AI'),
-      onPressed: state.isLoading ? null : _controller.extractAndAsk,
+      onPressed: state.isLoading ? null : _pickImageAndExtract,
     );
   }
 
