@@ -1,4 +1,5 @@
 // lib/widgets/book/book_form_dialog.dart
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -142,26 +143,35 @@ class _BookFormDialogState extends State<BookFormDialog> {
         title: const Text('掃描封面'),
         content: const Text('請選擇圖片來源'),
         actions: [
-          TextButton.icon(
-            icon: const Icon(Icons.camera_alt),
-            label: const Text('拍照'),
-            onPressed: () async {
-              final img = await picker.pickImage(
-                source: ImageSource.camera,
-                imageQuality: 90,
-              );
-              if (ctx.mounted) Navigator.pop(ctx, img);
-            },
-          ),
+          if (!Platform.isWindows)
+            TextButton.icon(
+              icon: const Icon(Icons.camera_alt),
+              label: const Text('拍照'),
+              onPressed: () async {
+                try {
+                  final img = await picker.pickImage(
+                    source: ImageSource.camera,
+                    imageQuality: 90,
+                  );
+                  if (ctx.mounted) Navigator.pop(ctx, img);
+                } catch (e) {
+                  if (ctx.mounted) Navigator.pop(ctx, null);
+                }
+              },
+            ),
           TextButton.icon(
             icon: const Icon(Icons.photo_library),
             label: const Text('從相簿選擇'),
             onPressed: () async {
-              final img = await picker.pickImage(
-                source: ImageSource.gallery,
-                imageQuality: 90,
-              );
-              if (ctx.mounted) Navigator.pop(ctx, img);
+              try {
+                final img = await picker.pickImage(
+                  source: ImageSource.gallery,
+                  imageQuality: 90,
+                );
+                if (ctx.mounted) Navigator.pop(ctx, img);
+              } catch (e) {
+                if (ctx.mounted) Navigator.pop(ctx, null);
+              }
             },
           ),
         ],
