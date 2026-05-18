@@ -4,7 +4,7 @@
 
 Human (Albert) - sole commit/push authority + dispatcher
 - Claude Code - supervisor, validation, docs, specs
-- Cursor - Life App implementer (agentic)
+- Cursor - Life App + Church implementer (agentic)
 - ChatGPT - Life App spec advisor (web)
 - Gemini - Church App spec advisor (web)
 - Grok - Church App spec advisor (web)
@@ -14,7 +14,7 @@ Human (Albert) - sole commit/push authority + dispatcher
 | Module | Implementer | Advisors | Validator |
 |---|---|---|---|
 | Life App | Cursor | ChatGPT | Claude Code |
-| Church | hand-apply | Gemini + Grok | Claude Code |
+| Church | Cursor or hand-apply | Gemini + Grok | Claude Code |
 | Cross-cutting | Albert only | Claude Code | Claude Code |
 
 ## Workflow per task

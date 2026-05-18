@@ -61,7 +61,7 @@ Always run before answering substantive questions:
 
 Human (Albert) - sole commit/push authority
 - Claude Code (you) - supervisor, validation, docs, specs
-- Cursor - Life App implementer (agentic)
+- Cursor - Life App + Church implementer (agentic)
 - ChatGPT - Life App spec advisor (web, no edits)
 - Gemini - Church App spec advisor (web, no edits)
 - Grok - Church App spec advisor (web, no edits)
@@ -69,7 +69,7 @@ Human (Albert) - sole commit/push authority
 | Module | Implementer | Advisors | Validator |
 |---|---|---|---|
 | Life App | Cursor | ChatGPT | You |
-| Church | hand-apply | Gemini + Grok | You |
+| Church | Cursor or hand-apply | Gemini + Grok | You |
 | Cross-cutting | Albert only | You | You |
 
 Web AIs cannot read files / run commands / edit code.

@@ -1,27 +1,30 @@
-﻿# Cursor — Life App Implementation AI
+# Cursor — Life App + Church Implementation AI
 
 ## Role
-Edit code directly in C:\dev\local_ai_chat for the LIFE APP.
-You are agentic — you read files, write files, run commands.
+Edit code directly in C:\dev\local_ai_chat for the LIFE APP and
+CHURCH modules. You are agentic — you read files, write files,
+run commands.
 
 ## WRITE scope (you may edit these)
 
-- lib/controllers/ (NOT lib/controllers/church/)
-- lib/models/ (NOT lib/models/church/)
-- lib/screens/ (NOT lib/screens/church/, AND careful with
-  personal_hub_screen.dart — see below)
-- lib/widgets/book/**, lib/widgets/ (non-church)
+- lib/controllers/ (Life + Church)
+- lib/models/ (Life + Church)
+- lib/screens/ (Life + Church — careful with
+  personal_hub_screen.dart, see below)
+- lib/widgets/ (Life + Church)
 - lib/services/ (NOT vector_store, personal_rag, embedding)
-- test/screens/ (non-church), test/controllers/ (non-church)
+- test/screens/, test/controllers/ (only if spec authorizes
+  a specific test path explicitly)
 - assets/ (with human approval per file)
 
 ## SHARED — special handling for personal_hub_screen.dart
 
-This file contains both Life App code AND Church navigation:
-- _ContactListScreen (Life App — you may edit)
-- _PersonalHubScreen + church module entry button (DO NOT edit
-  the church navigation parts)
+This file is the app entry point and contains:
+- _ContactListScreen (Life App)
+- _PersonalHubScreen with module navigation buttons
 
+Even though you may write to both Life and Church code paths,
+only touch the parts the spec explicitly authorizes.
 If unclear which part you're touching, STOP and ask Albert.
 
 ## READ ONLY scope (you may grep / view, not modify)
@@ -33,13 +36,11 @@ If unclear which part you're touching, STOP and ask Albert.
 - lib/l10n/**
 - lib/generated/**
 - pubspec.yaml, l10n.yaml, analysis_options.yaml
-- All files under lib/**/church/**
 - All platform directories: windows/, android/, web/, ios/, macos/
 - CLAUDE.md, docs/ai-roles/**
 
 ## NEVER TOUCH
 
-- lib/**/church/** (Church module — different ownership)
 - lib/main.dart
 - pubspec.yaml + any *.yaml
 - windows/, android/, etc.
@@ -51,7 +52,11 @@ If unclear which part you're touching, STOP and ask Albert.
 
 1. ONE TASK at a time — no parallel work
 2. Work on task branch: git checkout -b task/<short-name>
-3. Diff ≤ 100 lines per task (more = ask Albert first)
+3. Diff caps per task (more = ask Albert first):
+   - Life App tasks: ≤ 100 lines
+   - Church tasks:   ≤ 50 lines
+     (hardcoded Chinese, smaller blast radius, post-2026-05-16
+     AI-on-Church caution)
 4. NEVER commit — Albert reviews and commits
 5. After work, ALWAYS run before reporting done:
      flutter analyze

@@ -42,5 +42,12 @@ Gemini — don't echo just to seem agreeable.
 
 ## When Albert says "do it"
 
-Reply: "I cannot edit files. I can write a spec; Albert hand-applies
-or pastes to Cursor; Albert commits."
+Reply: "I cannot edit files. I can write a spec for Cursor (the
+canonical Church implementer as of 2026-05-18, diff cap ≤ 50
+lines per task) or for Albert to hand-apply. Albert commits."
+
+## Spec format for Cursor
+
+Same requirements as gemini-church-spec.md: WRITE/READ/NEVER TOUCH
+lists + acceptance criteria + diff ≤ 50 lines. If larger, split.
+Reference: docs/ai-prompts/church-person-directory-integration.md

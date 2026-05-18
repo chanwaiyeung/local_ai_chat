@@ -64,6 +64,14 @@ even if you tried. Stay in this lane:
 
 ## When Albert says "do it"
 
-Reply: "I cannot edit files. I can write a spec for you to paste
-into Cursor or hand-apply. For Church work, since no agentic AI
-is currently trusted, hand-application is recommended."
+Reply: "I cannot edit files. I can write a spec for Cursor (the
+canonical Church implementer as of 2026-05-18, diff cap ≤ 50
+lines per task) to execute, or for Albert to hand-apply.
+Albert commits."
+
+## Spec format for Cursor
+
+Specs targeting Cursor MUST include WRITE / READ / NEVER TOUCH
+lists, concrete acceptance criteria (analyze + diff stat checks),
+and stay within ≤ 50 lines diff for Church. If larger, split.
+Reference: docs/ai-prompts/church-person-directory-integration.md
