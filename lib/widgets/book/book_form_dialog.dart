@@ -1,12 +1,10 @@
-// lib/widgets/book/book_form_dialog.dart
-import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../models/book.dart';
-import '../../services/app_settings_service.dart';
-import '../../services/book_isbn_service.dart';
-import '../../services/book_vision_service.dart';
+import 'book_cover_section.dart';
+import 'book_metadata_section.dart';
+import 'book_reading_section.dart';
+import 'book_tags_section.dart';
 
 class BookFormDialog extends StatefulWidget {
   const BookFormDialog({
@@ -66,212 +64,46 @@ class _BookFormDialogState extends State<BookFormDialog> {
 
   @override
   void dispose() {
-    _titleCtrl.dispose();
-    _authorCtrl.dispose();
-    _publisherCtrl.dispose();
-    _isbnCtrl.dispose();
-    _yearCtrl.dispose();
-    _coverUrlCtrl.dispose();
-    _locationCtrl.dispose();
-    _notesCtrl.dispose();
-    _tagInputCtrl.dispose();
+    for (final c in [
+      _titleCtrl,
+      _authorCtrl,
+      _publisherCtrl,
+      _isbnCtrl,
+      _yearCtrl,
+      _coverUrlCtrl,
+      _locationCtrl,
+      _notesCtrl,
+      _tagInputCtrl,
+    ]) {
+      c.dispose();
+    }
     super.dispose();
   }
 
-  Future<void> _lookupIsbn() async {
-    final isbn = _isbnCtrl.text.trim();
-    if (isbn.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('請先輸入 ISBN')),
+  void _notify() => setState(() {});
+  Future<void> _lookupIsbn() => bookFormLookupIsbn(
+        context,
+        isbnCtrl: _isbnCtrl,
+        titleCtrl: _titleCtrl,
+        authorCtrl: _authorCtrl,
+        publisherCtrl: _publisherCtrl,
+        yearCtrl: _yearCtrl,
+        coverUrlCtrl: _coverUrlCtrl,
+        setLookingUp: (v) => _lookingUpIsbn = v,
+        notify: _notify,
       );
-      return;
-    }
-    setState(() => _lookingUpIsbn = true);
-    try {
-      final book = await BookIsbnService.lookup(isbn).timeout(
-        const Duration(seconds: 10),
+
+  Future<void> _scanCoverImage() => bookFormScanCover(
+        context,
+        titleCtrl: _titleCtrl,
+        authorCtrl: _authorCtrl,
+        publisherCtrl: _publisherCtrl,
+        yearCtrl: _yearCtrl,
+        coverUrlCtrl: _coverUrlCtrl,
+        isbnCtrl: _isbnCtrl,
+        setScanning: (v) => _scanningCover = v,
+        notify: _notify,
       );
-      if (!mounted) return;
-      if (book == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('找不到此 ISBN 的書籍資料')),
-        );
-        return;
-      }
-      var filledCount = 0;
-      if (_titleCtrl.text.trim().isEmpty && book.title.isNotEmpty) {
-        _titleCtrl.text = book.title;
-        filledCount++;
-      }
-      if (_authorCtrl.text.trim().isEmpty && book.author.isNotEmpty) {
-        _authorCtrl.text = book.author;
-        filledCount++;
-      }
-      if (_publisherCtrl.text.trim().isEmpty && book.publisher.isNotEmpty) {
-        _publisherCtrl.text = book.publisher;
-        filledCount++;
-      }
-      if (_yearCtrl.text.trim().isEmpty && book.year != null) {
-        _yearCtrl.text = book.year!.toString();
-        filledCount++;
-      }
-      if (_coverUrlCtrl.text.trim().isEmpty && book.coverUrl.isNotEmpty) {
-        _coverUrlCtrl.text = book.coverUrl;
-        filledCount++;
-      }
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('已從 ISBN 自動填入 $filledCount 個欄位')),
-      );
-      setState(() {});
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('查詢失敗: $e')),
-      );
-    } finally {
-      if (mounted) setState(() => _lookingUpIsbn = false);
-    }
-  }
-
-  Future<void> _scanCoverImage() async {
-    final picker = ImagePicker();
-    if (!mounted) return;
-    final XFile? image = await showDialog<XFile?>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('掃描封面'),
-        content: const Text('請選擇圖片來源'),
-        actions: [
-          if (!Platform.isWindows)
-            TextButton.icon(
-              icon: const Icon(Icons.camera_alt),
-              label: const Text('拍照'),
-              onPressed: () async {
-                try {
-                  final img = await picker.pickImage(
-                    source: ImageSource.camera,
-                    imageQuality: 90,
-                  );
-                  if (ctx.mounted) Navigator.pop(ctx, img);
-                } catch (e) {
-                  if (ctx.mounted) Navigator.pop(ctx, null);
-                }
-              },
-            ),
-          TextButton.icon(
-            icon: const Icon(Icons.photo_library),
-            label: const Text('從相簿選擇'),
-            onPressed: () async {
-              try {
-                final img = await picker.pickImage(
-                  source: ImageSource.gallery,
-                  imageQuality: 90,
-                );
-                if (ctx.mounted) Navigator.pop(ctx, img);
-              } catch (e) {
-                if (ctx.mounted) Navigator.pop(ctx, null);
-              }
-            },
-          ),
-        ],
-      ),
-    );
-    if (image == null) return;
-
-    final settings = await AppSettingsService().load();
-    final apiKey = settings.geminiApiKey?.trim();
-    if (apiKey == null || apiKey.isEmpty) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('請先前往 Settings 設定 Gemini API Key')),
-      );
-      return;
-    }
-
-    setState(() => _scanningCover = true);
-    if (!mounted) return;
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('AI 正在辨識封面...\n這可能需要幾秒鐘'),
-          ],
-        ),
-      ),
-    );
-
-    try {
-      final book = await BookVisionService.scanFromImage(
-        image.path,
-        apiKey: apiKey,
-      ).timeout(const Duration(seconds: 35));
-
-      if (!mounted) return;
-      Navigator.of(context).pop();
-
-      if (book == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('無法從圖片辨識書籍資料')),
-        );
-        return;
-      }
-
-      var filledCount = 0;
-      if (_titleCtrl.text.trim().isEmpty && book.title.isNotEmpty) {
-        _titleCtrl.text = book.title;
-        filledCount++;
-      }
-      if (_authorCtrl.text.trim().isEmpty && book.author.isNotEmpty) {
-        _authorCtrl.text = book.author;
-        filledCount++;
-      }
-      if (_publisherCtrl.text.trim().isEmpty && book.publisher.isNotEmpty) {
-        _publisherCtrl.text = book.publisher;
-        filledCount++;
-      }
-      if (_yearCtrl.text.trim().isEmpty && book.year != null) {
-        _yearCtrl.text = book.year!.toString();
-        filledCount++;
-      }
-      if (_coverUrlCtrl.text.trim().isEmpty && book.coverUrl.isNotEmpty) {
-        _coverUrlCtrl.text = book.coverUrl;
-        filledCount++;
-      }
-      if (_isbnCtrl.text.trim().isEmpty && book.isbn.isNotEmpty) {
-        _isbnCtrl.text = book.isbn;
-        filledCount++;
-      }
-
-      if (!mounted) return;
-      if (filledCount == 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('找不到可填入的欄位（可能都已手動填寫）')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('已從封面圖自動填入 $filledCount 個欄位')),
-        );
-      }
-      setState(() {});
-    } catch (e) {
-      if (mounted) {
-        if (Navigator.canPop(context)) {
-          Navigator.of(context).pop();
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('辨識失敗: $e')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _scanningCover = false);
-    }
-  }
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
@@ -315,13 +147,8 @@ class _BookFormDialogState extends State<BookFormDialog> {
         title: const Text('Delete book?'),
         content: Text('"${widget.existing?.title}" will be removed.'),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Delete',
-                  style: TextStyle(color: Colors.red))),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete', style: TextStyle(color: Colors.red))),
         ],
       ),
     );
@@ -331,24 +158,16 @@ class _BookFormDialogState extends State<BookFormDialog> {
     }
   }
 
-  Future<void> _pickReadDate() async {
+  Future<void> _pickDate({required bool started}) async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: _readAt ?? DateTime.now(),
+      initialDate: (started ? _startedReadingAt : _readAt) ?? DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
-    if (picked != null) setState(() => _readAt = picked);
-  }
-
-  Future<void> _pickStartedReadingDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _startedReadingAt ?? DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null) setState(() => _startedReadingAt = picked);
+    if (picked != null) {
+      setState(() => started ? _startedReadingAt = picked : _readAt = picked);
+    }
   }
 
   void _addTag() {
@@ -373,183 +192,42 @@ class _BookFormDialogState extends State<BookFormDialog> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: OutlinedButton.icon(
-                    icon: _scanningCover
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.photo_camera_outlined),
-                    label: Text(
-                        _scanningCover ? '辨識中...' : '拍照/選圖辨識封面'),
-                    onPressed: _scanningCover ? null : _scanCoverImage,
+                BookCoverSection(
+                  coverUrlCtrl: _coverUrlCtrl,
+                  scanningCover: _scanningCover,
+                  onScanCover: _scanCoverImage,
+                ),
+                BookMetadataSection(
+                  titleCtrl: _titleCtrl,
+                  authorCtrl: _authorCtrl,
+                  publisherCtrl: _publisherCtrl,
+                  isbnCtrl: _isbnCtrl,
+                  yearCtrl: _yearCtrl,
+                  locationCtrl: _locationCtrl,
+                  category: _category,
+                  onCategoryChanged: (v) => setState(() => _category = v ?? ''),
+                  lookingUpIsbn: _lookingUpIsbn,
+                  onLookupIsbn: _lookupIsbn,
+                ),
+                BookReadingSection(
+                  rating: _rating,
+                  onRatingChanged: (v) => setState(() => _rating = v),
+                  notesCtrl: _notesCtrl,
+                  startedReadingAt: _startedReadingAt,
+                  readAt: _readAt,
+                  onPickStartedReading: () => _pickDate(started: true),
+                  onClearStartedReading: () =>
+                      setState(() => _startedReadingAt = null),
+                  onPickReadDate: () => _pickDate(started: false),
+                  onClearReadDate: () => setState(() => _readAt = null),
+                ),
+                BookTagsSection(
+                  tags: _tags,
+                  tagInputCtrl: _tagInputCtrl,
+                  onAddTag: _addTag,
+                  onRemoveTag: (t) => setState(
+                    () => _tags = _tags.where((x) => x != t).toList(),
                   ),
-                ),
-                TextFormField(
-                  controller: _titleCtrl,
-                  decoration: const InputDecoration(labelText: 'Title *'),
-                  validator: (v) =>
-                      v == null || v.trim().isEmpty ? 'Required' : null,
-                ),
-                TextFormField(
-                  controller: _authorCtrl,
-                  decoration: const InputDecoration(labelText: 'Author'),
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _publisherCtrl,
-                        decoration:
-                            const InputDecoration(labelText: 'Publisher'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      width: 100,
-                      child: TextFormField(
-                        controller: _yearCtrl,
-                        decoration: const InputDecoration(labelText: 'Year'),
-                        keyboardType: TextInputType.number,
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _isbnCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'ISBN',
-                          helperText: 'Phase 2: auto-fill from Google Books',
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    if (_lookingUpIsbn)
-                      const Padding(
-                        padding: EdgeInsets.all(12),
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      )
-                    else
-                      IconButton(
-                        tooltip: '從 ISBN 自動填入',
-                        icon: const Icon(Icons.search),
-                        onPressed: _lookupIsbn,
-                      ),
-                  ],
-                ),
-                TextFormField(
-                  controller: _coverUrlCtrl,
-                  decoration: const InputDecoration(
-                      labelText: 'Cover image URL'),
-                ),
-                TextFormField(
-                  controller: _locationCtrl,
-                  decoration: const InputDecoration(labelText: 'Shelf location'),
-                ),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  initialValue: _category.isEmpty ? null : _category,
-                  decoration: const InputDecoration(labelText: 'Category'),
-                  items: [
-                    const DropdownMenuItem(value: '', child: Text('(none)')),
-                    ...BookCategory.all.map(
-                      (c) => DropdownMenuItem(value: c, child: Text(c)),
-                    ),
-                  ],
-                  onChanged: (v) => setState(() => _category = v ?? ''),
-                ),
-                const SizedBox(height: 8),
-                Text('Rating: ${_rating.toStringAsFixed(1)}'),
-                Slider(
-                  value: _rating,
-                  min: 0,
-                  max: 5,
-                  divisions: 10,
-                  label: _rating.toStringAsFixed(1),
-                  onChanged: (v) => setState(() => _rating = v),
-                ),
-                Row(
-                  children: [
-                    const Text('Started reading:'),
-                    const SizedBox(width: 8),
-                    Text(_startedReadingAt != null
-                        ? '${_startedReadingAt!.year}-${_startedReadingAt!.month.toString().padLeft(2, '0')}-${_startedReadingAt!.day.toString().padLeft(2, '0')}'
-                        : '(not started)'),
-                    const Spacer(),
-                    if (_startedReadingAt != null)
-                      IconButton(
-                        icon: const Icon(Icons.clear, size: 18),
-                        onPressed: () => setState(() => _startedReadingAt = null),
-                      ),
-                    TextButton(
-                        onPressed: _pickStartedReadingDate, child: const Text('Pick')),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Text('Read date:'),
-                    const SizedBox(width: 8),
-                    Text(_readAt != null
-                        ? '${_readAt!.year}-${_readAt!.month.toString().padLeft(2, '0')}-${_readAt!.day.toString().padLeft(2, '0')}'
-                        : '(not read)'),
-                    const Spacer(),
-                    if (_readAt != null)
-                      IconButton(
-                        icon: const Icon(Icons.clear, size: 18),
-                        onPressed: () => setState(() => _readAt = null),
-                      ),
-                    TextButton(
-                        onPressed: _pickReadDate, child: const Text('Pick')),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _tagInputCtrl,
-                        decoration: const InputDecoration(
-                            labelText: 'Add tag (press +)'),
-                        onFieldSubmitted: (_) => _addTag(),
-                      ),
-                    ),
-                    IconButton(
-                        onPressed: _addTag, icon: const Icon(Icons.add)),
-                  ],
-                ),
-                if (_tags.isNotEmpty)
-                  Wrap(
-                    spacing: 4,
-                    children: _tags
-                        .map((t) => Chip(
-                              label: Text(t),
-                              onDeleted: () => setState(
-                                () => _tags =
-                                    _tags.where((x) => x != t).toList(),
-                              ),
-                            ))
-                        .toList(),
-                  ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _notesCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Notes',
-                    helperText: 'Will be searchable via AI Q&A',
-                    alignLabelWithHint: true,
-                  ),
-                  maxLines: 5,
                 ),
               ],
             ),
@@ -558,22 +236,12 @@ class _BookFormDialogState extends State<BookFormDialog> {
       ),
       actions: [
         if (isEdit && widget.onDelete != null)
-          TextButton(
-            onPressed: _saving ? null : _confirmDelete,
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        TextButton(
-          onPressed: _saving ? null : () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
-        ),
+          TextButton(onPressed: _saving ? null : _confirmDelete, child: const Text('Delete', style: TextStyle(color: Colors.red))),
+        TextButton(onPressed: _saving ? null : () => Navigator.pop(context, false), child: const Text('Cancel')),
         FilledButton(
           onPressed: _saving ? null : _save,
           child: _saving
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white))
+              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
               : Text(isEdit ? 'Save' : 'Add'),
         ),
       ],
