@@ -7,6 +7,7 @@ import '../services/api_client.dart';
 import '../services/language_learning_service.dart';
 import '../services/ocr_service.dart';
 import '../services/tts_service.dart';
+import 'reader_reading_controller.dart';
 
 /// Container for every piece of state the Reader experience can show.
 ///
@@ -219,8 +220,11 @@ class ReaderController extends ValueNotifier<ReaderState> {
         _ocr = ocr ?? OcrService(),
         _tts = tts ?? TTSService(),
         super(ReaderState.initial) {
+    readingController = ReaderReadingController(api: _api, state: this);
     _languageService = LanguageLearningService(api: _api);
   }
+
+  late final ReaderReadingController readingController;
 
   final String bookTitle;
   final ReaderApi _api;
@@ -357,88 +361,13 @@ class ReaderController extends ValueNotifier<ReaderState> {
     }
   }
 
-  // --------------------------- Phase 1B retrieve-first read mode ---------------------------
+  Future<void> loadDocument(String docName) =>
+      readingController.loadDocument(docName);
 
-  /// Loads every chunk of [docName] in original chunkIndex order via
-  /// `GET /docs/<doc>/chunks`. No LLM call. Sets `documentChunks`,
-  /// `currentDocName`, `loadError`, `statusBanner`. Notifies twice
-  /// (start + end). Does **not** touch `answer` or `isLoading` — those
-  /// belong to the Q&A flow.
-  Future<void> loadDocument(String docName) async {
-    value = value.copyWith(
-      isLoadingDocument: true,
-      loadError: null,
-      statusBanner: '載入文件...',
-    );
+  Future<void> search(String query, {int topK = 4}) =>
+      readingController.search(query, topK: topK);
 
-    try {
-      final chunks = await _api.getDocumentChunks(docName);
-      // Keep ALL entries (including empty text) so the list index of each
-      // entry matches its server-side chunkIndex. The Reading Mode UI
-      // relies on this invariant for jump-to-chunk on search hits.
-      final texts = chunks
-          .map((c) => (c['text'] as String?) ?? '')
-          .toList(growable: false);
-      value = value.copyWith(
-        currentDocName: docName,
-        documentChunks: texts,
-        isLoadingDocument: false,
-        statusBanner: '文件已載入，共 ${chunks.length} 段文字。',
-      );
-    } catch (e) {
-      value = value.copyWith(
-        isLoadingDocument: false,
-        loadError: e.toString(),
-        currentDocName: null,
-        documentChunks: const [],
-        statusBanner: '載入失敗：$e',
-      );
-    }
-  }
-
-  /// Pure RAG retrieve via `POST /rag/retrieve` (no LLM generation).
-  /// Scoped to [currentDocName] when one is loaded; otherwise searches
-  /// the whole index. No-op for blank queries. Writes summary text to
-  /// `statusBanner`; never touches `answer` or `isLoading`.
-  Future<void> search(String query, {int topK = 4}) async {
-    if (query.trim().isEmpty) return;
-
-    value = value.copyWith(
-      isSearching: true,
-      searchError: null,
-      statusBanner: '檢索中...',
-    );
-
-    try {
-      final hits = await _api.retrieve(
-        query: query,
-        docName: value.currentDocName,
-        topK: topK,
-      );
-      final preview = hits.isEmpty ? '沒有找到相關內容' : _safePreview(hits.first);
-      value = value.copyWith(
-        searchResults: hits,
-        isSearching: false,
-        statusBanner: '找到 ${hits.length} 段相關內容。\n\n$preview',
-      );
-    } catch (e) {
-      value = value.copyWith(
-        isSearching: false,
-        searchError: e.toString(),
-        searchResults: const [],
-        statusBanner: '檢索失敗：$e',
-      );
-    }
-  }
-
-  /// Drops any cached search results / errors. Cheap; no network.
-  void clearSearch() {
-    if (value.searchResults.isEmpty && value.searchError == null) return;
-    value = value.copyWith(
-      searchResults: const [],
-      searchError: null,
-    );
-  }
+  void clearSearch() => readingController.clearSearch();
 
   Future<void> toggleSpeak() async {
     if (value.isSpeaking) {
@@ -456,11 +385,5 @@ class ReaderController extends ValueNotifier<ReaderState> {
     _ocr.dispose();
     unawaited(_tts.stop());
     super.dispose();
-  }
-
-  String _safePreview(Map<String, dynamic> hit) {
-    final raw = hit['text'] ?? hit['snippet'] ?? '';
-    final text = raw is String ? raw : raw.toString();
-    return text.length > 200 ? '${text.substring(0, 200)}...' : text;
   }
 }

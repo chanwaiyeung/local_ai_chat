@@ -1,9 +1,7 @@
 // test/reader_controller_test.dart
 //
-// Phase 1B: unit tests for ReaderController's retrieve-first read mode.
-// Drives the controller directly (no widgets) and asserts on its public
-// state surface. Covers: success, failure, blank query, scoped search,
-// and clearSearch.
+// Unit tests for ReaderController Q&A, OCR, and reading-mode delegation.
+// Retrieve-first read-mode behavior lives in reader_reading_controller_test.dart.
 
 import 'dart:async';
 
@@ -18,8 +16,6 @@ class _FakeReaderApi extends Fake implements ReaderApi {
     this.hits = const [],
     this.queryResponse = const {'answer': 'llm answer'},
     this.streamEvents = const [DeltaEvent('stream answer'), DoneEvent()],
-    this.throwOnLoad = false,
-    this.throwOnRetrieve = false,
     this.throwOnQuery = false,
   });
 
@@ -27,8 +23,6 @@ class _FakeReaderApi extends Fake implements ReaderApi {
   List<Map<String, dynamic>> hits;
   Map<String, dynamic> queryResponse;
   List<QueryEvent> streamEvents;
-  bool throwOnLoad;
-  bool throwOnRetrieve;
   bool throwOnQuery;
 
   String? lastChunksDoc;
@@ -43,7 +37,6 @@ class _FakeReaderApi extends Fake implements ReaderApi {
   @override
   Future<List<Map<String, dynamic>>> getDocumentChunks(String docName) async {
     lastChunksDoc = docName;
-    if (throwOnLoad) throw Exception('boom load');
     return chunks;
   }
 
@@ -56,7 +49,6 @@ class _FakeReaderApi extends Fake implements ReaderApi {
     lastRetrieveQuery = query;
     lastRetrieveDoc = docName;
     lastRetrieveTopK = topK;
-    if (throwOnRetrieve) throw Exception('boom retrieve');
     return hits;
   }
 
@@ -118,212 +110,37 @@ class _PendingOcrService extends OcrService {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('ReaderController.loadDocument', () {
-    test('populates documentChunks + currentDocName on success', () async {
+  group('ReaderController reading delegation', () {
+    test('exposes readingController wired to shared state', () {
+      final c = ReaderController(bookTitle: 'a.txt', api: _FakeReaderApi());
+      expect(c.readingController, isNotNull);
+      c.dispose();
+    });
+
+    test('loadDocument updates ReaderController state via wrapper', () async {
       final api = _FakeReaderApi(chunks: const [
-        {'docName': 'a.txt', 'chunkIndex': 0, 'text': 'first'},
-        {'docName': 'a.txt', 'chunkIndex': 1, 'text': 'second'},
+        {'text': 'chunk'},
       ]);
       final c = ReaderController(bookTitle: 'a.txt', api: api);
 
       await c.loadDocument('a.txt');
 
-      expect(api.lastChunksDoc, 'a.txt');
-      expect(c.value.currentDocName, 'a.txt');
-      expect(c.value.documentChunks, ['first', 'second']);
-      expect(c.value.statusBanner, '文件已載入，共 2 段文字。');
-      // Q&A field must not be polluted by read-mode operations.
-      expect(c.value.answer, ReaderState.initial.answer);
-      expect(c.value.isLoading, isFalse);
-      expect(c.value.isLoadingDocument, isFalse);
-      expect(c.value.loadError, isNull);
-
-      c.dispose();
-    });
-
-    test('preserves empty-text chunks (list index == chunkIndex)', () async {
-      // Reading Mode jump-to-chunk relies on `documentChunks[i]` being the
-      // chunk whose server-side chunkIndex is `i`. Dropping empties would
-      // break that invariant for any doc with a hole.
-      final api = _FakeReaderApi(chunks: const [
-        {'text': 'kept'},
-        {'text': ''},
-        {'text': 'also-kept'},
-      ]);
-      final c = ReaderController(bookTitle: 'a.txt', api: api);
-
-      await c.loadDocument('a.txt');
-      expect(c.value.documentChunks, ['kept', '', 'also-kept']);
-
-      c.dispose();
-    });
-
-    test('records error and clears state on failure', () async {
-      final api = _FakeReaderApi(throwOnLoad: true);
-      final c = ReaderController(bookTitle: 'a.txt', api: api);
-
-      await c.loadDocument('a.txt');
-
-      expect(c.value.loadError, contains('boom load'));
-      expect(c.value.statusBanner, contains('載入失敗：'));
-      expect(c.value.statusBanner, contains('boom load'));
-      // answer stays at initial — read-mode failures don't bleed into Q&A.
-      expect(c.value.answer, ReaderState.initial.answer);
-      expect(c.value.currentDocName, isNull);
-      expect(c.value.documentChunks, isEmpty);
-      expect(c.value.isLoading, isFalse);
-      expect(c.value.isLoadingDocument, isFalse);
-
-      c.dispose();
-    });
-  });
-
-  group('ReaderController.search', () {
-    test('blank query is a no-op (no API call, no state change)', () async {
-      final api = _FakeReaderApi();
-      final c = ReaderController(bookTitle: 'a.txt', api: api);
-      await c.search('   ');
-      expect(api.lastRetrieveQuery, isNull);
-      expect(c.value.isSearching, isFalse);
+      expect(c.value.documentChunks, ['chunk']);
       expect(c.value.answer, ReaderState.initial.answer);
       c.dispose();
     });
 
-    test('populates searchResults and forwards topK', () async {
+    test('search and clearSearch work via wrapper', () async {
       final api = _FakeReaderApi(hits: const [
-        {'doc': 'a.txt', 'chunkIndex': 0, 'score': 0.9, 'snippet': 'hit'},
+        {'text': 'hit'},
       ]);
       final c = ReaderController(bookTitle: 'a.txt', api: api);
 
-      await c.search('what is RAG?', topK: 3);
-
-      expect(api.lastRetrieveQuery, 'what is RAG?');
-      expect(api.lastRetrieveTopK, 3);
+      await c.search('rag');
       expect(c.value.searchResults, hasLength(1));
-      expect(c.value.searchResults.first['snippet'], 'hit');
-      expect(c.value.statusBanner, '找到 1 段相關內容。\n\nhit');
-      // Search must not overwrite a prior LLM answer.
-      expect(c.value.answer, ReaderState.initial.answer);
-      expect(c.value.isLoading, isFalse);
-      expect(c.value.searchError, isNull);
-
-      c.dispose();
-    });
-
-    test('search preview leaves short text untouched', () async {
-      final api = _FakeReaderApi(hits: const [
-        {'doc': 'a.txt', 'chunkIndex': 0, 'score': 0.9, 'text': '短文字'},
-      ]);
-      final c = ReaderController(bookTitle: 'a.txt', api: api);
-
-      await c.search('q');
-
-      expect(c.value.statusBanner, '找到 1 段相關內容。\n\n短文字');
-      expect(c.value.statusBanner!.endsWith('...'), isFalse);
-      c.dispose();
-    });
-
-    test('search preview truncates long text to 200 chars plus ellipsis',
-        () async {
-      final longText = 'a' * 201;
-      final api = _FakeReaderApi(hits: [
-        {'doc': 'a.txt', 'chunkIndex': 0, 'score': 0.9, 'text': longText},
-      ]);
-      final c = ReaderController(bookTitle: 'a.txt', api: api);
-
-      await c.search('q');
-
-      final preview = c.value.statusBanner!.split('\n\n').last;
-      expect(preview.length, 203);
-      expect(preview, '${'a' * 200}...');
-      c.dispose();
-    });
-
-    test('search preview falls back to snippet payload', () async {
-      final api = _FakeReaderApi(hits: const [
-        {'doc': 'a.txt', 'chunkIndex': 0, 'score': 0.9, 'snippet': 'snippet'},
-      ]);
-      final c = ReaderController(bookTitle: 'a.txt', api: api);
-
-      await c.search('q');
-
-      expect(c.value.statusBanner, '找到 1 段相關內容。\n\nsnippet');
-      c.dispose();
-    });
-
-    test('search reports empty result preview', () async {
-      final api = _FakeReaderApi();
-      final c = ReaderController(bookTitle: 'a.txt', api: api);
-
-      await c.search('q');
-
-      expect(c.value.statusBanner, '找到 0 段相關內容。\n\n沒有找到相關內容');
-      expect(c.value.searchResults, isEmpty);
-      c.dispose();
-    });
-
-    test('scopes by currentDocName once a doc is loaded', () async {
-      final api = _FakeReaderApi(
-        chunks: const [
-          {'text': 't'},
-        ],
-        hits: const [],
-      );
-      final c = ReaderController(bookTitle: 'a.txt', api: api);
-
-      await c.loadDocument('book.epub');
-      await c.search('x');
-
-      expect(api.lastRetrieveDoc, 'book.epub');
-      c.dispose();
-    });
-
-    test('records searchError on retrieve failure', () async {
-      final api = _FakeReaderApi(throwOnRetrieve: true);
-      final c = ReaderController(bookTitle: 'a.txt', api: api);
-
-      await c.search('x');
-
-      expect(c.value.searchError, contains('boom retrieve'));
-      expect(c.value.statusBanner, contains('檢索失敗：'));
-      expect(c.value.statusBanner, contains('boom retrieve'));
-      // Failed search must not bleed into the Q&A field.
-      expect(c.value.answer, ReaderState.initial.answer);
-      expect(c.value.searchResults, isEmpty);
-      expect(c.value.isLoading, isFalse);
-      expect(c.value.isSearching, isFalse);
-
-      c.dispose();
-    });
-  });
-
-  group('ReaderController.clearSearch', () {
-    test('clears results and error', () async {
-      final api = _FakeReaderApi(hits: const [
-        {'doc': 'a', 'chunkIndex': 0, 'score': 1, 'snippet': 's'},
-      ]);
-      final c = ReaderController(bookTitle: 'a.txt', api: api);
-
-      await c.search('x');
-      expect(c.value.searchResults, isNotEmpty);
 
       c.clearSearch();
       expect(c.value.searchResults, isEmpty);
-      expect(c.value.searchError, isNull);
-
-      c.dispose();
-    });
-
-    test('is a no-op when nothing to clear', () async {
-      final api = _FakeReaderApi();
-      final c = ReaderController(bookTitle: 'a.txt', api: api);
-
-      // notifyListeners would fire only if state actually changed.
-      var notifyCount = 0;
-      c.addListener(() => notifyCount++);
-      c.clearSearch();
-      expect(notifyCount, 0);
-
       c.dispose();
     });
   });
@@ -544,126 +361,6 @@ void main() {
 
     test('initial placeholder has no answerTerms', () {
       expect(ReaderState.initial.answerTerms, isEmpty);
-    });
-  });
-
-  group('ReaderController non-QA operations preserve answer', () {
-    test('loadDocument success preserves custom answer', () async {
-      final c = ReaderController(
-        bookTitle: 'a.txt',
-        api: _FakeReaderApi(chunks: const [
-          {'text': 'chunk'},
-        ]),
-      );
-      c.value = c.value.copyWith(answer: 'prior LLM');
-
-      await c.loadDocument('a.txt');
-
-      expect(c.value.answer, 'prior LLM');
-      expect(c.value.statusBanner, '文件已載入，共 1 段文字。');
-      c.dispose();
-    });
-
-    test('loadDocument failure preserves custom answer', () async {
-      final c = ReaderController(
-        bookTitle: 'a.txt',
-        api: _FakeReaderApi(throwOnLoad: true),
-      );
-      c.value = c.value.copyWith(answer: 'prior LLM');
-
-      await c.loadDocument('a.txt');
-
-      expect(c.value.answer, 'prior LLM');
-      expect(c.value.statusBanner, contains('載入失敗：'));
-      c.dispose();
-    });
-
-    test('search success preserves custom answer', () async {
-      final c = ReaderController(
-        bookTitle: 'a.txt',
-        api: _FakeReaderApi(hits: const [
-          {'text': 'hit'},
-        ]),
-      );
-      c.value = c.value.copyWith(answer: 'prior LLM');
-
-      await c.search('rag');
-
-      expect(c.value.answer, 'prior LLM');
-      expect(c.value.statusBanner, '找到 1 段相關內容。\n\nhit');
-      c.dispose();
-    });
-
-    test('search failure preserves custom answer', () async {
-      final c = ReaderController(
-        bookTitle: 'a.txt',
-        api: _FakeReaderApi(throwOnRetrieve: true),
-      );
-      c.value = c.value.copyWith(answer: 'prior LLM');
-
-      await c.search('rag');
-
-      expect(c.value.answer, 'prior LLM');
-      expect(c.value.statusBanner, contains('檢索失敗：'));
-      c.dispose();
-    });
-
-    test('blank search preserves statusBanner and answer', () async {
-      final c = ReaderController(bookTitle: 'a.txt', api: _FakeReaderApi());
-      c.value = c.value.copyWith(answer: 'prior LLM', statusBanner: 'old');
-
-      await c.search('   ');
-
-      expect(c.value.answer, 'prior LLM');
-      expect(c.value.statusBanner, 'old');
-      c.dispose();
-    });
-
-    test('clearSearch preserves answer and statusBanner', () async {
-      final c = ReaderController(
-        bookTitle: 'a.txt',
-        api: _FakeReaderApi(hits: const [
-          {'text': 'hit'},
-        ]),
-      );
-      c.value = c.value.copyWith(answer: 'prior LLM');
-      await c.search('rag');
-
-      c.clearSearch();
-
-      expect(c.value.answer, 'prior LLM');
-      expect(c.value.statusBanner, '找到 1 段相關內容。\n\nhit');
-      expect(c.value.searchResults, isEmpty);
-      c.dispose();
-    });
-
-    test('loadDocument start emits statusBanner before completion', () async {
-      final api = _FakeReaderApi();
-      final c = ReaderController(bookTitle: 'a.txt', api: api);
-      c.value = c.value.copyWith(answer: 'prior LLM');
-      final states = <ReaderState>[];
-      c.addListener(() => states.add(c.value));
-
-      await c.loadDocument('a.txt');
-
-      expect(states.first.answer, 'prior LLM');
-      expect(states.first.statusBanner, '載入文件...');
-      expect(states.first.isLoadingDocument, isTrue);
-      c.dispose();
-    });
-
-    test('search start emits statusBanner before completion', () async {
-      final c = ReaderController(bookTitle: 'a.txt', api: _FakeReaderApi());
-      c.value = c.value.copyWith(answer: 'prior LLM');
-      final states = <ReaderState>[];
-      c.addListener(() => states.add(c.value));
-
-      await c.search('rag');
-
-      expect(states.first.answer, 'prior LLM');
-      expect(states.first.statusBanner, '檢索中...');
-      expect(states.first.isSearching, isTrue);
-      c.dispose();
     });
   });
 
