@@ -1,4 +1,4 @@
-﻿// lib/screens/church/person_directory_screen.dart
+// lib/screens/church/person_directory_screen.dart
 import 'package:flutter/material.dart';
 import '../../controllers/church/person_controller.dart';
 import '../../models/church/person.dart';
@@ -78,26 +78,10 @@ class _PersonDirectoryScreenState extends State<PersonDirectoryScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('會友通訊錄')),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FloatingActionButton.extended(
-            heroTag: 'memberFab',
-            icon: const Icon(Icons.person_add),
-            label: const Text('新增會友'),
-            onPressed: () => _openForm(defaultType: PersonType.member),
-          ),
-          const SizedBox(width: 12),
-          FloatingActionButton.extended(
-            heroTag: 'seekerFab',
-            icon: const Icon(Icons.person_search_outlined),
-            label: const Text('新增非會友'),
-            onPressed: () => _openForm(defaultType: PersonType.seeker),
-            backgroundColor: Colors.orange,
-            foregroundColor: Colors.white,
-          ),
-        ],
+      floatingActionButton: FloatingActionButton.extended(
+        icon: const Icon(Icons.person_add),
+        label: const Text('Add Person'),
+        onPressed: () => _openForm(),
       ),
       body: !ctl.isLoaded
           ? const Center(child: CircularProgressIndicator())
@@ -200,8 +184,8 @@ class _PersonDirectoryScreenState extends State<PersonDirectoryScreen> {
                               const Divider(height: 1, indent: 16),
                           itemBuilder: (ctx, i) => _PersonRow(
                             person: persons[i],
-                            onTap: () =>
-                                _openForm(existing: persons[i]),
+                            onTap: () => _openForm(existing: persons[i]),
+                            onLongPress: () => _openForm(existing: persons[i]),
                           ),
                         ),
                 ),
@@ -261,9 +245,14 @@ class _Filter extends StatelessWidget {
 }
 
 class _PersonRow extends StatelessWidget {
-  const _PersonRow({required this.person, required this.onTap});
+  const _PersonRow({
+    required this.person,
+    required this.onTap,
+    required this.onLongPress,
+  });
   final Person person;
   final VoidCallback onTap;
+  final VoidCallback onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -317,6 +306,7 @@ class _PersonRow extends StatelessWidget {
       ),
       trailing: const Icon(Icons.chevron_right, color: Colors.grey),
       onTap: onTap,
+      onLongPress: onLongPress,
     );
   }
 }

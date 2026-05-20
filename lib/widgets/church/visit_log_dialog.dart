@@ -1,10 +1,10 @@
-﻿// lib/widgets/church/visit_log_dialog.dart
+// lib/widgets/church/visit_log_dialog.dart
 import 'package:flutter/material.dart';
 import '../../models/church/care_case.dart';
 import '../../models/church/visit_log.dart';
 
-/// 30-second workflow at the heart of the pastoral care MVP — record one
-/// sentence + condition + save. The demo moment: case turns red → green.
+/// VisitLogDialog allows recording or editing pastoral care visit logs.
+/// All labels are in English as per specification.
 class VisitLogDialog extends StatefulWidget {
   const VisitLogDialog({
     super.key,
@@ -32,6 +32,7 @@ class _VisitLogDialogState extends State<VisitLogDialog> {
   late DateTime _visitDate;
   late String _method;
   late String _condition;
+  DateTime? _nextFollowUpDate;
   bool _closeCase = false;
   bool _saving = false;
 
@@ -40,10 +41,22 @@ class _VisitLogDialogState extends State<VisitLogDialog> {
     super.initState();
     final e = widget.existing;
     _visitedByCtrl = TextEditingController(text: e?.visitedBy ?? '');
-    _summaryCtrl = TextEditingController(text: e?.summary ?? '');
+    
+    // Parse Next Follow-up Date if it exists in the summary
+    String initialSummary = e?.summary ?? '';
+    DateTime? parsedNextFollowUp;
+    final regExp = RegExp(r'\n\[Next Follow-up: (\d{4}-\d{2}-\d{2})\]$');
+    final match = regExp.firstMatch(initialSummary);
+    if (match != null) {
+      parsedNextFollowUp = DateTime.tryParse(match.group(1)!);
+      initialSummary = initialSummary.replaceAll(regExp, '');
+    }
+
+    _summaryCtrl = TextEditingController(text: initialSummary);
     _visitDate = e?.visitDate ?? DateTime.now();
     _method = e?.method ?? VisitMethod.inPerson;
     _condition = e?.condition ?? MemberCondition.good;
+    _nextFollowUpDate = parsedNextFollowUp;
   }
 
   @override
@@ -53,19 +66,39 @@ class _VisitLogDialogState extends State<VisitLogDialog> {
     super.dispose();
   }
 
-  Future<void> _pickDate() async {
+  Future<void> _pickVisitDate() async {
     final picked = await showDatePicker(
       context: context,
       initialDate: _visitDate,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    if (picked != null) setState(() => _visitDate = picked);
+    if (picked != null) {
+      setState(() => _visitDate = picked);
+    }
+  }
+
+  Future<void> _pickNextFollowUpDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _nextFollowUpDate ?? DateTime.now().add(const Duration(days: 7)),
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+    );
+    if (picked != null) {
+      setState(() => _nextFollowUpDate = picked);
+    }
   }
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
+
+    String finalSummary = _summaryCtrl.text.trim();
+    if (_nextFollowUpDate != null) {
+      finalSummary += '\n[Next Follow-up: ${_fmtDate(_nextFollowUpDate!)}]';
+    }
+
     final base = widget.existing ??
         VisitLog(caseId: widget.caseObj.id, visitedBy: '', summary: '');
     final visit = base.copyWith(
@@ -73,9 +106,10 @@ class _VisitLogDialogState extends State<VisitLogDialog> {
       visitDate: _visitDate,
       visitedBy: _visitedByCtrl.text.trim(),
       method: _method,
-      summary: _summaryCtrl.text.trim(),
+      summary: finalSummary,
       condition: _condition,
     );
+
     try {
       await widget.onSave(visit);
       if (_closeCase && widget.onCloseCase != null) {
@@ -85,7 +119,7 @@ class _VisitLogDialogState extends State<VisitLogDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('儲存失敗:$e')),
+          SnackBar(content: Text('Save failed: $e')),
         );
       }
     } finally {
@@ -97,15 +131,17 @@ class _VisitLogDialogState extends State<VisitLogDialog> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('確認刪除'),
-        content: const Text('刪除此筆探訪記錄?'),
+        title: const Text('Confirm Delete'),
+        content: const Text('Delete this visit log?'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('取消')),
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('刪除', style: TextStyle(color: Colors.red))),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
         ],
       ),
     );
@@ -119,9 +155,24 @@ class _VisitLogDialogState extends State<VisitLogDialog> {
   Widget build(BuildContext context) {
     final isEditing = widget.existing != null;
     final canClose = !isEditing && widget.onCloseCase != null;
+
+    final typeOptions = [
+      {'label': 'Home Visit', 'value': 'inperson'},
+      {'label': 'Hospital Visit', 'value': 'hospital'},
+      {'label': 'Phone Call', 'value': 'phone'},
+      {'label': 'Message', 'value': 'message'},
+    ];
+
+    final conditionOptions = [
+      {'label': 'Good', 'value': 'good'},
+      {'label': 'Concern', 'value': 'concern'},
+      {'label': 'Worsening', 'value': 'worsening'},
+    ];
+
     return AlertDialog(
       title: Text(
-          '${isEditing ? "編輯" : "記錄"}探訪 — ${widget.caseObj.memberName}'),
+        '${isEditing ? "Edit" : "Log"} Visit - ${widget.caseObj.memberName}',
+      ),
       content: SizedBox(
         width: 460,
         child: SingleChildScrollView(
@@ -133,58 +184,102 @@ class _VisitLogDialogState extends State<VisitLogDialog> {
               children: [
                 TextFormField(
                   controller: _visitedByCtrl,
-                  decoration:
-                      const InputDecoration(labelText: '探訪者(傳道人姓名)*'),
+                  decoration: const InputDecoration(
+                    labelText: 'Visited By *',
+                    hintText: 'Enter name of pastor/carer',
+                  ),
                   validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? '請輸入探訪者' : null,
+                      (v == null || v.trim().isEmpty) ? 'Please enter who visited' : null,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 Row(
                   children: [
-                    const Text('日期:'),
+                    const Text(
+                      'Visit Date:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(width: 8),
                     Text(_fmtDate(_visitDate)),
                     const Spacer(),
                     TextButton(
-                        onPressed: _pickDate, child: const Text('Pick')),
+                      onPressed: _pickVisitDate,
+                      child: const Text('Pick'),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                const Text('方式', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
+                const SizedBox(height: 12),
+                const Text(
+                  'Visit Type',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
-                  children: VisitMethod.all
-                      .map((m) => ChoiceChip(
-                            label: Text(VisitMethod.label(m)),
-                            selected: _method == m,
+                  runSpacing: 8,
+                  children: typeOptions
+                      .map((opt) => ChoiceChip(
+                            label: Text(opt['label']!),
+                            selected: _method == opt['value'],
                             onSelected: (sel) {
-                              if (sel) setState(() => _method = m);
+                              if (sel) {
+                                setState(() => _method = opt['value']!);
+                              }
                             },
                           ))
                       .toList(),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _summaryCtrl,
                   decoration: const InputDecoration(
-                    labelText: '摘要 *(1-2 句話,讓其他傳道人知道情況)',
+                    labelText: 'Notes / Summary *',
+                    hintText: 'Enter a brief summary of the visit',
+                    border: OutlineInputBorder(),
                   ),
                   maxLines: 3,
                   validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? '請寫一句摘要' : null,
+                      (v == null || v.trim().isEmpty) ? 'Please enter notes/summary' : null,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Text(
+                      'Next Follow-up Date:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(_nextFollowUpDate == null
+                        ? 'Optional'
+                        : _fmtDate(_nextFollowUpDate!)),
+                    const Spacer(),
+                    if (_nextFollowUpDate != null)
+                      IconButton(
+                        icon: const Icon(Icons.clear, size: 18),
+                        onPressed: () => setState(() => _nextFollowUpDate = null),
+                        tooltip: 'Clear Date',
+                      ),
+                    TextButton(
+                      onPressed: _pickNextFollowUpDate,
+                      child: const Text('Pick'),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
-                const Text('狀況', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
+                const Text(
+                  'Condition',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
-                  children: MemberCondition.all
-                      .map((c) => ChoiceChip(
-                            label: Text(MemberCondition.label(c)),
-                            selected: _condition == c,
+                  children: conditionOptions
+                      .map((opt) => ChoiceChip(
+                            label: Text(opt['label']!),
+                            selected: _condition == opt['value'],
                             onSelected: (sel) {
-                              if (sel) setState(() => _condition = c);
+                              if (sel) {
+                                setState(() => _condition = opt['value']!);
+                              }
                             },
                           ))
                       .toList(),
@@ -197,8 +292,8 @@ class _VisitLogDialogState extends State<VisitLogDialog> {
                     value: _closeCase,
                     onChanged: (v) =>
                         setState(() => _closeCase = v ?? false),
-                    title: const Text('此案件可以結案'),
-                    subtitle: const Text('儲存後自動移到「已結案」'),
+                    title: const Text('This case can be closed'),
+                    subtitle: const Text('Automatically move to "Closed" after saving'),
                   ),
                 ],
               ],
@@ -210,16 +305,16 @@ class _VisitLogDialogState extends State<VisitLogDialog> {
         if (widget.onDelete != null)
           TextButton(
             onPressed: _saving ? null : _confirmDelete,
-            child: const Text('刪除', style: TextStyle(color: Colors.red)),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         TextButton(
           onPressed:
               _saving ? null : () => Navigator.of(context).pop(false),
-          child: const Text('取消'),
+          child: const Text('Cancel'),
         ),
         FilledButton(
           onPressed: _saving ? null : _save,
-          child: Text(_saving ? '儲存中...' : '儲存'),
+          child: Text(_saving ? 'Saving...' : 'Save'),
         ),
       ],
     );

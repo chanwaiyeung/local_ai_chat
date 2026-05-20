@@ -1,4 +1,4 @@
-﻿// lib/screens/church/care_dashboard_screen.dart
+// lib/screens/church/care_dashboard_screen.dart
 import 'package:flutter/material.dart';
 import '../../controllers/church/care_controller.dart';
 import '../../models/church/care_case.dart';
@@ -74,7 +74,7 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
     );
   }
 
-  void _todoVisit(CareCase c) {
+  void _logVisit(CareCase c) {
     showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -86,7 +86,7 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
     );
   }
 
-  void _todoDetail(CareCase c) {
+  void _openCaseDetail(CareCase c) {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (ctx) => CaseDetailScreen(
         controller: widget.controller,
@@ -212,8 +212,8 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
             controller: ctl,
             initiallyExpanded: true,
             onEdit: (c) => _openCaseForm(existing: c),
-            onVisit: _todoVisit,
-            onDetail: _todoDetail,
+            onVisit: _logVisit,
+            onDetail: _openCaseDetail,
             onClose: _confirmClose,
           ),
         if (yellow.isNotEmpty)
@@ -225,8 +225,8 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
             controller: ctl,
             initiallyExpanded: true,
             onEdit: (c) => _openCaseForm(existing: c),
-            onVisit: _todoVisit,
-            onDetail: _todoDetail,
+            onVisit: _logVisit,
+            onDetail: _openCaseDetail,
             onClose: _confirmClose,
           ),
         if (green.isNotEmpty)
@@ -238,8 +238,8 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
             controller: ctl,
             initiallyExpanded: red.isEmpty && yellow.isEmpty,
             onEdit: (c) => _openCaseForm(existing: c),
-            onVisit: _todoVisit,
-            onDetail: _todoDetail,
+            onVisit: _logVisit,
+            onDetail: _openCaseDetail,
             onClose: _confirmClose,
           ),
       ],
@@ -311,8 +311,8 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
           caseObj: c,
           controller: ctl,
           onEdit: () => _openCaseForm(existing: c),
-          onVisit: () => _todoVisit(c),
-          onDetail: () => _todoDetail(c),
+          onVisit: () => _logVisit(c),
+          onDetail: () => _openCaseDetail(c),
           onClose: c.status == CareStatus.closed
               ? null
               : () => _confirmClose(c),
