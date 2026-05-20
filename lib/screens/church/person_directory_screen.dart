@@ -78,26 +78,10 @@ class _PersonDirectoryScreenState extends State<PersonDirectoryScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('會友通訊錄')),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FloatingActionButton.extended(
-            heroTag: 'memberFab',
-            icon: const Icon(Icons.person_add),
-            label: const Text('新增會友'),
-            onPressed: () => _openForm(defaultType: PersonType.member),
-          ),
-          const SizedBox(width: 12),
-          FloatingActionButton.extended(
-            heroTag: 'seekerFab',
-            icon: const Icon(Icons.person_search_outlined),
-            label: const Text('新增非會友'),
-            onPressed: () => _openForm(defaultType: PersonType.seeker),
-            backgroundColor: Colors.orange,
-            foregroundColor: Colors.white,
-          ),
-        ],
+      floatingActionButton: FloatingActionButton.extended(
+        icon: const Icon(Icons.person_add),
+        label: const Text('Add Person'),
+        onPressed: () => _openForm(),
       ),
       body: !ctl.isLoaded
           ? const Center(child: CircularProgressIndicator())
