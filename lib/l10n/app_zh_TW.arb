@@ -1,46 +1,49 @@
-﻿{
+{
   "@@locale": "zh_TW",
   "appTitle": "智讀館",
-  "@appTitle": { "description": "App title shown in OS task switcher" },
-
+  "@appTitle": {
+    "description": "App title shown in OS task switcher"
+  },
   "tabRecords": "紀錄",
   "tabAllocation": "配置",
-
   "investmentFinance": "投資理財",
   "noInvestmentRecords": "尚無投資紀錄",
   "aiFinancialAdvisor": "AI 理財顧問",
   "totalAssets": "總資產",
   "currencyLabel": "幣別：",
-
   "moduleExpense": "日常開支",
   "moduleContacts": "名片管理",
   "moduleHealth": "健康紀錄",
   "moduleWealth": "投資理財",
   "moduleDashboardSoon": "完整儀表板",
   "comingSoon": "即將推出",
-
   "expenseCount": "{count, plural, =0{尚未加入紀錄} other{{count} 筆紀錄}}",
   "@expenseCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
-
   "saveButton": "儲存",
   "cancelButton": "取消",
   "deleteButton": "刪除",
-
   "settings": "設定",
   "language": "語言",
   "languageZhTw": "繁體中文",
   "languageZhCn": "簡體中文",
   "languageEn": "English",
-
   "personalHubTitle": "Personal Hub",
   "modules": "模組",
   "dashboardTitle": "{year} 年 {month} 月總覽",
   "@dashboardTitle": {
     "placeholders": {
-      "year": { "type": "int" },
-      "month": { "type": "int" }
+      "year": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      }
     }
   },
   "totalExpensesThisMonth": "本月總開支",
@@ -51,20 +54,31 @@
   "quickAiQuery": "快速 AI 查詢",
   "featureNotEnabled": "{feature}：尚未啟用，請等待後續 Phase",
   "@featureNotEnabled": {
-    "placeholders": { "feature": { "type": "String" } }
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
   },
   "aiQueryFeatureComingSoon": "AI 跨模組查詢將於 Phase 6.3'b 推出",
   "noRecordsYet": "尚未加入紀錄",
   "noContactsYet": "尚未加入名片",
   "recordCountPlural": "{count, plural, =0{尚未加入紀錄} other{{count} 筆紀錄}}",
   "@recordCountPlural": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "contactCountPlural": "{count, plural, =0{尚未加入名片} other{{count} 張名片}}",
   "@contactCountPlural": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
-
   "wealth": "投資理財",
   "assetAllocation": "資產配置",
   "addRecord": "新增紀錄",
@@ -76,7 +90,11 @@
   "netWorthOverview": "淨值總覽",
   "assetCountLabel": "{count} 項資產",
   "@assetCountLabel": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "valuationNote": "依最新一筆估值合計（不跨幣別換算）",
   "noData": "暫無資料",
@@ -92,7 +110,6 @@
   "currency": "幣別",
   "notes": "備註",
   "tagsCommaSeparated": "標籤（逗號分隔）",
-
   "aiHealthAdvisor": "AI 健康顧問",
   "searchHealthHint": "搜尋備註 / 標籤...",
   "noHealthRecords": "尚無健康紀錄",
@@ -100,47 +117,73 @@
   "last30DaysOverview": "最近 30 天概況",
   "recordCountUnit": "{count} 筆",
   "@recordCountUnit": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "weight": "體重",
   "avgWeightStat": "平均 {val} kg ({count} 次)",
   "@avgWeightStat": {
     "placeholders": {
-      "val": { "type": "String" },
-      "count": { "type": "int" }
+      "val": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
     }
   },
   "bloodPressure": "血壓",
   "avgBpStat": "平均 {sys} / {dia} mmHg ({count} 次)",
   "@avgBpStat": {
     "placeholders": {
-      "sys": { "type": "String" },
-      "dia": { "type": "String" },
-      "count": { "type": "int" }
+      "sys": {
+        "type": "String"
+      },
+      "dia": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
     }
   },
   "heartRate": "心率",
   "avgHeartRateStat": "平均 {val} bpm ({count} 次)",
   "@avgHeartRateStat": {
     "placeholders": {
-      "val": { "type": "String" },
-      "count": { "type": "int" }
+      "val": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
     }
   },
   "steps": "步數",
   "totalStepsStat": "總計 {val} 步 ({count} 天)",
   "@totalStepsStat": {
     "placeholders": {
-      "val": { "type": "String" },
-      "count": { "type": "int" }
+      "val": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
     }
   },
   "sleep": "睡眠",
   "avgSleepStat": "平均 {val} 小時 ({count} 次)",
   "@avgSleepStat": {
     "placeholders": {
-      "val": { "type": "String" },
-      "count": { "type": "int" }
+      "val": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
     }
   },
   "noDataLabel": "(無資料)",
@@ -157,7 +200,6 @@
   "weightTrend": "體重趨勢 (kg)",
   "systolicTrend": "收縮壓趨勢 (mmHg)",
   "sleepHoursLabel": "睡眠時數",
-
   "searchExpenseHint": "搜尋商家 / 分類 / 備註...",
   "noMatchingExpenses": "沒有符合條件的開支",
   "previousMonth": "上個月",
@@ -165,20 +207,31 @@
   "yearMonthTitle": "{year} 年 {month} 月",
   "@yearMonthTitle": {
     "placeholders": {
-      "year": { "type": "int" },
-      "month": { "type": "int" }
+      "year": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      }
     }
   },
-  "noExpensesThisMonth": "本月暫無開支",
   "monthlyTotal": "本月合計：{totalText}",
   "@monthlyTotal": {
-    "placeholders": { "totalText": { "type": "String" } }
+    "placeholders": {
+      "totalText": {
+        "type": "String"
+      }
+    }
   },
   "categoryAmountChip": "{label} · {amount}",
   "@categoryAmountChip": {
     "placeholders": {
-      "label": { "type": "String" },
-      "amount": { "type": "String" }
+      "label": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "noMerchant": "(未填商家)",
@@ -189,18 +242,20 @@
   "defaultCategoriesLabel": "預設類別",
   "customCategoriesCount": "已有 {count} 個自訂類別",
   "@customCategoriesCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "paymentMethod": "付款方式",
   "date": "日期",
-
   "appearance": "外觀",
   "theme": "主題",
   "darkMode": "深色模式",
   "lightMode": "淺色模式",
   "systemDefault": "跟隨系統",
   "mySkills": "我的技能庫",
-  
   "embeddingSettings": "Embedding 設定",
   "enterEmbeddingModelName": "請輸入 embedding model 名稱",
   "modelInstalled": "已安裝",
@@ -209,7 +264,11 @@
   "customModelHint": "例如：mxbai-embed-large",
   "currentSelection": "目前選擇：{model}",
   "@currentSelection": {
-    "placeholders": { "model": { "type": "String" } }
+    "placeholders": {
+      "model": {
+        "type": "String"
+      }
+    }
   },
   "changeModelWarning": "注意：更換 embedding model 會清空目前 vector store，請重新匯入文件。",
   "retrievalMode": "檢索模式",
@@ -217,27 +276,20 @@
   "sparseMode": "Sparse：BM25 關鍵字搜尋",
   "hybridMode": "Hybrid：Dense + BM25 + RRF",
   "applySettings": "套用設定",
-
   "wealthExportCsv": "匯出 CSV",
   "wealthCsvCopied": "CSV 已複製到剪貼簿",
-
   "personalHubHealthRecords": "健康紀錄",
   "personalHubThisMonthExpense": "本月開支",
-
   "wealthMonthlyReport": "本月報告",
   "wealthThisMonthTotal": "本月總值",
   "wealthLastMonthTotal": "上月總值",
   "wealthChange": "變化",
-
   "records": "筆紀錄",
-
   "insightTitle": "一鍵生活洞察",
   "insightSubtitle": "結合 Health 與 Wealth 雙核分析，打造您的專屬生活指南。",
-
   "personalQueryTitle": "Personal Hub AI 查詢",
   "personalQueryHint": "問問你的 Personal Hub",
   "personalQueryHintSub": "可以同時搜尋你的開支與名片紀錄。",
-
   "skillsSearchHint": "搜尋技能...",
   "skillsEmpty": "尚無技能卡",
   "skillsEmptyHint": "使用 AI 回答後點擊「⭐ 儲存為技能」\n或點擊右上角雲端按鈕來生成",
@@ -246,10 +298,8 @@
   "querySample1": "上次跟王經理吃飯花了多少？",
   "querySample2": "我這個月在 7-11 花了多少？",
   "querySample3": "Acme Corp 有哪些聯絡人？",
-
   "addManually": "手動新增",
   "skillsSubtitle": "AI 學習記憶庫",
-
   "settingsApiKeyRequired": "請先輸入 API Key",
   "settingsTestingConnection": "測試連線中...",
   "settingsCloudAiTitle": "Cloud AI 服務 (Gemini)",
@@ -266,5 +316,317 @@
   "churchHubTitle": "會友管理",
   "churchNoMembers": "目前尚無會友資料",
   "churchAddMember": "新增會友",
-  "churchSearchHint": "搜尋姓名 / 電話"
+  "churchSearchHint": "搜尋姓名 / 電話",
+  "churchDirectoryTitle": "會友通訊錄",
+  "searchHint": "搜尋姓名 / 電話 / 小組 / 主日學 / 備註",
+  "filterMemberCount": "會友 ({count})",
+  "@filterMemberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterSeekerCount": "非會友 ({count})",
+  "@filterSeekerCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterAllCount": "全部 ({count})",
+  "@filterAllCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterMemberRegularCount": "經常參加崇拜的會友 ({count})",
+  "@filterMemberRegularCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterSeekerRegularCount": "經常參加崇拜的非會友 ({count})",
+  "@filterSeekerRegularCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterMemberOccasionalCount": "偶爾參加崇拜的會友 ({count})",
+  "@filterMemberOccasionalCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterSeekerOccasionalCount": "偶爾參加崇拜的非會友 ({count})",
+  "@filterSeekerOccasionalCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterMemberInactiveCount": "久未參加崇拜的會友 ({count})",
+  "@filterMemberInactiveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterSeekerInactiveCount": "久未參加崇拜的非會友 ({count})",
+  "@filterSeekerInactiveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noSearchResults": "無符合搜尋條件嘅會友",
+  "emptyDirectory": "通訊錄空白",
+  "emptyDirectoryHint": "撳右下角加第一個會友",
+  "personRowSmallGroup": "小組:{group}",
+  "@personRowSmallGroup": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "personRowSundaySchool": "主日學:{school}",
+  "@personRowSundaySchool": {
+    "placeholders": {
+      "school": {
+        "type": "String"
+      }
+    }
+  },
+  "historyTooltip": "歷史紀錄",
+  "closeCaseConfirmTitle": "結案",
+  "closeCaseConfirmContent": "將「{name}」這個案件標記為已結案?",
+  "@closeCaseConfirmContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "closeCase": "結案",
+  "careDashboardTitle": "教會關懷中央看版",
+  "tabMemberActive": "會友 ({count})",
+  "@tabMemberActive": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tabNewcomerActive": "新朋友 ({count})",
+  "@tabNewcomerActive": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tabVisitedHistory": "已探訪者 ({count})",
+  "@tabVisitedHistory": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "careSearchHint": "搜尋會友姓名 / 緣由 / 備註",
+  "addNewCaseLabel": "新增{label}案件",
+  "@addNewCaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "alertRedTitle": "需要立刻處理",
+  "alertYellowTitle": "即將需要安排",
+  "alertGreenTitle": "在追蹤中",
+  "historyNoResults": "沒有符合的人",
+  "historyEmpty": "暫無探訪歷史",
+  "historyEmptyHint": "在會友 / 新朋友 tab 開新案件並記錄探訪後,會出現喺度",
+  "searchNoCaseResults": "沒有符合的案件",
+  "tabEmptyCaseState": "目前沒有{label}案件",
+  "@tabEmptyCaseState": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "addNewCaseButton": "新增{label}案件",
+  "@addNewCaseButton": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "today": "今天",
+  "daysNoVisit": "🕐 {days} 天沒探訪",
+  "@daysNoVisit": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "caseRowSummary": "{reason}  ·  {urgency}優先",
+  "@caseRowSummary": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      },
+      "urgency": {
+        "type": "String"
+      }
+    }
+  },
+  "caseRowLastVisitPrefix": "上次:{visitedBy} {date} ",
+  "@caseRowLastVisitPrefix": {
+    "placeholders": {
+      "visitedBy": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "noVisitRecorded": "尚未探訪過",
+  "detailsButton": "詳情",
+  "logVisitButton": "記探訪",
+  "editCaseTooltip": "編輯案件",
+  "closeCaseTooltip": "結案",
+  "statusActiveBadge": "進行中",
+  "historyRowLastVisit": "上次:{visitedBy} · {method} · {date}",
+  "@historyRowLastVisit": {
+    "placeholders": {
+      "visitedBy": {
+        "type": "String"
+      },
+      "method": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "historyNoVisitRecorded": "尚未探訪過",
+  "historyRowStats": "共 {totalVisits} 次探訪 · {caseCount} 個案件",
+  "@historyRowStats": {
+    "placeholders": {
+      "totalVisits": {
+        "type": "int"
+      },
+      "caseCount": {
+        "type": "int"
+      }
+    }
+  },
+  "daysAgo": "{days} 天前",
+  "@daysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "weeksAgo": "{weeks} 週前",
+  "@weeksAgo": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "monthsAgo": "{months} 個月前",
+  "@monthsAgo": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "yearsAgo": "{years} 年前",
+  "@yearsAgo": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "saveFailed": "儲存失敗:{error}",
+  "@saveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteConfirmTitle": "確認刪除",
+  "deleteConfirmContent": "此會友嘅通訊錄資料會被永久刪除(相關探訪案件不會刪除)。",
+  "editPersonTitle": "編輯{label}",
+  "@editPersonTitle": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "addPersonTitle": "新增{label}",
+  "@addPersonTitle": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldNameLabel": "姓名 *",
+  "fieldNameRequired": "請輸入姓名",
+  "fieldPhoneLabel": "電話(可空)",
+  "fieldBirthdayLabel": "生日",
+  "sectionChurchLife": "教會生命",
+  "fieldBaptismDateLabel": "洗禮日期",
+  "fieldJoinDateLabel": "轉會 / 加入日期",
+  "fieldAttendanceLabel": "出席崇拜",
+  "sectionParticipation": "參與",
+  "fieldSmallGroupLabel": "所屬小組 / 團契",
+  "fieldSmallGroupHint": "例:週三長者團、夫婦團契 B 組",
+  "fieldSundaySchoolLabel": "主日學參與",
+  "fieldSundaySchoolHint": "例:成人 B 班 - 學生、兒童老師",
+  "sectionOthers": "其他",
+  "fieldCreatedByLabel": "建立者(傳道人姓名)",
+  "fieldNotesLabel": "備註(可空)",
+  "commonSaving": "儲存中...",
+  "defaultNewcomerReason": "新朋友",
+  "deleteCaseConfirmContent": "此案件和所有相關探訪記錄都會被永久刪除。",
+  "editCaseTitle": "編輯案件",
+  "addNewCaseTitle": "新增關懷案件",
+  "fieldNewcomerNameLabel": "新朋友姓名 *",
+  "fieldMemberNameLabel": "會友姓名 *",
+  "fieldReasonLabel": "緣由 *(例:住院、喪父、新朋友追蹤)",
+  "fieldReasonRequired": "請輸入緣由",
+  "fieldIdentityLabel": "身分",
+  "fieldUrgencyLabel": "優先程度",
+  "urgencyLegend": "高 = 3 天紅燈 / 中 = 7 天紅燈 / 低 = 14 天紅燈",
+  "notSet": "未設定",
+  "clear": "清除"
 }

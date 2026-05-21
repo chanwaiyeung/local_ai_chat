@@ -1,45 +1,46 @@
-﻿{
+{
   "@@locale": "en",
   "appTitle": "AI Library",
-
   "tabRecords": "Records",
   "tabAllocation": "Allocation",
-
   "investmentFinance": "Investment",
   "noInvestmentRecords": "No investment records yet",
   "aiFinancialAdvisor": "AI Financial Advisor",
   "totalAssets": "Net Worth",
   "currencyLabel": "Currency:",
-
   "moduleExpense": "Expenses",
   "moduleContacts": "Contacts",
   "moduleHealth": "Health",
   "moduleWealth": "Investment",
   "moduleDashboardSoon": "Full Dashboard",
   "comingSoon": "Coming soon",
-
   "expenseCount": "{count, plural, =0{No records yet} =1{1 record} other{{count} records}}",
   "@expenseCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
-
   "saveButton": "Save",
   "cancelButton": "Cancel",
   "deleteButton": "Delete",
-
   "settings": "Settings",
   "language": "Language",
   "languageZhTw": "Traditional Chinese",
   "languageZhCn": "Simplified Chinese",
   "languageEn": "English",
-
   "personalHubTitle": "Personal Hub",
   "modules": "Modules",
   "dashboardTitle": "Dashboard for {month}/{year}",
   "@dashboardTitle": {
     "placeholders": {
-      "year": { "type": "int" },
-      "month": { "type": "int" }
+      "year": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      }
     }
   },
   "totalExpensesThisMonth": "Total Expenses This Month",
@@ -50,20 +51,31 @@
   "quickAiQuery": "Quick AI Query",
   "featureNotEnabled": "{feature}: Not enabled yet",
   "@featureNotEnabled": {
-    "placeholders": { "feature": { "type": "String" } }
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
   },
   "aiQueryFeatureComingSoon": "Cross-module AI query coming in Phase 6.3'b",
   "noRecordsYet": "No records yet",
   "noContactsYet": "No contacts yet",
   "recordCountPlural": "{count, plural, =0{No records yet} =1{1 record} other{{count} records}}",
   "@recordCountPlural": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "contactCountPlural": "{count, plural, =0{No contacts yet} =1{1 contact} other{{count} contacts}}",
   "@contactCountPlural": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
-
   "wealth": "Investment & Finance",
   "assetAllocation": "Asset Allocation",
   "addRecord": "Add Record",
@@ -75,7 +87,11 @@
   "netWorthOverview": "Net Worth Overview",
   "assetCountLabel": "{count} Assets",
   "@assetCountLabel": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "valuationNote": "Based on latest valuation (no cross-currency conversion)",
   "noData": "No data",
@@ -91,7 +107,6 @@
   "currency": "Currency",
   "notes": "Notes",
   "tagsCommaSeparated": "Tags (comma separated)",
-
   "aiHealthAdvisor": "AI Health Advisor",
   "searchHealthHint": "Search notes / tags...",
   "noHealthRecords": "No health records yet",
@@ -99,47 +114,73 @@
   "last30DaysOverview": "Last 30 days overview",
   "recordCountUnit": "{count} records",
   "@recordCountUnit": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "weight": "Weight",
   "avgWeightStat": "Avg {val} kg ({count} times)",
   "@avgWeightStat": {
     "placeholders": {
-      "val": { "type": "String" },
-      "count": { "type": "int" }
+      "val": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
     }
   },
   "bloodPressure": "Blood Pressure",
   "avgBpStat": "Avg {sys} / {dia} mmHg ({count} times)",
   "@avgBpStat": {
     "placeholders": {
-      "sys": { "type": "String" },
-      "dia": { "type": "String" },
-      "count": { "type": "int" }
+      "sys": {
+        "type": "String"
+      },
+      "dia": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
     }
   },
   "heartRate": "Heart Rate",
   "avgHeartRateStat": "Avg {val} bpm ({count} times)",
   "@avgHeartRateStat": {
     "placeholders": {
-      "val": { "type": "String" },
-      "count": { "type": "int" }
+      "val": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
     }
   },
   "steps": "Steps",
   "totalStepsStat": "Total {val} steps ({count} days)",
   "@totalStepsStat": {
     "placeholders": {
-      "val": { "type": "String" },
-      "count": { "type": "int" }
+      "val": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
     }
   },
   "sleep": "Sleep",
   "avgSleepStat": "Avg {val} hours ({count} times)",
   "@avgSleepStat": {
     "placeholders": {
-      "val": { "type": "String" },
-      "count": { "type": "int" }
+      "val": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
     }
   },
   "noDataLabel": "(No data)",
@@ -156,7 +197,6 @@
   "weightTrend": "Weight Trend (kg)",
   "systolicTrend": "Systolic Trend (mmHg)",
   "sleepHoursLabel": "Sleep Hours",
-
   "searchExpenseHint": "Search merchant / category / notes...",
   "noMatchingExpenses": "No matching expenses",
   "previousMonth": "Previous month",
@@ -164,20 +204,31 @@
   "yearMonthTitle": "{month} / {year}",
   "@yearMonthTitle": {
     "placeholders": {
-      "year": { "type": "int" },
-      "month": { "type": "int" }
+      "year": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      }
     }
   },
-  "noExpensesThisMonth": "No expenses this month",
   "monthlyTotal": "Monthly total: {totalText}",
   "@monthlyTotal": {
-    "placeholders": { "totalText": { "type": "String" } }
+    "placeholders": {
+      "totalText": {
+        "type": "String"
+      }
+    }
   },
   "categoryAmountChip": "{label} · {amount}",
   "@categoryAmountChip": {
     "placeholders": {
-      "label": { "type": "String" },
-      "amount": { "type": "String" }
+      "label": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "noMerchant": "(No merchant)",
@@ -188,18 +239,20 @@
   "defaultCategoriesLabel": "Default categories",
   "customCategoriesCount": "{count} custom categories",
   "@customCategoriesCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "paymentMethod": "Payment Method",
   "date": "Date",
-
   "appearance": "Appearance",
   "theme": "Theme",
   "darkMode": "Dark Mode",
   "lightMode": "Light Mode",
   "systemDefault": "System Default",
   "mySkills": "My Skills",
-  
   "embeddingSettings": "Embedding Settings",
   "enterEmbeddingModelName": "Please enter an embedding model name",
   "modelInstalled": "Installed",
@@ -208,7 +261,11 @@
   "customModelHint": "e.g., mxbai-embed-large",
   "currentSelection": "Current selection: {model}",
   "@currentSelection": {
-    "placeholders": { "model": { "type": "String" } }
+    "placeholders": {
+      "model": {
+        "type": "String"
+      }
+    }
   },
   "changeModelWarning": "Note: Changing the embedding model will clear the current vector store. Please re-import your documents.",
   "retrievalMode": "Retrieval Mode",
@@ -216,27 +273,20 @@
   "sparseMode": "Sparse: BM25 Keyword Search",
   "hybridMode": "Hybrid: Dense + BM25 + RRF",
   "applySettings": "Apply Settings",
-
   "wealthExportCsv": "Export CSV",
   "wealthCsvCopied": "CSV copied to clipboard",
-
   "personalHubHealthRecords": "Health records",
   "personalHubThisMonthExpense": "This month's expenses",
-
   "wealthMonthlyReport": "Monthly Report",
   "wealthThisMonthTotal": "This month",
   "wealthLastMonthTotal": "Last month",
   "wealthChange": "Change",
-
   "records": "records",
-
   "insightTitle": "One-tap Life Insight",
   "insightSubtitle": "Combined Health & Wealth analysis, your personal life guide.",
-
   "personalQueryTitle": "Personal Hub AI Query",
   "personalQueryHint": "Ask your Personal Hub",
   "personalQueryHintSub": "Search across your expenses and contacts at once.",
-
   "skillsSearchHint": "Search skills...",
   "skillsEmpty": "No skill cards yet",
   "skillsEmptyHint": "After an AI reply, tap '⭐ Save as Skill'\nor tap the cloud button at top right to generate",
@@ -245,10 +295,8 @@
   "querySample1": "How much did I spend dining with Manager Wang?",
   "querySample2": "How much did I spend at 7-11 this month?",
   "querySample3": "Who are the contacts at Acme Corp?",
-
   "addManually": "Add Manually",
   "skillsSubtitle": "AI Learning Library",
-
   "settingsApiKeyRequired": "Please enter an API Key first",
   "settingsTestingConnection": "Testing connection...",
   "settingsCloudAiTitle": "Cloud AI Service (Gemini)",
@@ -265,5 +313,317 @@
   "churchHubTitle": "Church Members",
   "churchNoMembers": "No members yet",
   "churchAddMember": "Add Member",
-  "churchSearchHint": "Search name/phone"
+  "churchSearchHint": "Search name/phone",
+  "churchDirectoryTitle": "Church Directory",
+  "searchHint": "Search name / phone / small group / Sunday school / notes",
+  "filterMemberCount": "Members ({count})",
+  "@filterMemberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterSeekerCount": "Seekers ({count})",
+  "@filterSeekerCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterAllCount": "All ({count})",
+  "@filterAllCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterMemberRegularCount": "Regular Members ({count})",
+  "@filterMemberRegularCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterSeekerRegularCount": "Regular Seekers ({count})",
+  "@filterSeekerRegularCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterMemberOccasionalCount": "Occasional Members ({count})",
+  "@filterMemberOccasionalCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterSeekerOccasionalCount": "Occasional Seekers ({count})",
+  "@filterSeekerOccasionalCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterMemberInactiveCount": "Inactive Members ({count})",
+  "@filterMemberInactiveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterSeekerInactiveCount": "Inactive Seekers ({count})",
+  "@filterSeekerInactiveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noSearchResults": "No members match search criteria",
+  "emptyDirectory": "Directory is empty",
+  "emptyDirectoryHint": "Tap FAB to add the first member",
+  "personRowSmallGroup": "Group: {group}",
+  "@personRowSmallGroup": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "personRowSundaySchool": "Sunday School: {school}",
+  "@personRowSundaySchool": {
+    "placeholders": {
+      "school": {
+        "type": "String"
+      }
+    }
+  },
+  "historyTooltip": "History Records",
+  "closeCaseConfirmTitle": "Close Case",
+  "closeCaseConfirmContent": "Mark case for \"{name}\" as closed?",
+  "@closeCaseConfirmContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "closeCase": "Close Case",
+  "careDashboardTitle": "Care Dashboard",
+  "tabMemberActive": "Members ({count})",
+  "@tabMemberActive": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tabNewcomerActive": "Newcomers ({count})",
+  "@tabNewcomerActive": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tabVisitedHistory": "Visited ({count})",
+  "@tabVisitedHistory": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "careSearchHint": "Search member name / reason / notes",
+  "addNewCaseLabel": "Add {label} Case",
+  "@addNewCaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "alertRedTitle": "Requires immediate attention",
+  "alertYellowTitle": "Should schedule soon",
+  "alertGreenTitle": "Under follow-up",
+  "historyNoResults": "No matching persons",
+  "historyEmpty": "No visit history yet",
+  "historyEmptyHint": "Open a new case and log a visit under Members/Newcomers to see it here",
+  "searchNoCaseResults": "No matching cases",
+  "tabEmptyCaseState": "No {label} cases at present",
+  "@tabEmptyCaseState": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "addNewCaseButton": "Add {label} Case",
+  "@addNewCaseButton": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "today": "Today",
+  "daysNoVisit": "🕐 {days} days since last touch",
+  "@daysNoVisit": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "caseRowSummary": "{reason}  ·  {urgency} Priority",
+  "@caseRowSummary": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      },
+      "urgency": {
+        "type": "String"
+      }
+    }
+  },
+  "caseRowLastVisitPrefix": "Last: {visitedBy} {date} ",
+  "@caseRowLastVisitPrefix": {
+    "placeholders": {
+      "visitedBy": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "noVisitRecorded": "No visits logged yet",
+  "detailsButton": "Details",
+  "logVisitButton": "Log Visit",
+  "editCaseTooltip": "Edit Case",
+  "closeCaseTooltip": "Close Case",
+  "statusActiveBadge": "Active",
+  "historyRowLastVisit": "Last: {visitedBy} · {method} · {date}",
+  "@historyRowLastVisit": {
+    "placeholders": {
+      "visitedBy": {
+        "type": "String"
+      },
+      "method": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "historyNoVisitRecorded": "No visits logged yet",
+  "historyRowStats": "Total {totalVisits} visits · {caseCount} cases",
+  "@historyRowStats": {
+    "placeholders": {
+      "totalVisits": {
+        "type": "int"
+      },
+      "caseCount": {
+        "type": "int"
+      }
+    }
+  },
+  "daysAgo": "{days} days ago",
+  "@daysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "weeksAgo": "{weeks} weeks ago",
+  "@weeksAgo": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "monthsAgo": "{months} months ago",
+  "@monthsAgo": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "yearsAgo": "{years} years ago",
+  "@yearsAgo": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "saveFailed": "Save failed: {error}",
+  "@saveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteConfirmTitle": "Confirm Delete",
+  "deleteConfirmContent": "This member's directory info will be permanently deleted (associated care cases will not be deleted).",
+  "editPersonTitle": "Edit {label}",
+  "@editPersonTitle": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "addPersonTitle": "Add {label}",
+  "@addPersonTitle": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldNameLabel": "Name *",
+  "fieldNameRequired": "Please enter name",
+  "fieldPhoneLabel": "Phone (optional)",
+  "fieldBirthdayLabel": "Birthday",
+  "sectionChurchLife": "Church Life",
+  "fieldBaptismDateLabel": "Baptism Date",
+  "fieldJoinDateLabel": "Transfer / Join Date",
+  "fieldAttendanceLabel": "Worship Attendance",
+  "sectionParticipation": "Participation",
+  "fieldSmallGroupLabel": "Small Group / Fellowship",
+  "fieldSmallGroupHint": "e.g., Wed Elderly Group, Couple Fellowship Group B",
+  "fieldSundaySchoolLabel": "Sunday School",
+  "fieldSundaySchoolHint": "e.g., Adult Class B - student, Children's teacher",
+  "sectionOthers": "Others",
+  "fieldCreatedByLabel": "Created By (Pastor Name)",
+  "fieldNotesLabel": "Notes (optional)",
+  "commonSaving": "Saving...",
+  "defaultNewcomerReason": "Newcomer",
+  "deleteCaseConfirmContent": "This case and all associated visit logs will be permanently deleted.",
+  "editCaseTitle": "Edit Case",
+  "addNewCaseTitle": "Add Care Case",
+  "fieldNewcomerNameLabel": "Newcomer Name *",
+  "fieldMemberNameLabel": "Member Name *",
+  "fieldReasonLabel": "Reason * (e.g., hospitalized, father passed away, newcomer follow-up)",
+  "fieldReasonRequired": "Please enter reason",
+  "fieldIdentityLabel": "Identity",
+  "fieldUrgencyLabel": "Urgency",
+  "urgencyLegend": "High = 3 days red / Med = 7 days red / Low = 14 days red",
+  "notSet": "Not set",
+  "clear": "Clear"
 }
