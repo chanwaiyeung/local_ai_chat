@@ -56,6 +56,7 @@ import 'church/care_dashboard_screen.dart';
 import 'church/person_directory_screen.dart';
 import 'expense_screen.dart';
 import 'health_screen.dart';
+import 'library_screen.dart';
 import 'my_skills_screen.dart';
 import 'personal_query_screen.dart';
 import 'settings_screen.dart';
@@ -655,13 +656,25 @@ class _ModulesGrid extends StatelessWidget {
       ),
       _ModuleData(
         icon: Icons.menu_book_outlined,
-        label: 'Library',
+        label: '我的書庫',
         subtitle: '${bookController.count} books',
         color: Colors.brown,
         enabled: true,
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => BookScreen(controller: bookController),
+          ),
+        ),
+      ),
+      _ModuleData(
+        icon: Icons.local_library_outlined,
+        label: '智讀館',
+        subtitle: 'RAG 智慧閱讀',
+        color: Colors.indigo,
+        enabled: true,
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const LibraryScreen(),
           ),
         ),
       ),

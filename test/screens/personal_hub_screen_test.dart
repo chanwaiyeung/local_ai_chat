@@ -290,4 +290,48 @@ void main() {
 
     expect(find.text('1 筆紀錄'), findsNWidgets(2));
   });
+
+  // ─── Library / Books navigation (task/clarify-library-reader-navigation) ───
+
+  testWidgets('我的書庫 tile is present in the module grid', (tester) async {
+    await tester.pumpWidget(hostFor());
+    await tester.pump();
+    expect(find.text('我的書庫'), findsOneWidget);
+  });
+
+  testWidgets('智讀館 tile is present in the module grid', (tester) async {
+    await tester.pumpWidget(hostFor());
+    await tester.pump();
+    expect(find.text('智讀館'), findsOneWidget);
+  });
+
+  testWidgets('tapping 我的書庫 navigates to BookScreen', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(hostFor());
+    final tile = find.text('我的書庫');
+    await tester.ensureVisible(tile);
+    await tester.pumpAndSettle();
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+    // BookScreen AppBar title is hardcoded '📚 Library'.
+    expect(find.text('📚 Library'), findsOneWidget);
+  });
+
+  testWidgets('tapping 智讀館 navigates to LibraryScreen', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(hostFor());
+    final tile = find.text('智讀館');
+    await tester.ensureVisible(tile);
+    await tester.pumpAndSettle();
+    await tester.tap(tile);
+    // Pump navigation frame, then let LibraryScreen's async init settle.
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 3));
+    // LibraryScreen AppBar uses l10n.libraryTitle = '圖書館' in zh-TW locale.
+    expect(find.text('圖書館'), findsOneWidget);
+  });
 }
