@@ -99,15 +99,15 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('結案'),
-        content: Text('將「${c.memberName}」這個案件標記為已結案?'),
+        title: const Text(/* l10n: closeCaseConfirmTitle */ '結案'),
+        content: Text(/* l10n: closeCaseConfirmContent */ '將「${c.memberName}」這個案件標記為已結案?'),
         actions: [
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('取消')),
+              child: const Text(/* l10n: commonCancel */ '取消')),
           FilledButton(
               onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('結案')),
+              child: const Text(/* l10n: closeCase */ '結案')),
         ],
       ),
     );
@@ -125,13 +125,13 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('教會關懷中央看版'),
+        title: const Text(/* l10n: careDashboardTitle */ '教會關懷中央看版'),
         bottom: TabBar(
           controller: _tabController,
           tabs: [
-            Tab(text: '會友 (${ctl.activeCountByType(CaseType.member)})'),
-            Tab(text: '新朋友 (${ctl.activeCountByType(CaseType.newcomer)})'),
-            Tab(text: '已探訪者 (${ctl.personHistorySorted().length})'),
+            Tab(text: /* l10n: tabMemberActive */ '會友 (${ctl.activeCountByType(CaseType.member)})'),
+            Tab(text: /* l10n: tabNewcomerActive */ '新朋友 (${ctl.activeCountByType(CaseType.newcomer)})'),
+            Tab(text: /* l10n: tabVisitedHistory */ '已探訪者 (${ctl.personHistorySorted().length})'),
           ],
         ),
       ),
@@ -145,7 +145,7 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
                   child: TextField(
                     controller: _searchCtrl,
                     decoration: const InputDecoration(
-                      hintText: '搜尋會友姓名 / 緣由 / 備註',
+                      hintText: /* l10n: careSearchHint */ '搜尋會友姓名 / 緣由 / 備註',
                       prefixIcon: Icon(Icons.search),
                       isDense: true,
                       border: OutlineInputBorder(),
@@ -176,7 +176,7 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
         _tabController.index == 0 ? CaseType.member : CaseType.newcomer;
     return FloatingActionButton.extended(
       icon: const Icon(Icons.add),
-      label: Text('新增${CaseType.label(type)}案件'),
+      label: Text(/* l10n: addNewCaseLabel */ '新增${CaseType.label(type)}案件'),
       onPressed: () => _openCaseForm(defaultType: type),
     );
   }
@@ -206,7 +206,7 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
         if (red.isNotEmpty)
           _AlertSection(
             emoji: '🔴',
-            title: '需要立刻處理',
+            title: /* l10n: alertRedTitle */ '需要立刻處理',
             color: Colors.red.shade700,
             cases: red,
             controller: ctl,
@@ -219,7 +219,7 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
         if (yellow.isNotEmpty)
           _AlertSection(
             emoji: '🟡',
-            title: '即將需要安排',
+            title: /* l10n: alertYellowTitle */ '即將需要安排',
             color: Colors.orange.shade800,
             cases: yellow,
             controller: ctl,
@@ -232,7 +232,7 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
         if (green.isNotEmpty)
           _AlertSection(
             emoji: '🟢',
-            title: '在追蹤中',
+            title: /* l10n: alertGreenTitle */ '在追蹤中',
             color: Colors.green.shade700,
             cases: green,
             controller: ctl,
@@ -266,12 +266,12 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
             Icon(Icons.history, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
-              searching ? '沒有符合的人' : '暫無探訪歷史',
+              searching ? /* l10n: historyNoResults */ '沒有符合的人' : /* l10n: historyEmpty */ '暫無探訪歷史',
               style: const TextStyle(fontSize: 16),
             ),
             if (!searching) ...[
               const SizedBox(height: 4),
-              Text('在會友 / 新朋友 tab 開新案件並記錄探訪後,會出現喺度',
+              Text(/* l10n: historyEmptyHint */ '在會友 / 新朋友 tab 開新案件並記錄探訪後,會出現喺度',
                   style: TextStyle(color: Colors.grey[600], fontSize: 13)),
             ],
           ],
@@ -301,7 +301,7 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
 
   Widget _searchList(List<CareCase> matches, CareController ctl) {
     if (matches.isEmpty) {
-      return const Center(child: Text('沒有符合的案件'));
+      return const Center(child: Text(/* l10n: searchNoCaseResults */ '沒有符合的案件'));
     }
     return ListView.builder(
       itemCount: matches.length,
@@ -334,12 +334,12 @@ class _CareDashboardScreenState extends State<CareDashboardScreen>
             color: Colors.grey[400],
           ),
           const SizedBox(height: 16),
-          Text('目前沒有${CaseType.label(caseType)}案件',
+          Text(/* l10n: tabEmptyCaseState */ '目前沒有${CaseType.label(caseType)}案件',
               style: const TextStyle(fontSize: 16)),
           const SizedBox(height: 12),
           FilledButton.icon(
             icon: const Icon(Icons.add),
-            label: Text('新增${CaseType.label(caseType)}案件'),
+            label: Text(/* l10n: addNewCaseButton */ '新增${CaseType.label(caseType)}案件'),
             onPressed: () => _openCaseForm(defaultType: caseType),
           ),
         ],
@@ -450,7 +450,7 @@ class _CaseRow extends StatelessWidget {
                 ),
                 if (days != null)
                   Text(
-                    days == 0 ? '今天' : '🕐 $days 天沒探訪',
+                    days == 0 ? /* l10n: today */ '今天' : /* l10n: daysNoVisit */ '🕐 $days 天沒探訪',
                     style:
                         TextStyle(color: Colors.grey[700], fontSize: 12),
                   ),
@@ -458,13 +458,13 @@ class _CaseRow extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              '${caseObj.reason}  ·  ${CareUrgency.label(caseObj.urgency)}優先',
+              /* l10n: caseRowSummary */ '${caseObj.reason}  ·  ${CareUrgency.label(caseObj.urgency)}優先',
               style: TextStyle(color: Colors.grey[800], fontSize: 13),
             ),
             const SizedBox(height: 4),
             if (lastVisit != null)
               Text(
-                '上次:${lastVisit.visitedBy} ${_fmtDate(lastVisit.visitDate)} '
+                /* l10n: caseRowLastVisitPrefix */ '上次:${lastVisit.visitedBy} ${_fmtDate(lastVisit.visitDate)} '
                 '${VisitMethod.label(lastVisit.method)} '
                 '「${_truncate(lastVisit.summary, 30)}」',
                 style: TextStyle(color: Colors.grey[600], fontSize: 12),
@@ -473,7 +473,7 @@ class _CaseRow extends StatelessWidget {
               )
             else
               Text(
-                '尚未探訪過',
+                /* l10n: noVisitRecorded */ /* l10n: historyNoVisitRecorded */ '尚未探訪過',
                 style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: 12,
@@ -486,23 +486,23 @@ class _CaseRow extends StatelessWidget {
               children: [
                 TextButton.icon(
                   icon: const Icon(Icons.info_outline, size: 16),
-                  label: const Text('詳情'),
+                  label: const Text(/* l10n: detailsButton */ '詳情'),
                   onPressed: onDetail,
                 ),
                 FilledButton.icon(
                   icon: const Icon(Icons.add_circle_outline, size: 16),
-                  label: const Text('記探訪'),
+                  label: const Text(/* l10n: logVisitButton */ '記探訪'),
                   onPressed: onVisit,
                 ),
                 IconButton(
                   icon: const Icon(Icons.edit, size: 18),
-                  tooltip: '編輯案件',
+                  tooltip: /* l10n: editCaseTooltip */ '編輯案件',
                   onPressed: onEdit,
                 ),
                 if (onClose != null)
                   IconButton(
                     icon: const Icon(Icons.archive_outlined, size: 18),
-                    tooltip: '結案',
+                    tooltip: /* l10n: closeCaseTooltip */ '結案',
                     onPressed: onClose,
                   ),
               ],
@@ -556,7 +556,7 @@ class _PersonRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
               ),
               child: const Text(
-                '進行中',
+                /* l10n: statusActiveBadge */ '進行中',
                 style: TextStyle(
                     color: Colors.deepPurple,
                     fontWeight: FontWeight.bold,
@@ -570,14 +570,14 @@ class _PersonRow extends StatelessWidget {
         children: [
           if (lastVisit != null)
             Text(
-              '上次:${lastVisit.visitedBy} · ${VisitMethod.label(lastVisit.method)} · ${_fmtShort(lastVisit.visitDate)}',
+              /* l10n: historyRowLastVisit */ '上次:${lastVisit.visitedBy} · ${VisitMethod.label(lastVisit.method)} · ${_fmtShort(lastVisit.visitDate)}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(color: Colors.grey[700], fontSize: 12),
             )
           else
             Text(
-              '尚未探訪過',
+              /* l10n: noVisitRecorded */ /* l10n: historyNoVisitRecorded */ '尚未探訪過',
               style: TextStyle(
                   color: Colors.grey[500],
                   fontSize: 12,
@@ -585,7 +585,7 @@ class _PersonRow extends StatelessWidget {
             ),
           const SizedBox(height: 2),
           Text(
-            '共 ${person.totalVisits} 次探訪 · ${person.caseIds.length} 個案件',
+            /* l10n: historyRowStats */ '共 ${person.totalVisits} 次探訪 · ${person.caseIds.length} 個案件',
             style: TextStyle(color: Colors.grey[600], fontSize: 11),
           ),
         ],
@@ -616,10 +616,10 @@ class _PersonRow extends StatelessWidget {
       '${d.month}/${d.day.toString().padLeft(2, '0')}';
 
   static String _agoLabel(int days) {
-    if (days == 0) return '今天';
-    if (days < 7) return '$days 天前';
-    if (days < 30) return '${(days / 7).floor()} 週前';
-    if (days < 365) return '${(days / 30).floor()} 個月前';
-    return '${(days / 365).floor()} 年前';
+    if (days == 0) return /* l10n: today */ '今天';
+    if (days < 7) return /* l10n: daysAgo */ '$days 天前';
+    if (days < 30) return /* l10n: weeksAgo */ '${(days / 7).floor()} 週前';
+    if (days < 365) return /* l10n: monthsAgo */ '${(days / 30).floor()} 個月前';
+    return /* l10n: yearsAgo */ '${(days / 365).floor()} 年前';
   }
 }

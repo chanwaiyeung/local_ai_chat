@@ -101,7 +101,7 @@ class _PersonFormDialogState extends State<PersonFormDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('儲存失敗:$e')),
+          SnackBar(content: Text(/* l10n: saveFailed */ '儲存失敗:$e')),
         );
       }
     } finally {
@@ -113,15 +113,15 @@ class _PersonFormDialogState extends State<PersonFormDialog> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('確認刪除'),
-        content: const Text('此會友嘅通訊錄資料會被永久刪除(相關探訪案件不會刪除)。'),
+        title: const Text(/* l10n: deleteConfirmTitle */ '確認刪除'),
+        content: const Text(/* l10n: deleteConfirmContent */ '此會友嘅通訊錄資料會被永久刪除(相關探訪案件不會刪除)。'),
         actions: [
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('取消')),
+              child: const Text(/* l10n: commonCancel */ '取消')),
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('刪除',
+              child: const Text(/* l10n: commonDelete */ '刪除',
                   style: TextStyle(color: Colors.red))),
         ],
       ),
@@ -136,7 +136,7 @@ class _PersonFormDialogState extends State<PersonFormDialog> {
   Widget build(BuildContext context) {
     final isEditing = widget.existing != null;
     return AlertDialog(
-      title: Text(isEditing ? '編輯${PersonType.label(_personType)}' : '新增${PersonType.label(_personType)}'),
+      title: Text(isEditing ? /* l10n: editPersonTitle */ '編輯${PersonType.label(_personType)}' : /* l10n: addPersonTitle */ '新增${PersonType.label(_personType)}'),
       content: SizedBox(
         width: 480,
         child: SingleChildScrollView(
@@ -148,41 +148,41 @@ class _PersonFormDialogState extends State<PersonFormDialog> {
               children: [
                 TextFormField(
                   controller: _nameCtrl,
-                  decoration: const InputDecoration(labelText: '姓名 *'),
+                  decoration: const InputDecoration(labelText: /* l10n: fieldNameLabel */ '姓名 *'),
                   validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? '請輸入姓名' : null,
+                      (v == null || v.trim().isEmpty) ? /* l10n: fieldNameRequired */ '請輸入姓名' : null,
                 ),
                 TextFormField(
                   controller: _phoneCtrl,
                   decoration:
-                      const InputDecoration(labelText: '電話(可空)'),
+                      const InputDecoration(labelText: /* l10n: fieldPhoneLabel */ '電話(可空)'),
                   keyboardType: TextInputType.phone,
                 ),
                 _DateField(
-                  label: '生日',
+                  label: /* l10n: fieldBirthdayLabel */ '生日',
                   value: _birthday,
                   onPick: () => _pickDate(context, _birthday,
                       (d) => setState(() => _birthday = d)),
                   onClear: () => setState(() => _birthday = null),
                 ),
                 const SizedBox(height: 14),
-                const _SectionHeader('教會生命'),
+                const _SectionHeader(/* l10n: sectionChurchLife */ '教會生命'),
                 _DateField(
-                  label: '洗禮日期',
+                  label: /* l10n: fieldBaptismDateLabel */ '洗禮日期',
                   value: _baptismDate,
                   onPick: () => _pickDate(context, _baptismDate,
                       (d) => setState(() => _baptismDate = d)),
                   onClear: () => setState(() => _baptismDate = null),
                 ),
                 _DateField(
-                  label: '轉會 / 加入日期',
+                  label: /* l10n: fieldJoinDateLabel */ '轉會 / 加入日期',
                   value: _joinDate,
                   onPick: () => _pickDate(context, _joinDate,
                       (d) => setState(() => _joinDate = d)),
                   onClear: () => setState(() => _joinDate = null),
                 ),
                 const SizedBox(height: 8),
-                const Text('出席崇拜',
+                const Text(/* l10n: fieldAttendanceLabel */ '出席崇拜',
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
                 Wrap(
@@ -198,33 +198,33 @@ class _PersonFormDialogState extends State<PersonFormDialog> {
                       .toList(),
                 ),
                 const SizedBox(height: 14),
-                const _SectionHeader('參與'),
+                const _SectionHeader(/* l10n: sectionParticipation */ '參與'),
                 TextFormField(
                   controller: _smallGroupCtrl,
                   decoration: const InputDecoration(
-                    labelText: '所屬小組 / 團契',
-                    hintText: '例:週三長者團、夫婦團契 B 組',
+                    labelText: /* l10n: fieldSmallGroupLabel */ '所屬小組 / 團契',
+                    hintText: /* l10n: fieldSmallGroupHint */ '例:週三長者團、夫婦團契 B 組',
                   ),
                 ),
                 TextFormField(
                   controller: _sundaySchoolCtrl,
                   decoration: const InputDecoration(
-                    labelText: '主日學參與',
-                    hintText: '例:成人 B 班 - 學生、兒童老師',
+                    labelText: /* l10n: fieldSundaySchoolLabel */ '主日學參與',
+                    hintText: /* l10n: fieldSundaySchoolHint */ '例:成人 B 班 - 學生、兒童老師',
                   ),
                 ),
                 const SizedBox(height: 14),
-                const _SectionHeader('其他'),
+                const _SectionHeader(/* l10n: sectionOthers */ '其他'),
                 if (!isEditing)
                   TextFormField(
                     controller: _createdByCtrl,
                     decoration: const InputDecoration(
-                        labelText: '建立者(傳道人姓名)'),
+                        labelText: /* l10n: fieldCreatedByLabel */ '建立者(傳道人姓名)'),
                   ),
                 TextFormField(
                   controller: _notesCtrl,
                   decoration:
-                      const InputDecoration(labelText: '備註(可空)'),
+                      const InputDecoration(labelText: /* l10n: fieldNotesLabel */ '備註(可空)'),
                   maxLines: 2,
                 ),
               ],
@@ -236,17 +236,17 @@ class _PersonFormDialogState extends State<PersonFormDialog> {
         if (widget.onDelete != null)
           TextButton(
             onPressed: _saving ? null : _confirmDelete,
-            child: const Text('刪除',
+            child: const Text(/* l10n: commonDelete */ '刪除',
                 style: TextStyle(color: Colors.red)),
           ),
         TextButton(
           onPressed:
               _saving ? null : () => Navigator.of(context).pop(false),
-          child: const Text('取消'),
+          child: const Text(/* l10n: commonCancel */ '取消'),
         ),
         FilledButton(
           onPressed: _saving ? null : _save,
-          child: Text(_saving ? '儲存中...' : '儲存'),
+          child: Text(_saving ? /* l10n: commonSaving */ '儲存中...' : /* l10n: commonSave */ '儲存'),
         ),
       ],
     );

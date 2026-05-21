@@ -48,7 +48,7 @@ class _CaseFormDialogState extends State<CaseFormDialog> {
     if (e == null &&
         _caseType == CaseType.newcomer &&
         _reasonCtrl.text.isEmpty) {
-      _reasonCtrl.text = '新朋友';
+      _reasonCtrl.text = /* l10n: defaultNewcomerReason */ '新朋友';
     }
   }
 
@@ -81,7 +81,7 @@ class _CaseFormDialogState extends State<CaseFormDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('儲存失敗:$e')),
+          SnackBar(content: Text(/* l10n: saveFailed */ '儲存失敗:$e')),
         );
       }
     } finally {
@@ -93,15 +93,15 @@ class _CaseFormDialogState extends State<CaseFormDialog> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('確認刪除'),
-        content: const Text('此案件和所有相關探訪記錄都會被永久刪除。'),
+        title: const Text(/* l10n: deleteConfirmTitle */ '確認刪除'),
+        content: const Text(/* l10n: deleteCaseConfirmContent */ '此案件和所有相關探訪記錄都會被永久刪除。'),
         actions: [
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('取消')),
+              child: const Text(/* l10n: commonCancel */ '取消')),
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('刪除', style: TextStyle(color: Colors.red))),
+              child: const Text(/* l10n: commonDelete */ '刪除', style: TextStyle(color: Colors.red))),
         ],
       ),
     );
@@ -115,7 +115,7 @@ class _CaseFormDialogState extends State<CaseFormDialog> {
   Widget build(BuildContext context) {
     final isEditing = widget.existing != null;
     return AlertDialog(
-      title: Text(isEditing ? '編輯案件' : '新增關懷案件'),
+      title: Text(isEditing ? /* l10n: editCaseTitle */ '編輯案件' : /* l10n: addNewCaseTitle */ '新增關懷案件'),
       content: SizedBox(
         width: 460,
         child: SingleChildScrollView(
@@ -129,27 +129,27 @@ class _CaseFormDialogState extends State<CaseFormDialog> {
                   controller: _nameCtrl,
                   decoration: InputDecoration(
                     labelText: _caseType == CaseType.newcomer
-                        ? '新朋友姓名 *'
-                        : '會友姓名 *',
+                        ? /* l10n: fieldNewcomerNameLabel */ '新朋友姓名 *'
+                        : /* l10n: fieldMemberNameLabel */ '會友姓名 *',
                   ),
                   validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? '請輸入姓名' : null,
+                      (v == null || v.trim().isEmpty) ? /* l10n: fieldNameRequired */ '請輸入姓名' : null,
                 ),
                 TextFormField(
                   controller: _phoneCtrl,
-                  decoration: const InputDecoration(labelText: '電話(可空)'),
+                  decoration: const InputDecoration(labelText: /* l10n: fieldPhoneLabel */ '電話(可空)'),
                   keyboardType: TextInputType.phone,
                 ),
                 TextFormField(
                   controller: _reasonCtrl,
                   decoration: const InputDecoration(
-                    labelText: '緣由 *(例:住院、喪父、新朋友追蹤)',
+                    labelText: /* l10n: fieldReasonLabel */ '緣由 *(例:住院、喪父、新朋友追蹤)',
                   ),
                   validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? '請輸入緣由' : null,
+                      (v == null || v.trim().isEmpty) ? /* l10n: fieldReasonRequired */ '請輸入緣由' : null,
                 ),
                 const SizedBox(height: 16),
-                const Text('身分', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(/* l10n: fieldIdentityLabel */ '身分', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
                 Wrap(
                   spacing: 8,
@@ -168,10 +168,10 @@ class _CaseFormDialogState extends State<CaseFormDialog> {
                                 if (isNewcomer &&
                                     !wasNewcomer &&
                                     _reasonCtrl.text.isEmpty) {
-                                  _reasonCtrl.text = '新朋友';
+                                  _reasonCtrl.text = /* l10n: defaultNewcomerReason */ '新朋友';
                                 } else if (!isNewcomer &&
                                     wasNewcomer &&
-                                    _reasonCtrl.text == '新朋友') {
+                                    _reasonCtrl.text == /* l10n: defaultNewcomerReason */ '新朋友') {
                                   _reasonCtrl.text = '';
                                 }
                               });
@@ -180,7 +180,7 @@ class _CaseFormDialogState extends State<CaseFormDialog> {
                       .toList(),
                 ),
                 const SizedBox(height: 16),
-                const Text('優先程度', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(/* l10n: fieldUrgencyLabel */ '優先程度', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
                 Wrap(
                   spacing: 8,
@@ -196,17 +196,17 @@ class _CaseFormDialogState extends State<CaseFormDialog> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '高 = 3 天紅燈 / 中 = 7 天紅燈 / 低 = 14 天紅燈',
+                  /* l10n: urgencyLegend */ '高 = 3 天紅燈 / 中 = 7 天紅燈 / 低 = 14 天紅燈',
                   style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _createdByCtrl,
-                  decoration: const InputDecoration(labelText: '開立者(傳道人姓名)'),
+                  decoration: const InputDecoration(labelText: /* l10n: fieldCreatedByLabel */ '開立者(傳道人姓名)'),
                 ),
                 TextFormField(
                   controller: _notesCtrl,
-                  decoration: const InputDecoration(labelText: '備註(可空)'),
+                  decoration: const InputDecoration(labelText: /* l10n: fieldNotesLabel */ '備註(可空)'),
                   maxLines: 2,
                 ),
               ],
@@ -218,15 +218,15 @@ class _CaseFormDialogState extends State<CaseFormDialog> {
         if (widget.onDelete != null)
           TextButton(
             onPressed: _saving ? null : _confirmDelete,
-            child: const Text('刪除', style: TextStyle(color: Colors.red)),
+            child: const Text(/* l10n: commonDelete */ '刪除', style: TextStyle(color: Colors.red)),
           ),
         TextButton(
           onPressed: _saving ? null : () => Navigator.of(context).pop(false),
-          child: const Text('取消'),
+          child: const Text(/* l10n: commonCancel */ '取消'),
         ),
         FilledButton(
           onPressed: _saving ? null : _save,
-          child: Text(_saving ? '儲存中...' : '儲存'),
+          child: Text(_saving ? /* l10n: commonSaving */ '儲存中...' : /* l10n: commonSave */ '儲存'),
         ),
       ],
     );

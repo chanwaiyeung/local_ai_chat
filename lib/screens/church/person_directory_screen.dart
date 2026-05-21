@@ -88,7 +88,7 @@ class _PersonDirectoryScreenState extends State<PersonDirectoryScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('會友通訊錄')),
+      appBar: AppBar(title: const Text(/* l10n: churchDirectoryTitle */ '會友通訊錄')),
       floatingActionButton: FloatingActionButton.extended(
         icon: const Icon(Icons.person_add),
         label: const Text('Add Person'),
@@ -103,7 +103,7 @@ class _PersonDirectoryScreenState extends State<PersonDirectoryScreen> {
                   child: TextField(
                     controller: _searchCtrl,
                     decoration: const InputDecoration(
-                      hintText: '搜尋姓名 / 電話 / 小組 / 主日學 / 備註',
+                      hintText: /* l10n: searchHint */ '搜尋姓名 / 電話 / 小組 / 主日學 / 備註',
                       prefixIcon: Icon(Icons.search),
                       isDense: true,
                       border: OutlineInputBorder(),
@@ -118,33 +118,33 @@ class _PersonDirectoryScreenState extends State<PersonDirectoryScreen> {
                     child: Row(
                       children: [
                         _Filter(
-                          label: '會友 (${ctl.memberCount})',
+                          label: /* l10n: filterMemberCount */ '會友 (${ctl.memberCount})',
                           selected: _attendanceFilter == PersonType.member,
                           onTap: () => setState(
                               () => _attendanceFilter = PersonType.member),
                         ),
                         _Filter(
-                          label: '非會友 (${ctl.seekerCount})',
+                          label: /* l10n: filterSeekerCount */ '非會友 (${ctl.seekerCount})',
                           selected: _attendanceFilter == PersonType.seeker,
                           onTap: () => setState(
                               () => _attendanceFilter = PersonType.seeker),
                         ),
                         _Filter(
-                          label: '全部 (${ctl.totalCount})',
+                          label: /* l10n: filterAllCount */ '全部 (${ctl.totalCount})',
                           selected: _attendanceFilter == null,
                           onTap: () =>
                               setState(() => _attendanceFilter = null),
                         ),
                         const SizedBox(width: 6),
                         _Filter(
-                          label: '經常參加崇拜的會友 (${ctl.memberRegularCount})',
+                          label: /* l10n: filterMemberRegularCount */ '經常參加崇拜的會友 (${ctl.memberRegularCount})',
                           selected: _attendanceFilter == 'regular_member',
                           color: Colors.green,
                           onTap: () => setState(
                               () => _attendanceFilter = 'regular_member'),
                         ),
                         _Filter(
-                          label: '經常參加崇拜的非會友 (${ctl.seekerRegularCount})',
+                          label: /* l10n: filterSeekerRegularCount */ '經常參加崇拜的非會友 (${ctl.seekerRegularCount})',
                           selected: _attendanceFilter == 'regular_seeker',
                           color: Colors.green,
                           onTap: () => setState(
@@ -152,14 +152,14 @@ class _PersonDirectoryScreenState extends State<PersonDirectoryScreen> {
                         ),
                         const SizedBox(width: 6),
                         _Filter(
-                          label: '偶爾參加崇拜的會友 (${ctl.memberOccasionalCount})',
+                          label: /* l10n: filterMemberOccasionalCount */ '偶爾參加崇拜的會友 (${ctl.memberOccasionalCount})',
                           selected: _attendanceFilter == 'occasional_member',
                           color: Colors.orange,
                           onTap: () => setState(
                               () => _attendanceFilter = 'occasional_member'),
                         ),
                         _Filter(
-                          label: '偶爾參加崇拜的非會友 (${ctl.seekerOccasionalCount})',
+                          label: /* l10n: filterSeekerOccasionalCount */ '偶爾參加崇拜的非會友 (${ctl.seekerOccasionalCount})',
                           selected: _attendanceFilter == 'occasional_seeker',
                           color: Colors.orange,
                           onTap: () => setState(
@@ -167,14 +167,14 @@ class _PersonDirectoryScreenState extends State<PersonDirectoryScreen> {
                         ),
                         const SizedBox(width: 6),
                         _Filter(
-                          label: '久未參加崇拜的會友 (${ctl.memberInactiveCount})',
+                          label: /* l10n: filterMemberInactiveCount */ '久未參加崇拜的會友 (${ctl.memberInactiveCount})',
                           selected: _attendanceFilter == 'inactive_member',
                           color: Colors.red,
                           onTap: () => setState(
                               () => _attendanceFilter = 'inactive_member'),
                         ),
                         _Filter(
-                          label: '久未參加崇拜的非會友 (${ctl.seekerInactiveCount})',
+                          label: /* l10n: filterSeekerInactiveCount */ '久未參加崇拜的非會友 (${ctl.seekerInactiveCount})',
                           selected: _attendanceFilter == 'inactive_seeker',
                           color: Colors.red,
                           onTap: () => setState(
@@ -217,12 +217,12 @@ class _PersonDirectoryScreenState extends State<PersonDirectoryScreen> {
               size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
-            filtered ? '無符合搜尋條件嘅會友' : '通訊錄空白',
+            filtered ? /* l10n: noSearchResults */ '無符合搜尋條件嘅會友' : /* l10n: emptyDirectory */ '通訊錄空白',
             style: const TextStyle(fontSize: 16),
           ),
           if (!filtered) ...[
             const SizedBox(height: 4),
-            Text('撳右下角加第一個會友',
+            Text(/* l10n: emptyDirectoryHint */ '撳右下角加第一個會友',
                 style: TextStyle(
                     color: Colors.grey[600], fontSize: 13)),
           ],
@@ -271,9 +271,9 @@ class _PersonRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final infoLine = [
-      if (person.smallGroup.isNotEmpty) '小組:${person.smallGroup}',
+      if (person.smallGroup.isNotEmpty) /* l10n: personRowSmallGroup */ '小組:${person.smallGroup}',
       if (person.sundaySchool.isNotEmpty)
-        '主日學:${person.sundaySchool}',
+        /* l10n: personRowSundaySchool */ '主日學:${person.sundaySchool}',
     ].join(' · ');
 
     return ListTile(
@@ -323,7 +323,7 @@ class _PersonRow extends StatelessWidget {
         children: [
           IconButton(
             icon: const Icon(Icons.history, color: Colors.grey),
-            tooltip: '歷史紀錄',
+            tooltip: /* l10n: historyTooltip */ '歷史紀錄',
             onPressed: onHistoryTap,
           ),
           const Icon(Icons.chevron_right, color: Colors.grey),
