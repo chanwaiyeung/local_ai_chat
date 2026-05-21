@@ -1,8 +1,10 @@
 // lib/screens/church/person_directory_screen.dart
 import 'package:flutter/material.dart';
 import '../../controllers/church/person_controller.dart';
+import '../../main.dart';
 import '../../models/church/person.dart';
 import '../../widgets/church/person_form_dialog.dart';
+import 'person_history_screen.dart';
 
 class PersonDirectoryScreen extends StatefulWidget {
   const PersonDirectoryScreen({super.key, required this.controller});
@@ -53,6 +55,15 @@ class _PersonDirectoryScreenState extends State<PersonDirectoryScreen> {
             : () => widget.controller.deletePerson(existing.id),
       ),
     );
+  }
+
+  void _openPersonHistory(String name) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (ctx) => PersonHistoryScreen(
+        controller: globalCareController,
+        personName: name,
+      ),
+    ));
   }
 
   @override
@@ -186,6 +197,7 @@ class _PersonDirectoryScreenState extends State<PersonDirectoryScreen> {
                             person: persons[i],
                             onTap: () => _openForm(existing: persons[i]),
                             onLongPress: () => _openForm(existing: persons[i]),
+                            onHistoryTap: () => _openPersonHistory(persons[i].name),
                           ),
                         ),
                 ),
@@ -249,10 +261,12 @@ class _PersonRow extends StatelessWidget {
     required this.person,
     required this.onTap,
     required this.onLongPress,
+    required this.onHistoryTap,
   });
   final Person person;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
+  final VoidCallback onHistoryTap;
 
   @override
   Widget build(BuildContext context) {
@@ -304,7 +318,17 @@ class _PersonRow extends StatelessWidget {
             ),
         ],
       ),
-      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.history, color: Colors.grey),
+            tooltip: '歷史紀錄',
+            onPressed: onHistoryTap,
+          ),
+          const Icon(Icons.chevron_right, color: Colors.grey),
+        ],
+      ),
       onTap: onTap,
       onLongPress: onLongPress,
     );
