@@ -601,7 +601,7 @@ class _ModulesGrid extends StatelessWidget {
         onTap: onContactsTap,
       ),
       _ModuleData(
-        icon: Icons.favorite_outline,
+        icon: Icons.health_and_safety_outlined,
         label: loc.healthRecords,
         subtitle: loc.recordCountPlural(healthCount),
         color: Colors.red,
@@ -691,10 +691,10 @@ class _ModulesGrid extends StatelessWidget {
         ),
       ),
       _ModuleData(
-        icon: Icons.contacts_outlined,
+        icon: Icons.groups_outlined,
         label: '會友通訊錄',
         subtitle: '${globalPersonController.totalCount} 位 · ${globalPersonController.inactiveCount} 久未出席',
-        color: Colors.teal,
+        color: Colors.blueGrey,
         enabled: true,
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(
