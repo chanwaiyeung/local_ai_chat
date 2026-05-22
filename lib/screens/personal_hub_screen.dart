@@ -657,7 +657,7 @@ class _ModulesGrid extends StatelessWidget {
       _ModuleData(
         icon: Icons.menu_book_outlined,
         label: '我的書庫',
-        subtitle: '${bookController.count} books',
+        subtitle: '${bookController.count} 本書',
         color: Colors.brown,
         enabled: true,
         onTap: () => Navigator.of(context).push(
@@ -669,7 +669,7 @@ class _ModulesGrid extends StatelessWidget {
       _ModuleData(
         icon: Icons.local_library_outlined,
         label: '智讀館',
-        subtitle: 'RAG 智慧閱讀',
+        subtitle: '輕觸問答 · 長按全文',
         color: Colors.indigo,
         enabled: true,
         onTap: () => Navigator.of(context).push(
