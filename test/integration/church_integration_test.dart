@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,18 +12,25 @@ import '../helpers/test_app.dart';
 void main() {
   late VectorStore store;
   late PersonController controller;
+  late Directory tempDir;
 
   Widget hostFor() => TestApp(
         child: PersonDirectoryScreen(controller: controller),
       );
 
   setUp(() async {
+    tempDir = await Directory.systemTemp.createTemp(
+      'local_ai_chat_church_integration_test_',
+    );
+
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-            const MethodChannel('plugins.flutter.io/path_provider'),
-            (MethodCall methodCall) async {
-      return '.';
-    });
+      const MethodChannel('plugins.flutter.io/path_provider'),
+      (MethodCall methodCall) async {
+        return tempDir.path;
+      },
+    );
+
     store = VectorStore();
     controller = PersonController(store);
     await controller.loadAll();
@@ -37,7 +45,13 @@ void main() {
   tearDown(() async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-            const MethodChannel('plugins.flutter.io/path_provider'), null);
+      const MethodChannel('plugins.flutter.io/path_provider'),
+      null,
+    );
+
+    if (await tempDir.exists()) {
+      await tempDir.delete(recursive: true);
+    }
   });
 
   testWidgets('E2E Person Directory Flow (Create, Read, Update, Delete)', (tester) async {
@@ -155,9 +169,26 @@ void main() {
     });
     await tester.pumpAndSettle();
 
+    // Clear search text if present
+    final Finder searchField = find.byType(TextField);
+    if (searchField.evaluate().isNotEmpty) {
+      await tester.enterText(searchField, '');
+      await tester.pumpAndSettle();
+    }
+    // Tap the '全部' filter chip to clear attendance filter if present
+    final Finder allFilter = find.textContaining('全部');
+    if (allFilter.evaluate().isNotEmpty) {
+      await tester.tap(allFilter);
+      await tester.pumpAndSettle();
+    }
+
     // Verify back to empty state
     expect(find.text('林大維'), findsNothing);
     expect(controller.allPersons.isEmpty, true);
     expect(find.byIcon(Icons.contacts_outlined), findsOneWidget);
+    final emptyStateText = find.byWidgetPredicate((w) =>
+        w is Text &&
+        (w.data == '通訊錄空白' || w.data == '無符合搜尋條件嘅會友'));
+    expect(emptyStateText, findsOneWidget);
   });
 }
