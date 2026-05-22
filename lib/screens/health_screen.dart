@@ -15,8 +15,10 @@
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../controllers/health_controller.dart';
+import '../services/contact_ocr_service.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
 import '../models/health_record.dart';
@@ -32,6 +34,8 @@ class HealthScreen extends StatefulWidget {
 
 class _HealthScreenState extends State<HealthScreen> {
   String _query = '';
+
+  final _ocrService = ContactOcrService();
 
   @override
   void initState() {
@@ -69,6 +73,130 @@ class _HealthScreenState extends State<HealthScreen> {
           },
         ),
       ),
+    );
+  }
+
+  Future<void> _scanHealth() async {
+    final picker = ImagePicker();
+    if (!mounted) return;
+
+    final image = await showDialog<XFile?>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('掃描健康報告'),
+        content: const Text('請選擇圖片來源'),
+        actions: [
+          TextButton.icon(
+            icon: const Icon(Icons.camera_alt),
+            label: const Text('拍照'),
+            onPressed: () async {
+              final img = await picker.pickImage(
+                source: ImageSource.camera,
+                imageQuality: 90,
+              );
+              if (dialogContext.mounted) Navigator.pop(dialogContext, img);
+            },
+          ),
+          TextButton.icon(
+            icon: const Icon(Icons.photo_library),
+            label: const Text('從相簿選擇'),
+            onPressed: () async {
+              final img = await picker.pickImage(
+                source: ImageSource.gallery,
+                imageQuality: 90,
+              );
+              if (dialogContext.mounted) Navigator.pop(dialogContext, img);
+            },
+          ),
+        ],
+      ),
+    );
+
+    if (image == null || !mounted) return;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('正在辨識健康數據...\n這可能需要幾秒鐘'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('取消'),
+          ),
+        ],
+      ),
+    );
+
+    try {
+      final (text, _) = await _ocrService.scanBusinessCard(imagePath: image.path);
+      final prefilled = _parseHealthText(text);
+
+      if (!mounted) return;
+      Navigator.pop(context);
+
+      _openForm(existing: prefilled);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('已辨識健康數據，請確認後儲存')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('掃描失敗：$e')),
+      );
+    }
+  }
+
+  /// Parses raw OCR text from a health report / monitor screenshot.
+  /// Extracts weight, blood pressure, heart rate, steps, and sleep hours
+  /// using unit-aware regexes; any unrecognised metric is left null.
+  HealthRecord _parseHealthText(String text) {
+    double? weight;
+    int? systolic, diastolic, heartRate, steps;
+    double? sleepHours;
+
+    final weightRe = RegExp(r'(\d+(?:\.\d+)?)\s*kg', caseSensitive: false);
+    final bpRe     = RegExp(r'(\d{2,3})\s*/\s*(\d{2,3})');
+    final hrRe     = RegExp(r'(\d{2,3})\s*(?:bpm|心率|脈搏)', caseSensitive: false);
+    final stepsRe  = RegExp(r'(\d+)\s*(?:步|steps?)', caseSensitive: false);
+    final sleepRe  = RegExp(r'(\d+(?:\.\d+)?)\s*(?:h\b|hr\b|小時|hours?)', caseSensitive: false);
+
+    final wm = weightRe.firstMatch(text);
+    if (wm != null) weight = double.tryParse(wm.group(1) ?? '');
+
+    final bm = bpRe.firstMatch(text);
+    if (bm != null) {
+      systolic  = int.tryParse(bm.group(1) ?? '');
+      diastolic = int.tryParse(bm.group(2) ?? '');
+    }
+
+    final hm = hrRe.firstMatch(text);
+    if (hm != null) heartRate = int.tryParse(hm.group(1) ?? '');
+
+    final sm = stepsRe.firstMatch(text);
+    if (sm != null) steps = int.tryParse(sm.group(1) ?? '');
+
+    final slm = sleepRe.firstMatch(text);
+    if (slm != null) sleepHours = double.tryParse(slm.group(1) ?? '');
+
+    return HealthRecord(
+      date:      DateTime.now(),
+      weight:    weight,
+      systolic:  systolic,
+      diastolic: diastolic,
+      heartRate: heartRate,
+      steps:     steps,
+      sleepHours: sleepHours,
+      notes:     '健康報告掃描',
+      dateAdded: DateTime.now(),
     );
   }
 
@@ -166,9 +294,26 @@ class _HealthScreenState extends State<HealthScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(),
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('新增紀錄'),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            IconButton.filled(
+              tooltip: '掃描健康報告',
+              style: IconButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.secondary,
+                foregroundColor: Theme.of(context).colorScheme.onSecondary,
+              ),
+              onPressed: _scanHealth,
+              icon: const Icon(Icons.camera_alt),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -471,8 +616,14 @@ class _HealthRecordFormDialogState extends State<HealthRecordFormDialog> {
             TextFormField(
               controller: _weightCtrl,
               decoration: InputDecoration(labelText: AppLocalizations.of(context).weightKg),
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              validator: (v) {
+                final s = (v ?? '').trim();
+                if (s.isEmpty) return null;
+                final n = double.tryParse(s);
+                if (n == null || n <= 0) return '請輸入有效數值';
+                return null;
+              },
             ),
             const SizedBox(height: 8),
             Row(
@@ -482,6 +633,13 @@ class _HealthRecordFormDialogState extends State<HealthRecordFormDialog> {
                     controller: _systolicCtrl,
                     decoration: InputDecoration(labelText: AppLocalizations.of(context).systolicMmHg),
                     keyboardType: TextInputType.number,
+                    validator: (v) {
+                      final s = (v ?? '').trim();
+                      if (s.isEmpty) return null;
+                      final n = int.tryParse(s);
+                      if (n == null || n <= 0) return '請輸入有效整數';
+                      return null;
+                    },
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -490,6 +648,13 @@ class _HealthRecordFormDialogState extends State<HealthRecordFormDialog> {
                     controller: _diastolicCtrl,
                     decoration: InputDecoration(labelText: AppLocalizations.of(context).diastolicMmHg),
                     keyboardType: TextInputType.number,
+                    validator: (v) {
+                      final s = (v ?? '').trim();
+                      if (s.isEmpty) return null;
+                      final n = int.tryParse(s);
+                      if (n == null || n <= 0) return '請輸入有效整數';
+                      return null;
+                    },
                   ),
                 ),
               ],
@@ -499,19 +664,39 @@ class _HealthRecordFormDialogState extends State<HealthRecordFormDialog> {
               controller: _heartRateCtrl,
               decoration: InputDecoration(labelText: AppLocalizations.of(context).heartRateBpm),
               keyboardType: TextInputType.number,
+              validator: (v) {
+                final s = (v ?? '').trim();
+                if (s.isEmpty) return null;
+                final n = int.tryParse(s);
+                if (n == null || n <= 0) return '請輸入有效整數';
+                return null;
+              },
             ),
             const SizedBox(height: 8),
             TextFormField(
               controller: _stepsCtrl,
               decoration: InputDecoration(labelText: AppLocalizations.of(context).steps),
               keyboardType: TextInputType.number,
+              validator: (v) {
+                final s = (v ?? '').trim();
+                if (s.isEmpty) return null;
+                final n = int.tryParse(s);
+                if (n == null || n < 0) return '請輸入有效整數';
+                return null;
+              },
             ),
             const SizedBox(height: 8),
             TextFormField(
               controller: _sleepCtrl,
               decoration: InputDecoration(labelText: AppLocalizations.of(context).sleepHours),
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              validator: (v) {
+                final s = (v ?? '').trim();
+                if (s.isEmpty) return null;
+                final n = double.tryParse(s);
+                if (n == null || n < 0) return '請輸入有效數值';
+                return null;
+              },
             ),
             const SizedBox(height: 8),
             TextFormField(
