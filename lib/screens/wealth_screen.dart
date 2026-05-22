@@ -1072,7 +1072,7 @@ class _WealthRecordFormDialogState extends State<WealthRecordFormDialog> {
       date: _date,
       assetType: _assetType,
       assetName: _assetNameCtrl.text.trim(),
-      amount: double.parse(_amountCtrl.text),
+      amount: double.tryParse(_amountCtrl.text.trim()) ?? 0.0,
       currency: _currency,
       notes: _notesCtrl.text.trim(),
       tags: _tagsCtrl.text
@@ -1112,7 +1112,7 @@ class _WealthRecordFormDialogState extends State<WealthRecordFormDialog> {
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              initialValue: _assetType,
+              value: _assetType,
               decoration: InputDecoration(
                   labelText: AppLocalizations.of(context).assetClass),
               items: [
@@ -1141,12 +1141,11 @@ class _WealthRecordFormDialogState extends State<WealthRecordFormDialog> {
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                   validator: (v) {
-                    final n = double.tryParse(v ?? '');
-
+                    final trimmed = (v ?? '').trim();
+                    final n = double.tryParse(trimmed);
                     if (n == null || n <= 0) {
                       return AppLocalizations.of(context).invalidAmountError;
                     }
-
                     return null;
                   },
                 ),
@@ -1155,7 +1154,7 @@ class _WealthRecordFormDialogState extends State<WealthRecordFormDialog> {
               Expanded(
                 flex: 1,
                 child: DropdownButtonFormField<String>(
-                  initialValue: _currency,
+                  value: _currency,
                   decoration: InputDecoration(
                       labelText: AppLocalizations.of(context).currency),
                   items: [
