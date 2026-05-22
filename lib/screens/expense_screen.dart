@@ -16,10 +16,12 @@
 //     payment method, date, notes)
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../controllers/expense_controller.dart';
 import '../l10n/app_localizations.dart';
 import '../models/expense.dart';
+import '../services/contact_ocr_service.dart';
 import '../services/currency_service.dart';
 
 class ExpenseScreen extends StatefulWidget {
@@ -34,6 +36,8 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
   late int _year;
   late int _month;
   String _query = '';
+
+  final _ocrService = ContactOcrService();
 
   @override
   void initState() {
@@ -102,6 +106,144 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
           ),
         );
       },
+    );
+  }
+
+  Future<void> _scanExpense() async {
+    final picker = ImagePicker();
+    if (!mounted) return;
+
+    final image = await showDialog<XFile?>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('掃描收據'),
+        content: const Text('請選擇圖片來源'),
+        actions: [
+          TextButton.icon(
+            icon: const Icon(Icons.camera_alt),
+            label: const Text('拍照'),
+            onPressed: () async {
+              final img = await picker.pickImage(
+                source: ImageSource.camera,
+                imageQuality: 90,
+              );
+              if (dialogContext.mounted) Navigator.pop(dialogContext, img);
+            },
+          ),
+          TextButton.icon(
+            icon: const Icon(Icons.photo_library),
+            label: const Text('從相簿選擇'),
+            onPressed: () async {
+              final img = await picker.pickImage(
+                source: ImageSource.gallery,
+                imageQuality: 90,
+              );
+              if (dialogContext.mounted) Navigator.pop(dialogContext, img);
+            },
+          ),
+        ],
+      ),
+    );
+
+    if (image == null || !mounted) return;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('正在辨識收據...\n這可能需要幾秒鐘'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('取消'),
+          ),
+        ],
+      ),
+    );
+
+    try {
+      final (text, _) = await _ocrService.scanBusinessCard(imagePath: image.path);
+      final prefilled = _parseReceiptText(text);
+
+      if (!mounted) return;
+      Navigator.pop(context);
+
+      _openForm(existing: prefilled);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('已辨識收據，請確認後儲存')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('掃描失敗：$e')),
+      );
+    }
+  }
+
+  /// Parses raw OCR text extracted from a receipt image.
+  /// Extracts the largest decimal amount, guesses currency, and
+  /// uses the first text-like line as the merchant name.
+  Expense _parseReceiptText(String text) {
+    final lines = text
+        .split(RegExp(r'\r?\n'))
+        .map((l) => l.trim())
+        .where((l) => l.isNotEmpty)
+        .toList();
+
+    final amountRe = RegExp(r'[\d,]+\.\d{2}');
+    final currencyRe = RegExp(
+      r'\b(TWD|USD|HKD|JPY|CNY|EUR|GBP|CAD|AUD)\b|NT\$|\$|¥|€|£',
+      caseSensitive: false,
+    );
+
+    double amount = 0;
+    String currency = CurrencyService.instance.code;
+
+    for (final line in lines) {
+      final currencyMatch = currencyRe.firstMatch(line);
+      if (currencyMatch != null) {
+        final sym = currencyMatch.group(0)!.toUpperCase();
+        if (sym == 'NT\$') {
+          currency = 'TWD';
+        } else if (sym == '\$') {
+          currency = 'USD';
+        } else if (sym == '¥') {
+          currency = 'JPY';
+        } else if (sym == '€') {
+          currency = 'EUR';
+        } else if (sym == '£') {
+          currency = 'GBP';
+        } else if (['TWD', 'USD', 'HKD', 'JPY', 'CNY', 'EUR', 'GBP', 'CAD', 'AUD']
+            .contains(sym)) {
+          currency = sym;
+        }
+      }
+      for (final match in amountRe.allMatches(line)) {
+        final val = double.tryParse(match.group(0)!.replaceAll(',', ''));
+        if (val != null && val > amount) amount = val;
+      }
+    }
+
+    final merchant = lines.firstWhere(
+      (l) => l.length > 2 && !RegExp(r'^\d').hasMatch(l),
+      orElse: () => '',
+    );
+
+    return Expense(
+      amount: amount,
+      currency: currency,
+      merchant: merchant,
+      date: DateTime.now(),
+      category: '其他',
+      notes: '收據掃描',
     );
   }
 
@@ -179,9 +321,26 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(),
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('新增支出'),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            IconButton.filled(
+              tooltip: '掃描收據',
+              style: IconButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.secondary,
+                foregroundColor: Theme.of(context).colorScheme.onSecondary,
+              ),
+              onPressed: _scanExpense,
+              icon: const Icon(Icons.camera_alt),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -445,7 +604,7 @@ class _ExpenseFormState extends State<_ExpenseForm> {
     if (!_formKey.currentState!.validate()) return;
     final base = widget.existing ?? Expense(amount: 0, date: DateTime.now());
     final updated = base.copyWith(
-      amount: double.parse(_amountCtrl.text),
+      amount: double.tryParse(_amountCtrl.text.trim()) ?? 0.0,
       currency: _currency,
       date: _date,
       merchant: _merchantCtrl.text.trim(),
@@ -492,8 +651,11 @@ class _ExpenseFormState extends State<_ExpenseForm> {
                       decimal: true,
                     ),
                     validator: (v) {
-                      final n = double.tryParse(v ?? '');
-                      if (n == null || n <= 0) return AppLocalizations.of(context).invalidAmountError;
+                      final trimmed = (v ?? '').trim();
+                      final n = double.tryParse(trimmed);
+                      if (n == null || n <= 0) {
+                        return AppLocalizations.of(context).invalidAmountError;
+                      }
                       return null;
                     },
                   ),
@@ -502,7 +664,7 @@ class _ExpenseFormState extends State<_ExpenseForm> {
                 Expanded(
                   flex: 1,
                   child: DropdownButtonFormField<String>(
-                    initialValue: _currency,
+                    value: _currency,
                     decoration: InputDecoration(labelText: AppLocalizations.of(context).currency),
                     items: [
                       for (final c in _currencies)
@@ -520,8 +682,7 @@ class _ExpenseFormState extends State<_ExpenseForm> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              initialValue:
-                  categoryItems.contains(_category) ? _category : '其他',
+              value: categoryItems.contains(_category) ? _category : '其他',
               decoration: InputDecoration(
                 labelText: AppLocalizations.of(context).category,
                 helperText: widget.pastCategories.isEmpty
@@ -536,7 +697,7 @@ class _ExpenseFormState extends State<_ExpenseForm> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              initialValue: _paymentMethod,
+              value: _paymentMethod,
               decoration: InputDecoration(labelText: AppLocalizations.of(context).paymentMethod),
               items: [
                 for (final p in _payments)
