@@ -60,6 +60,19 @@ flutter run -d android   # 或 -d windows / -d chrome
 
 ---
 
+## 🌍 語言支援
+
+| 語言 | 代碼 | ARB 檔案 | 狀態 |
+|---|---|---|---|
+| 繁體中文（預設） | `zh_TW` | `app_zh_TW.arb` | ✅ 255 keys |
+| 簡體中文 | `zh_CN` | `app_zh_CN.arb` | ✅ 255 keys |
+| English | `en` | `app_en.arb` | ✅ 255 keys |
+| 日本語 | `ja` | `app_ja.arb` | ✅ 255 keys |
+
+新增語言：建立 `lib/l10n/app_<locale>.arb`，執行 `flutter gen-l10n`，再於 `main.dart` 的 `supportedLocales` 加入對應 `Locale`。
+
+---
+
 ## Roadmap
 
 | Phase | 狀態 | 說明 |
@@ -68,6 +81,7 @@ flutter run -d android   # 或 -d windows / -d chrome
 | v2.3 Health & Wealth | ✅ | 健康管理 + 投資理財 + 掃描 |
 | v2.4 Hub 統一 & 教會 | ✅ | 全模組 UI 統一、教會關懷 |
 | v2.5 Complete Release | ✅ | 所有模組驗證 + 掃描 + 圖示統一 |
+| v2.5.x l10n 完整化 | ✅ | 77 字串標記 + 日文支援（app_ja.arb） |
 | v2.6 macOS 完整支援 | 🔜 | |
 | v2.7 離線 LLM 優化 | 🔜 | |
 
