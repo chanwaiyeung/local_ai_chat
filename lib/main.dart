@@ -223,7 +223,13 @@ class MyAppState extends State<MyApp> {
       onGenerateTitle: (ctx) => AppLocalizations.of(ctx).appTitle,
       locale: _locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
+      supportedLocales: const [
+        Locale('en'),
+        Locale('zh'),      // 繁體
+        Locale('zh', 'TW'), // 繁體台灣
+        Locale('zh', 'CN'), // 簡體
+        Locale('ja'),       // ← 新增這一行
+      ],
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
