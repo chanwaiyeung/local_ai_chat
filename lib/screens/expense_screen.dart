@@ -116,12 +116,12 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
     final image = await showDialog<XFile?>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('掃描收據'),
-        content: const Text('請選擇圖片來源'),
+        title: const Text('掃描收據' /* l10n: scanReceipt */),
+        content: const Text('請選擇圖片來源' /* l10n: selectImageSource */),
         actions: [
           TextButton.icon(
             icon: const Icon(Icons.camera_alt),
-            label: const Text('拍照'),
+            label: const Text('拍照' /* l10n: takePicture */),
             onPressed: () async {
               final img = await picker.pickImage(
                 source: ImageSource.camera,
@@ -132,7 +132,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
           ),
           TextButton.icon(
             icon: const Icon(Icons.photo_library),
-            label: const Text('從相簿選擇'),
+            label: const Text('從相簿選擇' /* l10n: pickFromGallery */),
             onPressed: () async {
               final img = await picker.pickImage(
                 source: ImageSource.gallery,
@@ -156,13 +156,13 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
           children: [
             CircularProgressIndicator(),
             SizedBox(height: 16),
-            Text('正在辨識收據...\n這可能需要幾秒鐘'),
+            Text('正在辨識收據...\n這可能需要幾秒鐘' /* l10n: scanningReceipt */),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('取消'),
+            child: const Text('取消' /* l10n: cancel */),
           ),
         ],
       ),
@@ -177,13 +177,13 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
 
       _openForm(existing: prefilled);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('已辨識收據，請確認後儲存')),
+        const SnackBar(content: Text('已辨識收據，請確認後儲存' /* l10n: receiptRecognised */)),
       );
     } catch (e) {
       if (!mounted) return;
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('掃描失敗：$e')),
+        SnackBar(content: Text('掃描失敗：$e' /* l10n: scanFailed(e) */)),
       );
     }
   }
@@ -242,8 +242,8 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
       currency: currency,
       merchant: merchant,
       date: DateTime.now(),
-      category: '其他',
-      notes: '收據掃描',
+      category: '其他' /* l10n: categoryOther */,
+      notes: '收據掃描' /* l10n: receiptScanNote */,
     );
   }
 
@@ -324,14 +324,14 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(),
         icon: const Icon(Icons.add),
-        label: const Text('新增支出'),
+        label: const Text('新增支出' /* l10n: addExpenseFab */),
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             IconButton.filled(
-              tooltip: '掃描收據',
+              tooltip: '掃描收據' /* l10n: scanReceipt */,
               style: IconButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.secondary,
                 foregroundColor: Theme.of(context).colorScheme.onSecondary,
@@ -541,14 +541,14 @@ class _ExpenseFormState extends State<_ExpenseForm> {
 
   static const List<String> _currencies = ['USD', 'EUR', 'GBP', 'HKD', 'TWD', 'CAD', 'JPY', 'CNY', 'AUD'];
   static const List<String> _defaultCategories = [
-    '餐飲',
-    '交通',
-    '購物',
-    '娛樂',
-    '住房',
-    '醫療',
-    '教育',
-    '其他',
+    '餐飲' /* l10n: categoryDining */,
+    '交通' /* l10n: categoryTransport */,
+    '購物' /* l10n: categoryShopping */,
+    '娛樂' /* l10n: categoryEntertainment */,
+    '住房' /* l10n: categoryHousing */,
+    '醫療' /* l10n: categoryMedical */,
+    '教育' /* l10n: categoryEducation */,
+    '其他' /* l10n: categoryOther */,
   ];
   static const List<String> _payments = [
     'cash',
@@ -575,7 +575,7 @@ class _ExpenseFormState extends State<_ExpenseForm> {
     _merchantCtrl = TextEditingController(text: e?.merchant ?? '');
     _notesCtrl = TextEditingController(text: e?.notes ?? '');
     _currency = e?.currency ?? CurrencyService.instance.code;
-    _category = e?.category ?? '餐飲';
+    _category = e?.category ?? '餐飲' /* l10n: categoryDining */;
     // If existing.category isn't in the predefined list (e.g. user typed a
     // custom one), still show it as the selected value via _categoryOptions.
     _paymentMethod = e?.paymentMethod ?? 'cash';
@@ -693,7 +693,7 @@ class _ExpenseFormState extends State<_ExpenseForm> {
                 for (final c in categoryOptions)
                   DropdownMenuItem(value: c, child: Text(c))
               ],
-              onChanged: (v) => setState(() => _category = v ?? '其他'),
+              onChanged: (v) => setState(() => _category = v ?? '其他' /* l10n: categoryOther */),
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(

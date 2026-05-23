@@ -94,11 +94,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('實機 IP'),
+          title: const Text('實機 IP' /* l10n: deviceIpDialogTitle */),
           content: TextField(
             controller: _ipController,
             decoration: const InputDecoration(
-              hintText: '例如 192.168.1.42',
+              hintText: '例如 192.168.1.42' /* l10n: ipAddressHint */,
               border: OutlineInputBorder(),
             ),
             keyboardType: TextInputType.url,
@@ -107,11 +107,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('取消'),
+              child: const Text('取消' /* l10n: cancel */),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, _ipController.text),
-              child: const Text('套用'),
+              child: const Text('套用' /* l10n: apply */),
             ),
           ],
         );
@@ -134,12 +134,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
         title: Text(l10n.libraryTitle),
         actions: [
           IconButton(
-            tooltip: '實機 IP',
+            tooltip: '實機 IP' /* l10n: deviceIpTooltip */,
             onPressed: _loading ? null : _showIpDialog,
             icon: const Icon(Icons.wifi),
           ),
           IconButton(
-            tooltip: '重新整理',
+            tooltip: '重新整理' /* l10n: refresh */,
             onPressed: _loading ? null : _loadDocs,
             icon: const Icon(Icons.refresh),
           ),
@@ -148,7 +148,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(child: Text('錯誤：$_error'))
+              ? Center(child: Text('錯誤：$_error' /* l10n: errorPrefix(e) */))
               : _docs.isEmpty
                   ? Center(child: Text(l10n.libraryEmpty))
                   : ListView.builder(

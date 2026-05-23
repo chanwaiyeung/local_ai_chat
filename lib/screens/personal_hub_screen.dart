@@ -656,8 +656,8 @@ class _ModulesGrid extends StatelessWidget {
       ),
       _ModuleData(
         icon: Icons.menu_book_outlined,
-        label: '我的書庫',
-        subtitle: '${bookController.count} 本書',
+        label: '我的書庫' /* l10n: myLibrary */,
+        subtitle: '${bookController.count} 本書' /* l10n: bookCount(n) */,
         color: Colors.brown,
         enabled: true,
         onTap: () => Navigator.of(context).push(
@@ -668,8 +668,8 @@ class _ModulesGrid extends StatelessWidget {
       ),
       _ModuleData(
         icon: Icons.local_library_outlined,
-        label: '智讀館',
-        subtitle: '輕觸問答 · 長按全文',
+        label: '智讀館' /* l10n: smartReader */,
+        subtitle: '輕觸問答 · 長按全文' /* l10n: smartReaderHint */,
         color: Colors.indigo,
         enabled: true,
         onTap: () => Navigator.of(context).push(
@@ -680,8 +680,8 @@ class _ModulesGrid extends StatelessWidget {
       ),
       _ModuleData(
         icon: Icons.favorite_outline,
-        label: '教會關懷',
-        subtitle: '${globalCareController.activeCount} 案件 · ${globalCareController.redCount} 紅燈',
+        label: '教會關懷' /* l10n: churchCare */,
+        subtitle: '${globalCareController.activeCount} 案件 · ${globalCareController.redCount} 紅燈' /* l10n: churchCareSubtitle(active,red) */,
         color: Colors.deepPurple,
         enabled: true,
         onTap: () => Navigator.of(context).push(
@@ -692,8 +692,8 @@ class _ModulesGrid extends StatelessWidget {
       ),
       _ModuleData(
         icon: Icons.groups_outlined,
-        label: '會友通訊錄',
-        subtitle: '${globalPersonController.totalCount} 位 · ${globalPersonController.inactiveCount} 久未出席',
+        label: '會友通訊錄' /* l10n: memberDirectory */,
+        subtitle: '${globalPersonController.totalCount} 位 · ${globalPersonController.inactiveCount} 久未出席' /* l10n: memberDirectorySubtitle(total,inactive) */,
         color: Colors.blueGrey,
         enabled: true,
         onTap: () => Navigator.of(context).push(
@@ -824,16 +824,16 @@ class _ContactListScreenState extends State<_ContactListScreen> {
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                if (contact.company.isNotEmpty) Text('Company: ${contact.company}'),
-                                if (contact.phone.isNotEmpty) Text('Phone: ${contact.phone}'),
-                                if (contact.email.isNotEmpty) Text('Email: ${contact.email}'),
-                                if (contact.notes.isNotEmpty) Text('Notes: ${contact.notes}'),
+                                if (contact.company.isNotEmpty) Text('Company: ${contact.company}' /* l10n: contactCompany(v) */),
+                                if (contact.phone.isNotEmpty) Text('Phone: ${contact.phone}' /* l10n: contactPhone(v) */),
+                                if (contact.email.isNotEmpty) Text('Email: ${contact.email}' /* l10n: contactEmail(v) */),
+                                if (contact.notes.isNotEmpty) Text('Notes: ${contact.notes}' /* l10n: contactNotes(v) */),
                               ],
                             ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('Close'),
+                                child: const Text('Close' /* l10n: close */),
                               ),
                             ],
                           ),
@@ -850,7 +850,7 @@ class _ContactListScreenState extends State<_ContactListScreen> {
               );
             },
             icon: const Icon(Icons.add),
-            label: const Text('Add Contact'),
+            label: const Text('Add Contact' /* l10n: addContact */),
           ),
         );
       },

@@ -83,12 +83,12 @@ class _HealthScreenState extends State<HealthScreen> {
     final image = await showDialog<XFile?>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('掃描健康報告'),
-        content: const Text('請選擇圖片來源'),
+        title: const Text('掃描健康報告' /* l10n: scanHealthReport */),
+        content: const Text('請選擇圖片來源' /* l10n: selectImageSource */),
         actions: [
           TextButton.icon(
             icon: const Icon(Icons.camera_alt),
-            label: const Text('拍照'),
+            label: const Text('拍照' /* l10n: takePicture */),
             onPressed: () async {
               final img = await picker.pickImage(
                 source: ImageSource.camera,
@@ -99,7 +99,7 @@ class _HealthScreenState extends State<HealthScreen> {
           ),
           TextButton.icon(
             icon: const Icon(Icons.photo_library),
-            label: const Text('從相簿選擇'),
+            label: const Text('從相簿選擇' /* l10n: pickFromGallery */),
             onPressed: () async {
               final img = await picker.pickImage(
                 source: ImageSource.gallery,
@@ -123,13 +123,13 @@ class _HealthScreenState extends State<HealthScreen> {
           children: [
             CircularProgressIndicator(),
             SizedBox(height: 16),
-            Text('正在辨識健康數據...\n這可能需要幾秒鐘'),
+            Text('正在辨識健康數據...\n這可能需要幾秒鐘' /* l10n: scanningHealth */),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('取消'),
+            child: const Text('取消' /* l10n: cancel */),
           ),
         ],
       ),
@@ -144,13 +144,13 @@ class _HealthScreenState extends State<HealthScreen> {
 
       _openForm(existing: prefilled);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('已辨識健康數據，請確認後儲存')),
+        const SnackBar(content: Text('已辨識健康數據，請確認後儲存' /* l10n: healthDataRecognised */)),
       );
     } catch (e) {
       if (!mounted) return;
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('掃描失敗：$e')),
+        SnackBar(content: Text('掃描失敗：$e' /* l10n: scanFailed(e) */)),
       );
     }
   }
@@ -195,7 +195,7 @@ class _HealthScreenState extends State<HealthScreen> {
       heartRate: heartRate,
       steps:     steps,
       sleepHours: sleepHours,
-      notes:     '健康報告掃描',
+      notes:     '健康報告掃描' /* l10n: healthReportScanNote */,
       dateAdded: DateTime.now(),
     );
   }
@@ -297,14 +297,14 @@ class _HealthScreenState extends State<HealthScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(),
         icon: const Icon(Icons.add),
-        label: const Text('新增紀錄'),
+        label: const Text('新增紀錄' /* l10n: addRecord */),
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             IconButton.filled(
-              tooltip: '掃描健康報告',
+              tooltip: '掃描健康報告' /* l10n: scanHealthReport */,
               style: IconButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.secondary,
                 foregroundColor: Theme.of(context).colorScheme.onSecondary,
@@ -621,7 +621,7 @@ class _HealthRecordFormDialogState extends State<HealthRecordFormDialog> {
                 final s = (v ?? '').trim();
                 if (s.isEmpty) return null;
                 final n = double.tryParse(s);
-                if (n == null || n <= 0) return '請輸入有效數值';
+                if (n == null || n <= 0) return '請輸入有效數值' /* l10n: invalidNumericValue */;
                 return null;
               },
             ),
@@ -637,7 +637,7 @@ class _HealthRecordFormDialogState extends State<HealthRecordFormDialog> {
                       final s = (v ?? '').trim();
                       if (s.isEmpty) return null;
                       final n = int.tryParse(s);
-                      if (n == null || n <= 0) return '請輸入有效整數';
+                      if (n == null || n <= 0) return '請輸入有效整數' /* l10n: invalidIntegerValue */;
                       return null;
                     },
                   ),
@@ -652,7 +652,7 @@ class _HealthRecordFormDialogState extends State<HealthRecordFormDialog> {
                       final s = (v ?? '').trim();
                       if (s.isEmpty) return null;
                       final n = int.tryParse(s);
-                      if (n == null || n <= 0) return '請輸入有效整數';
+                      if (n == null || n <= 0) return '請輸入有效整數' /* l10n: invalidIntegerValue */;
                       return null;
                     },
                   ),
@@ -668,7 +668,7 @@ class _HealthRecordFormDialogState extends State<HealthRecordFormDialog> {
                 final s = (v ?? '').trim();
                 if (s.isEmpty) return null;
                 final n = int.tryParse(s);
-                if (n == null || n <= 0) return '請輸入有效整數';
+                if (n == null || n <= 0) return '請輸入有效整數' /* l10n: invalidIntegerValue */;
                 return null;
               },
             ),
@@ -681,7 +681,7 @@ class _HealthRecordFormDialogState extends State<HealthRecordFormDialog> {
                 final s = (v ?? '').trim();
                 if (s.isEmpty) return null;
                 final n = int.tryParse(s);
-                if (n == null || n < 0) return '請輸入有效整數';
+                if (n == null || n < 0) return '請輸入有效整數' /* l10n: invalidIntegerValue */;
                 return null;
               },
             ),
@@ -694,7 +694,7 @@ class _HealthRecordFormDialogState extends State<HealthRecordFormDialog> {
                 final s = (v ?? '').trim();
                 if (s.isEmpty) return null;
                 final n = double.tryParse(s);
-                if (n == null || n < 0) return '請輸入有效數值';
+                if (n == null || n < 0) return '請輸入有效數值' /* l10n: invalidNumericValue */;
                 return null;
               },
             ),

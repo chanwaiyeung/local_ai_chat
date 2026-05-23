@@ -128,8 +128,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
                   children: [
                     Text(
                       state.selectedText == null
-                          ? '語言解釋'
-                          : '語言解釋：${state.selectedText}',
+                          ? '語言解釋' /* l10n: languageNote */
+                          : '語言解釋：${state.selectedText}' /* l10n: languageNoteFor(term) */,
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     const SizedBox(height: 8),
@@ -169,7 +169,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('問 AI'),
+              : const Text('問 AI' /* l10n: askAi */),
         ),
       ],
     );
@@ -193,7 +193,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
   Widget _buildOcrButton(ReaderState state) {
     return OutlinedButton.icon(
       icon: const Icon(Icons.document_scanner),
-      label: const Text('OCR 問 AI'),
+      label: const Text('OCR 問 AI' /* l10n: ocrAskAi */),
       onPressed: state.isLoading ? null : _pickImageAndExtract,
     );
   }
@@ -201,7 +201,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
   Widget _buildTtsButton(ReaderState state) {
     return ElevatedButton.icon(
       icon: Icon(state.isSpeaking ? Icons.stop : Icons.play_arrow),
-      label: Text(state.isSpeaking ? '停止朗讀' : '朗讀回答'),
+      label: Text(state.isSpeaking ? '停止朗讀' /* l10n: stopReading */ : '朗讀回答' /* l10n: readAnswer */),
       onPressed: _controller.toggleSpeak,
     );
   }
@@ -220,7 +220,7 @@ class _CitationsPanel extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: ExpansionTile(
         leading: const Icon(Icons.format_quote),
-        title: Text('引用來源（${citations.length}）'),
+        title: Text('引用來源（${citations.length}）' /* l10n: citationsTitle(n) */),
         childrenPadding: const EdgeInsets.only(bottom: 8),
         children: [
           for (var i = 0; i < citations.length; i++)

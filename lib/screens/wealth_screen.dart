@@ -152,7 +152,7 @@ class _WealthScreenState extends State<WealthScreen>
     if (apiKey == null || apiKey.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('請先前往 Settings 設定 Gemini API Key')),
+        const SnackBar(content: Text('請先前往 Settings 設定 Gemini API Key' /* l10n: requiresGeminiApiKey */)),
       );
       return;
     }
@@ -162,12 +162,12 @@ class _WealthScreenState extends State<WealthScreen>
     final image = await showDialog<XFile?>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('掃描資產'),
-        content: const Text('請選擇圖片來源'),
+        title: const Text('掃描資產' /* l10n: scanAsset */),
+        content: const Text('請選擇圖片來源' /* l10n: selectImageSource */),
         actions: [
           TextButton.icon(
             icon: const Icon(Icons.camera_alt),
-            label: const Text('拍照'),
+            label: const Text('拍照' /* l10n: takePicture */),
             onPressed: () async {
               final img = await picker.pickImage(
                 source: ImageSource.camera,
@@ -180,7 +180,7 @@ class _WealthScreenState extends State<WealthScreen>
           ),
           TextButton.icon(
             icon: const Icon(Icons.photo_library),
-            label: const Text('從相簿選擇'),
+            label: const Text('從相簿選擇' /* l10n: pickFromGallery */),
             onPressed: () async {
               final img = await picker.pickImage(
                 source: ImageSource.gallery,
@@ -206,13 +206,13 @@ class _WealthScreenState extends State<WealthScreen>
           children: [
             CircularProgressIndicator(),
             SizedBox(height: 16),
-            Text('AI 正在分析圖片...\n這可能需要幾秒鐘'),
+            Text('AI 正在分析圖片...\n這可能需要幾秒鐘' /* l10n: aiAnalysingImage */),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('取消'),
+            child: const Text('取消' /* l10n: cancel */),
           ),
         ],
       ),
@@ -231,11 +231,11 @@ class _WealthScreenState extends State<WealthScreen>
       if (record != null) {
         _openForm(existing: record);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('AI 已成功辨識資產，請確認後儲存')),
+          const SnackBar(content: Text('AI 已成功辨識資產，請確認後儲存' /* l10n: aiAssetRecognised */)),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('AI 無法辨識清晰資產，請換張更清楚的圖片或手動輸入')),
+          const SnackBar(content: Text('AI 無法辨識清晰資產，請換張更清楚的圖片或手動輸入' /* l10n: aiAssetUnrecognised */)),
         );
       }
     } catch (e) {
@@ -244,7 +244,7 @@ class _WealthScreenState extends State<WealthScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '掃描失敗：${e.toString().replaceAll('VisionLlmException: ', '')}',
+            '掃描失敗：${e.toString().replaceAll('VisionLlmException: ', '')}' /* l10n: scanFailed(e) */,
           ),
         ),
       );
@@ -305,7 +305,7 @@ class _WealthScreenState extends State<WealthScreen>
         child: Row(
           children: [
             IconButton.filled(
-              tooltip: '掃描資產',
+              tooltip: '掃描資產' /* l10n: scanAsset */,
               style: IconButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.secondary,
                 foregroundColor: Theme.of(context).colorScheme.onSecondary,
