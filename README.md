@@ -1,13 +1,13 @@
 # 🌟 local_ai_chat - Personal Hub
 
-**雙架構個人 AI 生活管理系統**
+**本地 AI 個人生活管家** — 掃描、記錄、問答，全部離線運行。
 
-- **Flutter 版**：原生行動 App（Android/iOS）
+- **Flutter 版**：原生行動 App（Android / iOS / Windows）
 - **Streamlit 版**：快速 Web 儀表板（推薦開發測試使用）
 
 ---
 
-## 🚀 快速開始 - Streamlit 版 (v3.9.0)
+## 🚀 快速開始 - Streamlit 版
 
 ```bash
 cd local_ai_chat
@@ -17,43 +17,59 @@ streamlit run main.py
 
 ---
 
-## 📱 Flutter 版 - v2.2.0 Personal Hub GA
+## 📱 Flutter 版 - v2.5.0 Personal Hub Complete
 
-> **本地 AI 個人生活管家**：名片管理 + 日常開支 + 跨模組 RAG
+> **七大模組全部完成**：掃描 + 表單驗證 + 本地 RAG + 統一 UI
 
-[![Version](https://img.shields.io/badge/version-2.2.0-blue)]()
-[![Tests](https://img.shields.io/badge/tests-327%20passed-brightgreen)]()
-
----
-
-## v2.2.0 主要功能
-
-- **名片管理**：掃描 + OCR + RAG 搜尋
-- **日常開支**：掃描 + 手動 + 月份切換 + 統計
-- **跨模組 RAG**：自然語言查詢跨資料來源
-- **統一 Dashboard**：總覽 + 快速查詢
+[![Version](https://img.shields.io/badge/version-2.5.0-blue)]()
+[![Flutter](https://img.shields.io/badge/Flutter-%3E%3D3.22-blue)]()
 
 ---
 
-## 快速開始
+## v2.5.0 模組狀態
 
-1. 啟動本地 Ollama + 你的 AI Server
-2. 執行 App（Windows / Android）
-3. 開始掃描名片或記錄開支
+| 模組 | 功能 | 狀態 |
+|---|---|---|
+| **聯絡人** | 掃描名片 OCR · 表單新增 / 編輯 · 搜尋 | ✅ 完成 |
+| **日常開支** | 掃描收據 OCR · 多幣別 · 月份統計 | ✅ 完成 |
+| **健康紀錄** | 掃描報告 OCR · 血壓/體重/心率/步數 | ✅ 完成 |
+| **投資理財** | 手動記錄 · 多幣別 · 資產分類 | ✅ 完成 |
+| **我的書庫** | 書籍管理 · 本地 RAG 問答 | ✅ 完成 |
+| **智讀館** | 串流問答 · 全文瀏覽 · 引用 · TTS | ✅ 完成 |
+| **教會模組** | 關懷追蹤 · 會友通訊錄 | ✅ 完成 |
+
+---
+
+## 快速開始（Flutter）
+
+```bash
+flutter pub get
+flutter run -d android   # 或 -d windows / -d chrome
+```
+
+1. 進入 Personal Hub，選擇模組
+2. 點右下角 **+** 手動新增，或點底部相機圖示掃描
+3. 書庫 / 智讀館需先在設定中填入 Ollama 或 Gemini API
 
 ---
 
 ## 下載
 
-- Windows：`local_ai_chat_v2.2.0_windows_x64.zip`
-- Android：`local_ai_chat_v2.2.0.apk`
+- Windows：`local_ai_chat_v2.5.0_windows_x64.zip`
+- Android：`local_ai_chat_v2.5.0.apk`
 
 ---
 
 ## Roadmap
 
-- v2.3：健康管理 + 投資理財
-- v2.4：macOS 完整支援
+| Phase | 狀態 | 說明 |
+|---|:---:|---|
+| v2.2 Personal Hub GA | ✅ | 名片 + 開支 + 跨模組 RAG |
+| v2.3 Health & Wealth | ✅ | 健康管理 + 投資理財 + 掃描 |
+| v2.4 Hub 統一 & 教會 | ✅ | 全模組 UI 統一、教會關懷 |
+| v2.5 Complete Release | ✅ | 所有模組驗證 + 掃描 + 圖示統一 |
+| v2.6 macOS 完整支援 | 🔜 | |
+| v2.7 離線 LLM 優化 | 🔜 | |
 
 ---
 
@@ -252,7 +268,7 @@ from v2.0 as a separate import/export task.
 | 1     | ✅     | Local AI Server + RAG + mobile UI                   |
 | 2     | ✅     | Streaming + citations + TTS + multi-format          |
 | 3     | ✅     | Language learning helper (vocab + example)          |
-| 4     | 🟡     | OCR (server batch ✅, mobile photo 🟡)              |
+| 4     | ✅     | OCR (server batch + mobile photo scan)              |
 | 5     | ⏸     | AI Glasses (immersive reading)                      |
 
 ## License
