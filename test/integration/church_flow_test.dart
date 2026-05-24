@@ -77,8 +77,8 @@ void main() {
     expect(find.text('新增關懷案件'), findsOneWidget);
 
     // 3. Fill in Case details and Save
-    final Finder nameField = find.byWidgetPredicate((w) => w is TextField && w.decoration?.labelText == '會友姓名 *');
-    final Finder reasonField = find.byWidgetPredicate((w) => w is TextField && w.decoration?.labelText == '緣由 *(例:住院、喪父、新朋友追蹤)');
+    final Finder nameField = find.byWidgetPredicate((w) => w is TextField && w.decoration?.labelText == '會友 / Member 姓名 *');
+    final Finder reasonField = find.byWidgetPredicate((w) => w is TextField && w.decoration?.labelText == '緣由 *(例:住院、喪父、非會友追蹤)');
     final Finder notesField = find.byWidgetPredicate((w) => w is TextField && w.decoration?.labelText == '備註(可空)');
 
     await tester.enterText(nameField, '李四');

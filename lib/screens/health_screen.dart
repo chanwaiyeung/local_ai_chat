@@ -18,10 +18,10 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../controllers/health_controller.dart';
-import '../services/contact_ocr_service.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
 import '../models/health_record.dart';
+import '../services/contact_ocr_service.dart';
 import 'personal_query_screen.dart';
 
 class HealthScreen extends StatefulWidget {

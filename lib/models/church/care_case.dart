@@ -103,9 +103,9 @@ class CaseType {
   static String label(String type) {
     switch (type) {
       case member:
-        return '會友';
+        return '會友 / Member';
       case newcomer:
-        return '新朋友';
+        return '非會友 / Non-Member';
       default:
         return type;
     }

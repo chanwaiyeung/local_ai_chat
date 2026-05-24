@@ -52,8 +52,7 @@ import '../widgets/health/health_summary_card.dart';
 import '../widgets/wealth/wealth_monthly_report_card.dart';
 import '../widgets/wealth/wealth_report_card.dart';
 import 'book_screen.dart';
-import 'church/care_dashboard_screen.dart';
-import 'church/person_directory_screen.dart';
+import 'church/church_hub_screen.dart';
 import 'expense_screen.dart';
 import 'health_screen.dart';
 import 'library_screen.dart';
@@ -679,26 +678,14 @@ class _ModulesGrid extends StatelessWidget {
         ),
       ),
       _ModuleData(
-        icon: Icons.favorite_outline,
-        label: '教會關懷' /* l10n: churchCare */,
-        subtitle: '${globalCareController.activeCount} 案件 · ${globalCareController.redCount} 紅燈' /* l10n: churchCareSubtitle(active,red) */,
+        icon: Icons.church_outlined,
+        label: '教會' /* l10n: church */,
+        subtitle: '${globalCareController.activeCount} 案件 · ${globalPersonController.totalCount} 位會友' /* l10n: churchHubSubtitle(cases,members) */,
         color: Colors.deepPurple,
         enabled: true,
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => CareDashboardScreen(controller: globalCareController),
-          ),
-        ),
-      ),
-      _ModuleData(
-        icon: Icons.groups_outlined,
-        label: '會友通訊錄' /* l10n: memberDirectory */,
-        subtitle: '${globalPersonController.totalCount} 位 · ${globalPersonController.inactiveCount} 久未出席' /* l10n: memberDirectorySubtitle(total,inactive) */,
-        color: Colors.blueGrey,
-        enabled: true,
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => PersonDirectoryScreen(controller: globalPersonController),
+            builder: (_) => const ChurchHubScreen(),
           ),
         ),
       ),

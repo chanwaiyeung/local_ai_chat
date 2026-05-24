@@ -1112,7 +1112,7 @@ class _WealthRecordFormDialogState extends State<WealthRecordFormDialog> {
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              value: _assetType,
+              initialValue: _assetType,
               decoration: InputDecoration(
                   labelText: AppLocalizations.of(context).assetClass),
               items: [
@@ -1154,7 +1154,7 @@ class _WealthRecordFormDialogState extends State<WealthRecordFormDialog> {
               Expanded(
                 flex: 1,
                 child: DropdownButtonFormField<String>(
-                  value: _currency,
+                  initialValue: _currency,
                   decoration: InputDecoration(
                       labelText: AppLocalizations.of(context).currency),
                   items: [
@@ -1190,3 +1190,5 @@ class _WealthRecordFormDialogState extends State<WealthRecordFormDialog> {
     );
   }
 }
+
+

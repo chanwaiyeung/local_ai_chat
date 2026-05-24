@@ -1,4 +1,4 @@
-﻿// lib/screens/expense_screen.dart
+// lib/screens/expense_screen.dart
 //
 // Phase 6.2' (base) + Phase 6.6 enhancements.
 //
@@ -664,7 +664,7 @@ class _ExpenseFormState extends State<_ExpenseForm> {
                 Expanded(
                   flex: 1,
                   child: DropdownButtonFormField<String>(
-                    value: _currency,
+                    initialValue: _currency,
                     decoration: InputDecoration(labelText: AppLocalizations.of(context).currency),
                     items: [
                       for (final c in _currencies)
@@ -682,7 +682,7 @@ class _ExpenseFormState extends State<_ExpenseForm> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: categoryItems.contains(_category) ? _category : '其他',
+              initialValue: categoryItems.contains(_category) ? _category : '其他',
               decoration: InputDecoration(
                 labelText: AppLocalizations.of(context).category,
                 helperText: widget.pastCategories.isEmpty
@@ -697,7 +697,7 @@ class _ExpenseFormState extends State<_ExpenseForm> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: _paymentMethod,
+              initialValue: _paymentMethod,
               decoration: InputDecoration(labelText: AppLocalizations.of(context).paymentMethod),
               items: [
                 for (final p in _payments)
@@ -731,6 +731,9 @@ class _ExpenseFormState extends State<_ExpenseForm> {
     );
   }
 }
+
+
+
 
 
 

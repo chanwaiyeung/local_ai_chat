@@ -1,4 +1,4 @@
-﻿// lib/widgets/church/case_form_dialog.dart
+// lib/widgets/church/case_form_dialog.dart
 import 'package:flutter/material.dart';
 import '../../models/church/care_case.dart';
 
@@ -129,8 +129,8 @@ class _CaseFormDialogState extends State<CaseFormDialog> {
                   controller: _nameCtrl,
                   decoration: InputDecoration(
                     labelText: _caseType == CaseType.newcomer
-                        ? /* l10n: fieldNewcomerNameLabel */ '新朋友姓名 *'
-                        : /* l10n: fieldMemberNameLabel */ '會友姓名 *',
+                        ? /* l10n: fieldNewcomerNameLabel */ '非會友 / Non-Member 姓名 *'
+                        : /* l10n: fieldMemberNameLabel */ '會友 / Member 姓名 *',
                   ),
                   validator: (v) =>
                       (v == null || v.trim().isEmpty) ? /* l10n: fieldNameRequired */ '請輸入姓名' : null,
@@ -143,7 +143,7 @@ class _CaseFormDialogState extends State<CaseFormDialog> {
                 TextFormField(
                   controller: _reasonCtrl,
                   decoration: const InputDecoration(
-                    labelText: /* l10n: fieldReasonLabel */ '緣由 *(例:住院、喪父、新朋友追蹤)',
+                    labelText: /* l10n: fieldReasonLabel */ '緣由 *(例:住院、喪父、非會友追蹤)',
                   ),
                   validator: (v) =>
                       (v == null || v.trim().isEmpty) ? /* l10n: fieldReasonRequired */ '請輸入緣由' : null,
@@ -232,3 +232,4 @@ class _CaseFormDialogState extends State<CaseFormDialog> {
     );
   }
 }
+
