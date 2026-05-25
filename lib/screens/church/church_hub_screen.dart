@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import '../../controllers/church/care_controller.dart';
 import '../../main.dart';
 import 'care_dashboard_screen.dart';
+import 'church_ai_assistant.dart';
 import 'person_directory_screen.dart';
 import 'person_history_screen.dart';
 
@@ -72,6 +73,13 @@ class _ChurchHubScreenState extends State<ChurchHubScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('教會')),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const ChurchAiAssistant()),
+        ),
+        icon: const Icon(Icons.smart_toy_outlined),
+        label: const Text('AI 助手'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         child: Column(
