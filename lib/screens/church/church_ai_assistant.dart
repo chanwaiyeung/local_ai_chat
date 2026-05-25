@@ -1,6 +1,6 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant v2.12 — 52 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.13 — 56 quick AI functions for pastoral team.
 //
 // v1   (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
 // v2.1 (+ 4): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
@@ -15,6 +15,7 @@
 // v2.10(+ 4): 年度預算草案 / 小組倍增計劃 / 牧者靈修休假計劃 / 危機處理指引
 // v2.11(+ 4): 青少年年度計劃 / 長執退修議程 / 靈命成長追蹤 / 禱告文化建立計劃
 // v2.12(+ 4): 教會異象宣言 / 新堂會設立計劃 / 短宣隊招募培訓 / 轉會推薦信
+// v2.13(+ 4): 年度讀經計劃 / 青年營會方案 / 志工管理系統 / 牧師交棒計劃
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
@@ -1355,6 +1356,115 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
     return buf.toString();
   }
 
+  // ── v2.13 prompt builders ────────────────────────────────────────────────
+
+  String _buildAnnualBibleReadingPrompt(String year) {
+    final people = globalPersonController;
+    return '請為教會「$year 年」生成一份全教會年度靈修讀經計劃，'
+        '讓所有會友（${people.totalCount} 人）一同讀完聖經或特定書卷。\n\n'
+        '計劃選項（請提供 3 個版本，讓教牧選擇）：\n\n'
+        '【版本 A：一年讀完全本聖經】\n'
+        '1. 每日讀經份量（章節數 + 估計時間）\n'
+        '2. 月度安排總覽（1-12 月，每月完成哪幾卷）\n'
+        '3. 建議搭配靈修書目（2-3 本）\n\n'
+        '【版本 B：一年讀完新約 + 詩篇】\n'
+        '4. 週計劃框架（週一至週六讀經，週日崇拜整合）\n'
+        '5. 每月主題（與教會講道系列配合的主題建議）\n\n'
+        '【版本 C：聚焦主題讀經（4 個主題，每季一個）】\n'
+        '6. 四季主題建議（例：一季福音書 / 一季書信 / 一季歷史書 / 一季智慧書）\n'
+        '7. 每季推薦經文選讀清單\n\n'
+        '【全教會推廣配套】\n'
+        '8. 讀經記錄表設計（可列印，週/月格式）\n'
+        '9. 激勵機制建議（小組分享/里程碑慶祝/年終見證會）\n'
+        '10. 讀經 App 推薦（適合繁體中文的 3 個選項）\n'
+        '11. 落後者恩典指引（跟不上進度時的鼓勵話語 + 補救方案）\n\n'
+        '請用繁體中文，讓不同靈命程度的會友都能參與。';
+  }
+
+  String _buildYouthCampPrompt(String theme) {
+    final people = globalPersonController;
+    final youthEst = (people.totalCount ~/ 5).clamp(10, 50);
+    return '請為主題「$theme」的青年營會生成完整活動方案，'
+        '預計參加人數：約 $youthEst 人，為期 2 天 1 夜（可調整）。\n\n'
+        '（注意：營會 ≠ 單日活動，需包含住宿生活、夜間程序、早晨靈修等元素。）\n\n'
+        '完整方案包括：\n\n'
+        '【行程時間表】\n'
+        '第一天（Day 1）：逐小時行程\n'
+        '  - 報到/暖身遊戲 → 晚餐 → 晚間聚會（信息 + 敬拜）→ 小組時間 → 宵夜\n'
+        '第二天（Day 2）：逐小時行程\n'
+        '  - 早晨靈修 → 早餐 → 上午聚會（信息 2）→ 戶外活動 → 午餐 → 回應時間 → 散營\n\n'
+        '【信息大綱（2 篇）】\n'
+        '- 第一篇：主題切入（痛點共鳴 + 聖經基礎 + 3 個重點）\n'
+        '- 第二篇：呼召回應（深化 + 個人委身 + 小組禱告）\n\n'
+        '【活動設計（3 個）】\n'
+        '- 暖身破冰遊戲（全體，30 分鐘）\n'
+        '- 主題戶外活動（與信息相關，60-90 分鐘）\n'
+        '- 小組查經討論（5-8 人一組，45 分鐘，附 4 條討論問題）\n\n'
+        '【後勤清單】\n'
+        '- 物資採購清單（食物/文具/遊戲器材/急救）\n'
+        '- 工作人員職責分配表（隊長/組長/敬拜/後勤各 1 行）\n'
+        '- 家長知情同意書要點（5 項必要資訊）\n\n'
+        '【跟進計劃】\n'
+        '- 營後 1 週：組長關心電話話術\n'
+        '- 營後 2-4 週：鞏固行動 3 個\n\n'
+        '請用繁體中文，語氣充滿青春活力。';
+  }
+
+  String _buildVolunteerManagementPrompt(String churchSize) {
+    return '請為一間「$churchSize」規模的教會設計一套完整的義工招募與管理系統，'
+        '幫助同工有效地組織和關顧義工隊伍。\n\n'
+        '系統包括以下模組：\n\n'
+        '【模組一：招募系統】\n'
+        '1. 義工需求評估表（各部門填寫，格式統一）\n'
+        '2. 恩賜探索問卷（10 題，幫助會友發現適合的服事崗位）\n'
+        '3. 義工崗位清單範本（格式：崗位名稱/職責/時間要求/聯絡人）\n'
+        '4. 義工申請流程（填表 → 面談 → 試用 → 確認的標準程序）\n\n'
+        '【模組二：入職培訓】\n'
+        '5. 義工入職指引（必須知道的 10 件事）\n'
+        '6. 新義工首月陪伴計劃（導師制，每週一個里程碑）\n\n'
+        '【模組三：持續關顧】\n'
+        '7. 義工季度評估對話框架（組長與義工的 30 分鐘談話）\n'
+        '8. 義工倦怠預警信號（8 個早期跡象 + 應對策略）\n'
+        '9. 年度義工感恩禮拜建議（流程 + 感謝方式）\n\n'
+        '【模組四：記錄與追蹤】\n'
+        '10. 義工資料表範本（姓名/崗位/開始日期/服事時數/聯絡）\n'
+        '11. 月度服事時數記錄表（各部門匯總格式）\n\n'
+        '【模組五：退出機制】\n'
+        '12. 義工轉換崗位流程（健康方式說再見並重新開始）\n'
+        '13. 長期義工感謝與傳承儀式（服事滿 1/3/5 年的認可方式）\n\n'
+        '請用繁體中文，系統實際可操作，讓教會行政同工照著執行。';
+  }
+
+  String _buildPastoralSuccessionPrompt(String timeline) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    return '請為教會生成一份「牧師退休/交棒計劃」框架，'
+        '交棒時間線：$timeline，幫助牧者和長執有序完成世代傳承。\n\n'
+        '教會現況：${people.totalCount} 位會友（定期 ${people.regularCount} 人），'
+        '活躍關懷案件 ${care.activeCount} 件。\n\n'
+        '計劃框架：\n\n'
+        '【一、宣告前準備（靜默期）】\n'
+        '1. 牧者個人禱告確認框架（5 個自問問題）\n'
+        '2. 與長執私下溝通的 3 個步驟\n'
+        '3. 交棒時機成熟的 5 個指標\n\n'
+        '【二、繼任者物色與培育】\n'
+        '4. 繼任牧者資格標準（屬靈/品格/能力/家庭，各 3-4 項）\n'
+        '5. 內部培育 vs 外部招聘的評估框架\n'
+        '6. 繼任者培育路徑（$timeline 時間線下的月度里程碑）\n\n'
+        '【三、過渡期安排】\n'
+        '7. 知識與關係交接清單（20 項必須移交的事項）\n'
+        '8. 與各部門/小組組長的過渡對話框架\n'
+        '9. 向會眾宣告的方式與時機建議\n\n'
+        '【四、告別與感恩】\n'
+        '10. 退休/告別崇拜框架（感恩敬拜 + 見證 + 委任新牧者）\n'
+        '11. 退休牧者在新局面中的角色定位（避免干預的健康界限）\n\n'
+        '【五、新牧者首年支援】\n'
+        '12. 新牧者第一年重點事項（每季度 3 個目標）\n'
+        '13. 長執會對新牧者的支持承諾框架\n\n'
+        '請用繁體中文，處理這敏感議題時語氣尊重而有盼望，'
+        '強調傳承是教會生命力的見證。';
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
   /// Generic single-field input dialog — avoids duplicating dialog code.
@@ -1767,6 +1877,36 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         hint: '例：陳大明  或  陳大明｜恩典堂',
         confirmLabel: '生成推薦信',
         buildPrompt: _buildTransferLetterPrompt,
+      );
+
+  // ── v2.13 dialog triggers ────────────────────────────────────────────────
+
+  Future<void> _askBibleReadingYear() => _askInput(
+        title: '讀經年份',
+        hint: '例：2027 年、下一個教會年度…',
+        confirmLabel: '生成讀經計劃',
+        buildPrompt: _buildAnnualBibleReadingPrompt,
+      );
+
+  Future<void> _askYouthCampTheme() => _askInput(
+        title: '營會主題',
+        hint: '例：破框而出、身份認同、勇敢追夢…',
+        confirmLabel: '生成營會方案',
+        buildPrompt: _buildYouthCampPrompt,
+      );
+
+  Future<void> _askChurchSizeForVolunteer() => _askInput(
+        title: '教會規模',
+        hint: '例：50 人小型教會、200 人中型教會…',
+        confirmLabel: '生成管理系統',
+        buildPrompt: _buildVolunteerManagementPrompt,
+      );
+
+  Future<void> _askSuccessionTimeline() => _askInput(
+        title: '交棒時間線',
+        hint: '例：1 年內、2-3 年過渡期、5 年長期規劃…',
+        confirmLabel: '生成交棒計劃',
+        buildPrompt: _buildPastoralSuccessionPrompt,
       );
 
   // ── UI ──────────────────────────────────────────────────────────────────
@@ -2220,6 +2360,40 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '轉會推薦信',
             subtitle: '輸入會友姓名（選填轉往教會），生成正式轉會推薦信',
             onTap: _askTransferMember,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '傳承更新'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.auto_stories_outlined,
+            color: Colors.green,
+            title: '年度全教會讀經計劃',
+            subtitle: '輸入年份，生成3個難度版本的讀經計劃、記錄表與激勵機制',
+            onTap: _askBibleReadingYear,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.cabin_outlined,
+            color: Colors.orange,
+            title: '青年營會完整方案',
+            subtitle: '輸入營會主題，生成兩天一夜完整行程、兩篇信息大綱與後勤清單',
+            onTap: _askYouthCampTheme,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.manage_accounts_outlined,
+            color: Colors.indigo,
+            title: '義工管理系統',
+            subtitle: '輸入教會規模，生成招募/入職/關顧/記錄/退出五模組完整系統',
+            onTap: _askChurchSizeForVolunteer,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.handshake_outlined,
+            color: Colors.brown,
+            title: '牧師交棒計劃',
+            subtitle: '輸入交棒時間線，生成繼任者培育、過渡交接、新牧者支援完整框架',
+            onTap: _askSuccessionTimeline,
           ),
           const SizedBox(height: 24),
           Container(
