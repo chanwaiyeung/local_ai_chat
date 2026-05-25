@@ -1,6 +1,6 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant v2.10 — 44 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.11 — 48 quick AI functions for pastoral team.
 //
 // v1   (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
 // v2.1 (+ 4): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
@@ -13,6 +13,7 @@
 // v2.8 (+ 4): 佈道後跟進計劃 / 小組長培訓大綱 / 青少年事工方案 / 長執會議議程
 // v2.9 (+ 4): 小組長月報模板 / 佈道訓練課程 / 新人整合計劃 / 年度大會演講稿
 // v2.10(+ 4): 年度預算草案 / 小組倍增計劃 / 牧者靈修休假計劃 / 危機處理指引
+// v2.11(+ 4): 青少年年度計劃 / 長執退修議程 / 靈命成長追蹤 / 禱告文化建立計劃
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
@@ -1110,6 +1111,137 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         '注意：請避免對具體情況作出法律建議，提醒查詢專業人士。';
   }
 
+  // ── v2.11 prompt builders ────────────────────────────────────────────────
+
+  String _buildYouthAnnualPlanPrompt(String year) {
+    final people = globalPersonController;
+    final youthEst = people.seekerCount + (people.totalCount ~/ 5);
+    return '請為「$year 年度」青少年事工生成一份完整的年度策略計劃，'
+        '涵蓋全年 12 個月，適合向長執會提交審批。\n\n'
+        '（注意：此為年度策略計劃，有別於單次活動方案。）\n\n'
+        '估計青少年人數：約 ${youthEst > 5 ? youthEst : 15}-${youthEst + 10} 人。\n\n'
+        '年度計劃結構：\n\n'
+        '【異象與目標】\n'
+        '1. 本年度青少年事工主題（1 句話，含主題經文）\n'
+        '2. 三大年度目標（SMART 格式，可量化）\n\n'
+        '【月度行事曆（1-12 月）】\n'
+        '每月格式：月份 ｜ 主要活動 ｜ 查經主題 ｜ 外展行動 ｜ 備注\n'
+        '（請依季節、節日和校曆合理分配活動密度）\n\n'
+        '【重點事工計劃】\n'
+        '3. 門徒栽培路徑（初信→成長→裝備→領袖，各階段描述）\n'
+        '4. 外展策略（校園/社交媒體/活動各 1 個具體計劃）\n'
+        '5. 領袖培育（識別、培育、授權的步驟）\n\n'
+        '【資源規劃】\n'
+        '6. 人力需求（同工/義工數量及職責）\n'
+        '7. 預算概估（分：活動/物資/培訓/宣傳）\n'
+        '8. 場地需求（常規聚會 + 特別活動）\n\n'
+        '【成效評估】\n'
+        '9. 每季度評估指標（4 個，可量化）\n'
+        '10. 年終成效回顧框架（3 個問題）\n\n'
+        '請用繁體中文，計劃既有異象深度，也有執行細節。';
+  }
+
+  String _buildElderRetreatPrompt(String duration) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    return '請為長執退修會生成一份完整議程，時長：$duration。\n\n'
+        '（注意：退修會 ≠ 例行長執會。退修會重點是：異象更新、屬靈更新、'
+        '深層議題討論、同工關係建立，而非處理日常行政。）\n\n'
+        '教會背景：${people.totalCount} 位會友，活躍關懷 ${care.activeCount} 件。\n\n'
+        '退修會議程框架：\n\n'
+        '【開場：設立退修基調（佔 10%）】\n'
+        '- 開幕禱告與靜默（15 分鐘）\n'
+        '- 破冰活動：分享「我服事教會最感恩的一刻」\n'
+        '- 退修會守則宣讀（保密、尊重、誠實）\n\n'
+        '【核心一：屬靈更新（佔 30%）】\n'
+        '- 聖經默想與分享（選 1 節與教會領袖相關的經文）\n'
+        '- 個人靈命自我評估（5 題問卷，不公開）\n'
+        '- 小組代禱：為彼此的服事重擔代禱\n\n'
+        '【核心二：教會健康深度評估（佔 30%）】\n'
+        '- 現況討論：優勢/挑戰/機遇/威脅（SWOT，各 3 條）\n'
+        '- 教牧關懷：回顧關懷數據（${care.activeCount} 件案件的質性討論）\n'
+        '- 未說出口的議題：給每人空白卡片匿名寫下未被討論的擔憂\n\n'
+        '【核心三：未來異象凝聚（佔 20%）】\n'
+        '- 異象重溫：教會使命宣言是否仍有共識？\n'
+        '- 未來 3 年最重要的 1 件事：投票共識\n'
+        '- 行動承諾：每人寫下退修後的 1 個個人承諾\n\n'
+        '【結束：委身與祝福（佔 10%）】\n'
+        '- 彼此禱告覆手祝福\n'
+        '- 結束聖餐（可選）\n'
+        '- 下次退修會日期\n\n'
+        '請用繁體中文，議程設計讓長執真正得到更新，而非另一個工作會議。';
+  }
+
+  String _buildSpiritualGrowthTrackingPrompt(String name) {
+    final people = globalPersonController;
+    final care = globalCareController;
+    final buf = StringBuffer();
+    buf.writeln('請為會友「$name」設計一份個人靈命成長追蹤計劃，'
+        '幫助牧者系統地陪伴其屬靈成長旅程。\n');
+
+    final person = people.findByName(name);
+    if (person != null) {
+      buf.writeln('【會友資料】');
+      buf.writeln('類型：${person.personType} ／ 出席：${person.attendance}');
+      if (person.notes.isNotEmpty) buf.writeln('備註：${person.notes}');
+    }
+
+    final related = care.allCases
+        .where((c) =>
+            c.memberName.contains(name) || name.contains(c.memberName))
+        .take(3)
+        .toList();
+    if (related.isNotEmpty) {
+      buf.writeln('\n【關懷背景】');
+      for (final c in related) {
+        buf.writeln('- ${c.reason}（${c.status}）');
+      }
+    }
+
+    buf.writeln('\n追蹤計劃結構：\n\n'
+        '【靈命現況評估（起點）】\n'
+        '1. 靈命成熟度初評（4 個維度：聖經認識/禱告生活/群體委身/外展服事，各 1-5 分）\n'
+        '2. 個人屬靈目標（此人希望在哪方面成長，引導問題 3 條）\n\n'
+        '【3 個月成長目標】\n'
+        '3. 聖經閱讀計劃（推薦書卷 + 每日份量）\n'
+        '4. 禱告習慣建立（每日禱告時間建議 + 代禱事項框架）\n'
+        '5. 群體參與目標（小組 / 服事 / 主日的具體委身）\n\n'
+        '【月度跟進框架】\n'
+        '6. 每月牧者見面議題（3-4 個標準問題，追蹤進度）\n'
+        '7. 里程碑慶祝建議（完成第一個月 / 第三個月時如何認可）\n\n'
+        '【半年評估】\n'
+        '8. 靈命重評（與初評對比，看見成長）\n'
+        '9. 調整與下一階段目標設定\n\n'
+        '請用繁體中文，計劃要有彈性，尊重個人節奏，避免律法主義感。');
+    return buf.toString();
+  }
+
+  String _buildPrayerCulturePrompt(String focus) {
+    final people = globalPersonController;
+    return '請為教會設計一套「禱告文化建立計劃」，'
+        '重點：$focus，幫助整間教會從個人到群體建立更深的禱告生命。\n\n'
+        '教會規模：${people.totalCount} 位會友（定期 ${people.regularCount} 人）。\n\n'
+        '計劃結構：\n\n'
+        '【一、現況評估】\n'
+        '1. 教會禱告文化健康指標（5 項，可自評 1-5 分）\n'
+        '2. 常見障礙分析（為什麼弟兄姊妹不禱告的 5 個原因 + 應對策略）\n\n'
+        '【二、個人禱告裝備（1-3 個月）】\n'
+        '3. 禱告生活 30 天挑戰計劃（每日 1 個小步驟）\n'
+        '4. 禱告日記框架（ACTS 格式：讚美/認罪/感恩/祈求）\n'
+        '5. 禱告伙伴配對計劃（如何在教會中建立禱告伙伴關係）\n\n'
+        '【三、小組禱告深化（3-6 個月）】\n'
+        '6. 小組禱告升級方案（從代禱清單到真實代禱分享的 3 個步驟）\n'
+        '7. 禱告操練建議（輪流帶禱告/禁食禱告/默想禱告）\n\n'
+        '【四、全教會禱告事工（6 個月以上）】\n'
+        '8. 禱告室/禱告角設立建議（空間設計 + 使用規則）\n'
+        '9. 通宵禱告會策劃框架（主題/流程/時間分配）\n'
+        '10. 禱告事工核心團隊組建（人選條件 + 職責 + 運作模式）\n\n'
+        '【五、成效評估】\n'
+        '11. 6 個月後禱告文化健康重評\n'
+        '12. 見證收集方式（禱告答覆分享）\n\n'
+        '請用繁體中文，讓禱告文化成為自然流露而非宗教義務。';
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
   /// Generic single-field input dialog — avoids duplicating dialog code.
@@ -1462,6 +1594,36 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         hint: '例：會友衝突、財務醜聞、牧者離職、意外事故…',
         confirmLabel: '生成處理指引',
         buildPrompt: _buildCrisisManagementPrompt,
+      );
+
+  // ── v2.11 dialog triggers ────────────────────────────────────────────────
+
+  Future<void> _askYouthPlanYear() => _askInput(
+        title: '計劃年度',
+        hint: '例：2027 年度、明年…',
+        confirmLabel: '生成年度計劃',
+        buildPrompt: _buildYouthAnnualPlanPrompt,
+      );
+
+  Future<void> _askRetreatDuration() => _askInput(
+        title: '退修時長',
+        hint: '例：一天、兩天一夜、半天…',
+        confirmLabel: '生成議程',
+        buildPrompt: _buildElderRetreatPrompt,
+      );
+
+  Future<void> _askGrowthTrackingName() => _askInput(
+        title: '會友姓名',
+        hint: '請輸入需要靈命成長追蹤的會友姓名',
+        confirmLabel: '生成追蹤計劃',
+        buildPrompt: _buildSpiritualGrowthTrackingPrompt,
+      );
+
+  Future<void> _askPrayerCultureFocus() => _askInput(
+        title: '禱告文化重點',
+        hint: '例：個人禱告習慣、小組代禱深化、全教會禱告運動…',
+        confirmLabel: '生成建立計劃',
+        buildPrompt: _buildPrayerCulturePrompt,
       );
 
   // ── UI ──────────────────────────────────────────────────────────────────
@@ -1847,6 +2009,40 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '教會危機處理指引',
             subtitle: '輸入危機類型，生成評估、對內對外溝通、牧養恢復的四步驟指引',
             onTap: _askCrisisType,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '靈命牧養'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.people_alt_outlined,
+            color: Colors.purple,
+            title: '青少年事工年度計劃',
+            subtitle: '輸入計劃年度，生成含月度行事曆、門徒路徑、外展策略的12個月計劃',
+            onTap: _askYouthPlanYear,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.landscape_outlined,
+            color: Colors.teal,
+            title: '長執退修會議程',
+            subtitle: '輸入退修時長，生成以異象更新和屬靈更新為核心的退修會框架',
+            onTap: _askRetreatDuration,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.trending_up_outlined,
+            color: Colors.green,
+            title: '靈命成長追蹤計劃',
+            subtitle: '輸入會友姓名，生成個人靈命評估、3個月目標與月度跟進框架',
+            onTap: _askGrowthTrackingName,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.record_voice_over_outlined,
+            color: Colors.indigo,
+            title: '禱告文化建立計劃',
+            subtitle: '輸入重點方向，生成從個人到全教會的禱告文化三階段建立計劃',
+            onTap: _askPrayerCultureFocus,
           ),
           const SizedBox(height: 24),
           Container(
