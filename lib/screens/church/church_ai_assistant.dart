@@ -1,6 +1,6 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant v2.11 — 48 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.12 — 52 quick AI functions for pastoral team.
 //
 // v1   (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
 // v2.1 (+ 4): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
@@ -14,6 +14,7 @@
 // v2.9 (+ 4): 小組長月報模板 / 佈道訓練課程 / 新人整合計劃 / 年度大會演講稿
 // v2.10(+ 4): 年度預算草案 / 小組倍增計劃 / 牧者靈修休假計劃 / 危機處理指引
 // v2.11(+ 4): 青少年年度計劃 / 長執退修議程 / 靈命成長追蹤 / 禱告文化建立計劃
+// v2.12(+ 4): 教會異象宣言 / 新堂會設立計劃 / 短宣隊招募培訓 / 轉會推薦信
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
@@ -1242,6 +1243,118 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         '請用繁體中文，讓禱告文化成為自然流露而非宗教義務。';
   }
 
+  // ── v2.12 prompt builders ────────────────────────────────────────────────
+
+  String _buildVisionStatementPrompt(String focus) {
+    final people = globalPersonController;
+    return '請為教會生成一份「異象宣言草稿套件」，重點方向：$focus。\n\n'
+        '教會背景：${people.totalCount} 位會友（正式會員 ${people.memberCount} 人，'
+        '慕道友 ${people.seekerCount} 人）。\n\n'
+        '套件包括：\n\n'
+        '【一、使命宣言（Mission）】\n'
+        '1. 三個版本（長版 50 字 / 中版 25 字 / 短版 10 字以內）\n'
+        '2. 撰寫時的核心問題：教會為何存在？服事誰？如何服事？\n\n'
+        '【二、異象宣言（Vision）】\n'
+        '3. 5-10 年後教會希望成為的樣子（1 段，3-4 句，具體有畫面感）\n'
+        '4. 異象呈現的 3 個選項（不同側重點，讓長執會選擇）\n\n'
+        '【三、核心價值（Core Values）】\n'
+        '5. 5-7 個核心價值（每個：1 個詞 + 1 句解釋 + 1 節經文）\n\n'
+        '【四、策略重點（Strategic Focus）】\n'
+        '6. 本年度 3 大策略重點（與異象對齊，可執行）\n\n'
+        '【五、對外呈現】\n'
+        '7. 教會簡介段落（對外使用，100 字，溫暖吸引人）\n'
+        '8. 社群媒體簡介版本（30 字以內）\n\n'
+        '請用繁體中文，異象要有属靈深度，使命要清晰實際。\n'
+        '用[方括號]標示需要長執會共同確認的部分。';
+  }
+
+  String _buildChurchPlantingPrompt(String location) {
+    final people = globalPersonController;
+    return '請為在「$location」設立新堂會生成一份初步計劃框架，'
+        '幫助母堂牧者和長執評估可行性並開始籌備。\n\n'
+        '母堂背景：${people.totalCount} 位會友（定期 ${people.regularCount} 人）。\n\n'
+        '計劃框架：\n\n'
+        '【階段一：可行性評估（第 1-3 個月）】\n'
+        '1. 地區需求分析（人口/已有教會/屬靈需求，3 個評估問題）\n'
+        '2. 母堂資源評估（人力/財務/禱告，自評表）\n'
+        '3. 核心創堂團隊組成（建議人數 + 理想屬靈恩賜組合）\n\n'
+        '【階段二：籌備期（第 4-12 個月）】\n'
+        '4. 創堂牧者/帶領人標準（屬靈/性格/能力要求）\n'
+        '5. 聚會地點評估清單（5 個實際考量）\n'
+        '6. 財務支持架構（母堂供給比例 + 新堂自立時間表）\n'
+        '7. 核心成員招募策略（從母堂差遣還是當地建立）\n\n'
+        '【階段三：開堂年（第 13-24 個月）】\n'
+        '8. 開堂崇拜策劃要點（首次主日崇拜的 5 個關鍵元素）\n'
+        '9. 第一年事工重點（3 個，不貪多）\n'
+        '10. 母子堂關係架構（牧養連結 + 治理獨立的平衡）\n\n'
+        '【持續支援】\n'
+        '11. 母堂持續支援計劃（第 1-3 年各年度支援重點）\n'
+        '12. 健康指標追蹤（新堂會發展的 5 個里程碑）\n\n'
+        '請用繁體中文，框架實際可行，讓沒有創堂經驗的教會也能按步推進。';
+  }
+
+  String _buildShortTermMissionPrompt(String destination) {
+    final people = globalPersonController;
+    return '請為前往「$destination」的短宣隊生成完整的招募與培訓計劃。\n\n'
+        '差派教會：${people.totalCount} 位會友（估計潛在短宣隊員 ${(people.regularCount ~/ 8).clamp(3, 20)} 人）。\n\n'
+        '計劃包括：\n\n'
+        '【招募計劃】\n'
+        '1. 招募公告草稿（含：目的地/日期/人數上限/費用/申請截止，留空格式）\n'
+        '2. 申請表問題（10 題，評估呼召/健康/能力/委身程度）\n'
+        '3. 遴選標準（5 個必要條件 + 3 個優先考量）\n'
+        '4. 口頭邀請話術（教牧向潛在隊員提名的 3 句話）\n\n'
+        '【培訓計劃（出發前）】\n'
+        '5. 培訓課程大綱（3-4 次聚會，各 2 小時）\n'
+        '   - 第一次：宣教神學與心態準備\n'
+        '   - 第二次：$destination 文化與服事內容了解\n'
+        '   - 第三次：實際技能（探訪/兒童事工/見證分享）\n'
+        '   - 第四次：隊伍建立與出發禱告\n'
+        '6. 出發前個人準備清單（屬靈/體力/實際裝備）\n\n'
+        '【差遣禮拜框架】\n'
+        '7. 短宣差遣典禮程序（在主日崇拜中進行，15 分鐘內）\n\n'
+        '【回來後】\n'
+        '8. 回程後匯報分享框架（主日見證 5 分鐘版 + 長執會報告版）\n'
+        '9. 短宣後屬靈整合期建議（2-4 週）\n\n'
+        '請用繁體中文，讓第一次帶短宣的牧者也能照著做。';
+  }
+
+  String _buildTransferLetterPrompt(String input) {
+    // input: "姓名" or "姓名｜轉往教會"
+    final parts = input.split('｜');
+    final name = parts[0].trim();
+    final destination = parts.length > 1 ? parts[1].trim() : '';
+    final people = globalPersonController;
+    final person = people.findByName(name);
+
+    final buf = StringBuffer();
+    buf.writeln('請為會友「$name」生成一封正式的轉會推薦信，'
+        '由本教會牧者或長執簽署，推薦給接收教會。\n');
+    if (destination.isNotEmpty) {
+      buf.writeln('轉往教會：$destination\n');
+    }
+    if (person != null) {
+      buf.writeln('【會友資料】');
+      buf.writeln('類型：${person.personType} ／ 出席狀況：${person.attendance}');
+      if (person.notes.isNotEmpty) buf.writeln('備註：${person.notes}');
+    }
+
+    buf.writeln('\n推薦信結構：\n\n'
+        '(1) 信頭（本教會名稱、地址、日期，留空格式）\n'
+        '(2) 收信方稱謂（「親愛的${destination.isNotEmpty ? destination : '________'}牧者/長執：」）\n'
+        '(3) 推薦段落（3-4 句）：\n'
+        '    - 確認會友身份（正式會員/慕道友，在本會年數）\n'
+        '    - 肯定其品格與屬靈生命（留通用正面評語）\n'
+        '    - 說明離開原因（溫和措辭，如：因遷居/學業/主的帶領）\n'
+        '(4) 在本會服事摘要（留空格：「___在本會曾參與______服事」）\n'
+        '(5) 真誠推薦語（請接收教會接納並牧養）\n'
+        '(6) 為其祝福的禱告語（1-2 句）\n'
+        '(7) 署名欄（牧師姓名/職銜/教會名稱/聯絡電話，留空）\n'
+        '(8) 副本說明（一式兩份：接收教會留底 + 會友自存）\n\n'
+        '請用繁體中文，語氣正式而溫暖，展現兩間教會之間的合一精神。\n'
+        '約 200-250 字，適合正式信件格式列印。');
+    return buf.toString();
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
   /// Generic single-field input dialog — avoids duplicating dialog code.
@@ -1624,6 +1737,36 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         hint: '例：個人禱告習慣、小組代禱深化、全教會禱告運動…',
         confirmLabel: '生成建立計劃',
         buildPrompt: _buildPrayerCulturePrompt,
+      );
+
+  // ── v2.12 dialog triggers ────────────────────────────────────────────────
+
+  Future<void> _askVisionFocus() => _askInput(
+        title: '異象重點方向',
+        hint: '例：關懷社區、門徒訓練、跨文化宣教、年輕化…',
+        confirmLabel: '生成異象宣言',
+        buildPrompt: _buildVisionStatementPrompt,
+      );
+
+  Future<void> _askPlantingLocation() => _askInput(
+        title: '新堂會地點',
+        hint: '例：九龍東、台中南區、溫哥華列治文…',
+        confirmLabel: '生成設立計劃',
+        buildPrompt: _buildChurchPlantingPrompt,
+      );
+
+  Future<void> _askMissionDestination() => _askInput(
+        title: '短宣目的地',
+        hint: '例：泰北清邁、菲律賓宿霧、本地社區…',
+        confirmLabel: '生成招募培訓計劃',
+        buildPrompt: _buildShortTermMissionPrompt,
+      );
+
+  Future<void> _askTransferMember() => _askInput(
+        title: '會友姓名（選填轉往教會：姓名｜教會名稱）',
+        hint: '例：陳大明  或  陳大明｜恩典堂',
+        confirmLabel: '生成推薦信',
+        buildPrompt: _buildTransferLetterPrompt,
       );
 
   // ── UI ──────────────────────────────────────────────────────────────────
@@ -2043,6 +2186,40 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '禱告文化建立計劃',
             subtitle: '輸入重點方向，生成從個人到全教會的禱告文化三階段建立計劃',
             onTap: _askPrayerCultureFocus,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '異象拓展'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.visibility_outlined,
+            color: Colors.deepPurple,
+            title: '教會異象宣言',
+            subtitle: '輸入異象方向，生成使命/異象/核心價值/策略重點完整套件',
+            onTap: _askVisionFocus,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.add_business_outlined,
+            color: Colors.teal,
+            title: '新堂會設立計劃',
+            subtitle: '輸入地點，生成可行性評估、籌備期、開堂年的三階段完整框架',
+            onTap: _askPlantingLocation,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.connecting_airports_outlined,
+            color: Colors.blue,
+            title: '短宣隊招募培訓',
+            subtitle: '輸入目的地，生成招募公告、申請表、培訓課程與差遣典禮全套計劃',
+            onTap: _askMissionDestination,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.swap_horiz_outlined,
+            color: Colors.blueGrey,
+            title: '轉會推薦信',
+            subtitle: '輸入會友姓名（選填轉往教會），生成正式轉會推薦信',
+            onTap: _askTransferMember,
           ),
           const SizedBox(height: 24),
           Container(
