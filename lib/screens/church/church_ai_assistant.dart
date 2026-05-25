@@ -1,6 +1,6 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant v2.19 — 80 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.20 — 84 quick AI functions for pastoral team.
 //
 // v1   (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
 // v2.1 (+ 4): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
@@ -22,6 +22,7 @@
 // v2.17(+ 4): 合唱團排練計劃 / 長者事工方案 / 圖書館管理系統 / 教牧問責框架
 // v2.18(+ 4): 受洗準備課程 / 追思禮拜流程 / 教會網站更新計劃 / 跨教會合作提案
 // v2.19(+ 4): 財務審計報告 / 青年領袖培訓營 / 建築擴建提案 / 多代事工整合計劃
+// v2.20(+ 4): 詩班年度事工計劃 / 長者關懷小組手冊 / 教會電子報月刊 / 牧師年度考核計劃
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
@@ -2152,6 +2153,114 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         '請用繁體中文，充分尊重不同世代的差異，以「合一多元」為精神。';
   }
 
+  // ── v2.20 prompt builders ────────────────────────────────────────────────
+
+  String _buildChoirAnnualMinistryPrompt(String theme) {
+    return '請為教會詩班/合唱團設計一份「$theme」年度整體事工計劃，'
+        '涵蓋全年主題系列、演出、招募、培訓與預算。\n\n'
+        '（注意：此為年度整體事工計劃，有別於每週排練時間表。'
+        '重點在戰略方向、整合事工、年度里程碑。）\n\n'
+        '年度計劃架構：\n\n'
+        '【一、年度異象與主題】\n'
+        '1. 年度主題系列設計（4 個季度主題 + 每季度代表詩歌風格）\n'
+        '2. 詩班事工異象聲明（2-3 句，涵蓋敬拜/福音/裝備三層）\n\n'
+        '【二、主要演出計劃】\n'
+        '3. 年度重要演出時程（聖誕音樂會/復活節/特別崇拜等，附準備週期）\n'
+        '4. 社區/聯合演出機會（2 個對外音樂事工建議）\n\n'
+        '【三、成員招募與培訓】\n'
+        '5. 年度招募計劃（季節性招募時機 + 試聲流程 + 歡迎追蹤）\n'
+        '6. 聲樂技巧培訓計劃（每季 1 次工作坊，主題與講師建議）\n'
+        '7. 詩班靈命培育（每月靈修主題 + 詩班退修設計框架）\n\n'
+        '【四、行政與資源】\n'
+        '8. 年度預算框架（樂譜/伴奏/錄音/服裝/培訓，各類別比例）\n'
+        '9. 詩班指揮與伴奏分工責任表（角色/職責/協作方式）\n'
+        '10. 詩班健康指標（6 項：出席率/新成員/聲部平衡/成員滿意度等）\n\n'
+        '請用繁體中文，計劃既有藝術追求也有牧養關懷，讓詩班成為敬拜事工核心。';
+  }
+
+  String _buildSeniorCareGroupHandbookPrompt(String groupSize) {
+    final care = globalCareController;
+    final senior = care.activeCases
+        .where((c) => c.reason.contains('長者') || c.reason.contains('老年'))
+        .length;
+    return '請為教會長者關懷小組（約 $groupSize 位長者）設計一份完整的「運作手冊」，'
+        '讓同工清楚如何提供有尊嚴、有效果的長者關懷。\n\n'
+        '（注意：此為同工操作手冊，有別於長者活動方案。'
+        '重點在關懷流程、同工職責、轉介機制。）\n\n'
+        '教會背景：現有長者關懷個案約 $senior 件（活躍中）。\n\n'
+        '手冊章節：\n\n'
+        '【一、長者關懷原則】\n'
+        '1. 長者關懷的 5 個核心價值（尊嚴/自主/連結/意義/信仰）\n'
+        '2. 常見誤區與正確做法對照（4 組）\n\n'
+        '【二、同工角色與責任】\n'
+        '3. 長者關懷同工職責描述（組長/探訪員/電話關懷員/行政員，各職位）\n'
+        '4. 同工保護原則（雙人探訪規則、資料保密、個人界限）\n\n'
+        '【三、關懷流程】\n'
+        '5. 首次接觸流程（識別需要 → 初次拜訪 → 評估 → 建立關懷計劃，步驟清單）\n'
+        '6. 定期探訪記錄表格式（探訪日期/身體狀況/靈性狀態/代禱事項/下次跟進）\n'
+        '7. 電話關懷腳本（開場白/話題引導/結束禱告，3 個情境版本）\n\n'
+        '【四、特殊情況處理】\n'
+        '8. 喪親關懷流程（死亡前/死亡後/一週/一個月/週年，各階段）\n'
+        '9. 健康危機轉介清單（何時需要通知家屬/社工/醫療，判斷基準）\n'
+        '10. 認知退化長者的關懷調整（5 個實用技巧）\n\n'
+        '【五、評估與持續改善】\n'
+        '11. 季度同工評估問卷（10 題，幫助同工反思成效）\n\n'
+        '請用繁體中文，語氣溫暖專業，讓同工有信心照顧最脆弱的群體。';
+  }
+
+  String _buildChurchNewsletterPrompt(String month) {
+    final people = globalPersonController;
+    return '請為「$month」設計一份教會電子報月刊的完整編輯計劃，'
+        '幫助教會透過電子報深化與會友及社區的連結。\n\n'
+        '（注意：此為電子報月刊，有別於社群媒體每月內容計劃。'
+        '電子報偏重深度內容、牧養信息，直達訂閱者收件箱。）\n\n'
+        '教會背景：${people.totalCount} 位會友（電子報潛在訂閱群）。\n\n'
+        '月刊編輯計劃：\n\n'
+        '【一、本期主題與定位】\n'
+        '1. $month 期主題建議（配合教會曆/節日/講道系列，3 個選項）\n'
+        '2. 目標讀者群（會友/慕道友/社區/前會友，本期側重）\n\n'
+        '【二、內容欄位規劃】\n'
+        '3. 標準欄位（每期固定，8 個欄位：牧者的話/信仰問答/事工焦點/代禱事項/活動預告/會友故事/資源推薦/聖經金句）\n'
+        '4. 本期特輯（與主題配合的深度文章，500-800 字大綱）\n'
+        '5. 會友生命故事格式（採訪提問清單，10 題）\n\n'
+        '【三、設計與發佈】\n'
+        '6. 電子報版面設計原則（標題/圖片比例/字數/CTA 按鈕，6 條）\n'
+        '7. 發佈時間策略（最佳發送日時 + A/B 測試主旨建議）\n'
+        '8. 行動呼籲設計（每期結尾的 3 個 CTA：禱告/參與/分享）\n\n'
+        '【四、增長與互動】\n'
+        '9. 訂閱增長策略（在線/實體招募管道，5 個）\n'
+        '10. 互動反饋機制（讀者回應收集方式 + 如何用於下期改善）\n\n'
+        '【五、編輯流程】\n'
+        '11. 月刊製作時間表（每月第幾週做什麼，完整 4 週倒數清單）\n\n'
+        '請用繁體中文，讓電子報成為教會與讀者之間真實的牧養橋樑。';
+  }
+
+  String _buildPastorAnnualReviewPrompt(String pastorRole) {
+    return '請為「$pastorRole」設計一套完整的「年度考核與個人發展計劃」框架，'
+        '幫助長執會以尊重、建設性的方式支持牧師的成長。\n\n'
+        '（注意：此為年度考核與個人發展計劃，有別於教牧問責框架。'
+        '問責框架是治理結構；年度考核聚焦績效評估與個人成長規劃。）\n\n'
+        '考核與發展計劃框架：\n\n'
+        '【一、考核原則】\n'
+        '1. 教牧考核的 5 個健康原則（非績效導向，而是成長導向）\n'
+        '2. 考核的目的聲明（牧師版本與長執版本，各 1 段）\n\n'
+        '【二、年度工作成果回顧】\n'
+        '3. 事工成果評估清單（10 個面向：講道/牧養/行政/訓練/社區等）\n'
+        '4. 360 度反饋收集（向誰收集？收集什麼？匿名保護機制）\n'
+        '5. 自我評估問卷（牧師版本，15 題涵蓋事工/靈命/家庭/身心）\n\n'
+        '【三、靈命與個人狀態評估】\n'
+        '6. 靈命健康評估（6 個指標：靈修習慣/屬靈友誼/禱告生活等）\n'
+        '7. 身心平衡評估（工時/休假/家庭時間/興趣，是否健康？）\n\n'
+        '【四、個人發展計劃】\n'
+        '8. 來年發展目標設定格式（3 個：事工技能/神學裝備/個人成長）\n'
+        '9. 資源支援計劃（進修/會議/督導/導師，長執會承擔什麼？）\n'
+        '10. 安息假與退修計劃（年度安排框架，含頻率與資助原則）\n\n'
+        '【五、考核會議設計】\n'
+        '11. 年度考核會議流程（開場禱告→回顧→反饋→目標→支援，各時段）\n'
+        '12. 考核後跟進（季度輕量回顧，3 個問題格式）\n\n'
+        '請用繁體中文，語氣充滿對牧師的愛護與尊重，使考核成為祝福而非審判。';
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
   /// Generic single-field input dialog — avoids duplicating dialog code.
@@ -2774,6 +2883,36 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         hint: '例：代際導師配對、跨代崇拜整合、多代小組化…',
         confirmLabel: '生成整合計劃',
         buildPrompt: _buildMultiGenerationalMinistryPrompt,
+      );
+
+  // ── v2.20 dialog triggers ────────────────────────────────────────────────
+
+  Future<void> _askChoirAnnualTheme() => _askInput(
+        title: '詩班年度主題',
+        hint: '例：《恩典之年》、《讚美中的得勝》、全年敬拜更新…',
+        confirmLabel: '生成年度事工計劃',
+        buildPrompt: _buildChoirAnnualMinistryPrompt,
+      );
+
+  Future<void> _askSeniorGroupSize() => _askInput(
+        title: '小組人數規模',
+        hint: '例：10 位、20-30 位長者、2 個關懷組…',
+        confirmLabel: '生成運作手冊',
+        buildPrompt: _buildSeniorCareGroupHandbookPrompt,
+      );
+
+  Future<void> _askNewsletterMonth() => _askInput(
+        title: '電子報月份',
+        hint: '例：2026 年 6 月、聖誕特刊、新年期…',
+        confirmLabel: '生成月刊計劃',
+        buildPrompt: _buildChurchNewsletterPrompt,
+      );
+
+  Future<void> _askPastorRole() => _askInput(
+        title: '牧師職位',
+        hint: '例：主任牧師、副牧師、青少年牧師…',
+        confirmLabel: '生成考核計劃',
+        buildPrompt: _buildPastorAnnualReviewPrompt,
       );
 
   // ── UI ──────────────────────────────────────────────────────────────────
@@ -3465,6 +3604,40 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '多代事工整合計劃',
             subtitle: '輸入整合重點，生成代際配對、跨代服事、多代崇拜與小組多代化策略',
             onTap: _askMultiGenFocus,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '事工精進'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.queue_music_outlined,
+            color: Colors.deepPurple,
+            title: '詩班年度整體事工計劃',
+            subtitle: '輸入年度主題，生成季度系列、演出時程、招募培訓與預算框架',
+            onTap: _askChoirAnnualTheme,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.elderly_outlined,
+            color: Colors.orange,
+            title: '長者關懷小組運作手冊',
+            subtitle: '輸入小組規模，生成同工職責、探訪流程、特殊情況處理與評估工具',
+            onTap: _askSeniorGroupSize,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.mark_email_read_outlined,
+            color: Colors.indigo,
+            title: '教會電子報月刊計劃',
+            subtitle: '輸入月份，生成主題欄位、深度特輯大綱、發佈策略與 4 週製作時間表',
+            onTap: _askNewsletterMonth,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.manage_accounts_outlined,
+            color: Colors.green,
+            title: '牧師年度考核與發展計劃',
+            subtitle: '輸入牧師職位，生成360度評估、靈命健康指標、個人發展目標與考核會議設計',
+            onTap: _askPastorRole,
           ),
           const SizedBox(height: 24),
           Container(
