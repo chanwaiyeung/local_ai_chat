@@ -1,6 +1,6 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant v2.8 — 36 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.9 — 40 quick AI functions for pastoral team.
 //
 // v1  (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
 // v2.1(+ 4 cards): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
@@ -11,6 +11,7 @@
 // v2.6(+ 4 cards): 佈道會邀請文案 / 喪禮安慰信 / 人生里程碑禱告 / 宣教報告草稿
 // v2.7(+ 4 cards): 教會年報摘要 / 婚禮崇拜程序 / 嬰兒奉獻典禮程序 / 多週查經課程
 // v2.8(+ 4 cards): 佈道後跟進計劃 / 小組長培訓大綱 / 青少年事工方案 / 長執會議議程
+// v2.9(+ 4 cards): 小組長月報模板 / 佈道訓練課程 / 新人整合計劃 / 年度大會演講稿
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
@@ -890,6 +891,118 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
     return buf.toString();
   }
 
+  // ── v2.9 prompt builders ─────────────────────────────────────────────────
+
+  String _buildSmallGroupMonthlyReportPrompt(String month) {
+    final care = globalCareController;
+    return '請為小組長生成「$month」月度報告模板，'
+        '方便小組長每月向牧者／教牧同工提交，格式簡潔高效。\n\n'
+        '教會整體：活躍關懷案件 ${care.activeCount} 件，供小組長參考對照。\n\n'
+        '月報模板結構：\n\n'
+        '【$month 小組月報】\n'
+        '小組名稱：_______ ／ 組長姓名：_______ ／ 提交日期：_______\n\n'
+        '1. 出席統計\n'
+        '   - 本月平均出席人數：_____ 人 ／ 總組員人數：_____ 人\n'
+        '   - 出席率：_____%\n'
+        '   - 新加入組員：（姓名 + 首次出席日期）\n'
+        '   - 本月缺席超過 2 次的組員：（姓名 + 原因）\n\n'
+        '2. 靈命與查經\n'
+        '   - 本月查經主題：_______\n'
+        '   - 組員參與度評估（1-5 分）：_____ ／ 主要收穫：_______\n'
+        '   - 組員分享的生命改變：（1-2 則）\n\n'
+        '3. 關懷狀況\n'
+        '   - 需要牧者跟進的組員：（姓名 + 情況摘要）\n'
+        '   - 本月關懷行動：（探訪 / 電話 / 祝福食物等）\n'
+        '   - 有緊急需要的組員：（請標明，牧者優先跟進）\n\n'
+        '4. 外展與邀請\n'
+        '   - 本月新朋友帶來人數：_____ 人\n'
+        '   - 佈道對象跟進情況：_______\n\n'
+        '5. 組長個人反思\n'
+        '   - 本月帶領最大挑戰：_______\n'
+        '   - 需要牧者支援的事項：_______\n'
+        '   - 下月計劃：_______\n\n'
+        '6. 代禱事項（3-5 條，為組員保密原則下摘要）\n\n'
+        '請用繁體中文，格式清晰，小組長填寫不超過 15 分鐘。';
+  }
+
+  String _buildEvangelismTrainingPrompt(String format) {
+    final people = globalPersonController;
+    return '請為教會設計一套「門徒佈道訓練課程」大綱，格式：$format。\n\n'
+        '目標學員：普通會友（非神學背景），教會共 ${people.totalCount} 位會友。\n\n'
+        '課程目標：裝備會友能自然、有信心地向親友分享信仰。\n\n'
+        '課程大綱：\n\n'
+        '【單元一：為什麼要傳福音？（20%）】\n'
+        '- 學習目標：理解大使命、克服恐懼、明白福音本質\n'
+        '- 核心內容：大使命（太 28:19）、愛的動機、福音的定義\n'
+        '- 互動活動：分享「我不開口的原因」+ 小組禱告\n\n'
+        '【單元二：我的見證（20%）】\n'
+        '- 學習目標：能用 3 分鐘說清楚個人信仰見證\n'
+        '- 核心內容：見證三段式（信主前/關鍵時刻/信主後）\n'
+        '- 實踐練習：兩人一組練習分享，互相給予回饋\n\n'
+        '【單元三：清楚表達福音（30%）】\n'
+        '- 學習目標：能用生活語言解釋福音核心\n'
+        '- 核心內容：橋梁圖 / 四個屬靈定律 / 簡單問題引導法\n'
+        '- 角色扮演：模擬朋友問「什麼是基督徒」的對話\n\n'
+        '【單元四：日常生活中的佈道（30%）】\n'
+        '- 學習目標：建立長期關係佈道的習慣\n'
+        '- 核心內容：禱告名單（3 位未信朋友）、服侍佈道、邀請\n'
+        '- 行動承諾：每人寫下 3 位代禱對象 + 30 天行動計劃\n\n'
+        '附：評估問卷（課前/課後對比，各 5 題）\n'
+        '請用繁體中文，語氣鼓勵，讓普通會友不感到壓力。';
+  }
+
+  String _buildNewcomerIntegrationPrompt(String name) {
+    final people = globalPersonController;
+    final care = globalCareController;
+    return '請為剛開始定期來教會的新人「$name」制定一份「6 個月融入計劃」，'
+        '目標是讓他/她在半年內從訪客變成有歸屬感的肢體。\n\n'
+        '（注意：此計劃針對已多次出席的新人，有別於佈道會後的 72 小時緊急跟進。）\n\n'
+        '教會背景：${people.totalCount} 位會友，定期出席 ${people.regularCount} 人，'
+        '活躍關懷 ${care.activeCount} 件。\n\n'
+        '六個月路徑圖：\n\n'
+        '【第 1 個月：認識與接納】\n'
+        '- 配對歡迎同工（職責、第一個月行動清單）\n'
+        '- 重點里程碑：完成個人探訪 1 次 + 邀請參加小組 1 次\n'
+        '- 同工話術：3 句自然邀約語\n\n'
+        '【第 2-3 個月：參與與歸屬】\n'
+        '- 重點里程碑：穩定參與小組 + 認識 5 位弟兄姊妹\n'
+        '- 建議邀請活動（2-3 個適合新人的教會活動）\n'
+        '- 評估：用 3 個問題評估歸屬感進度\n\n'
+        '【第 4-5 個月：服事探索】\n'
+        '- 重點里程碑：嘗試一個服事崗位（試用期）\n'
+        '- 恩賜探索對話（牧者/小組長與新人的 30 分鐘談話框架）\n\n'
+        '【第 6 個月：委身確認】\n'
+        '- 重點里程碑：參加入會課程 / 考慮受洗\n'
+        '- 6 個月總結對話（評估問題 5 條）\n\n'
+        '請用繁體中文，計劃具體可執行，讓義工同工照著做。';
+  }
+
+  String _buildAGMSpeechPrompt(String year) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    final buf = StringBuffer();
+    buf.writeln('請為「$year 年」教會年度大會（AGM）生成牧者演講稿草稿，'
+        '供牧者在全體會友年度大會上口頭報告，時長約 15-20 分鐘。\n\n'
+        '（注意：此為口頭演講稿，有別於印刷版年報。'
+        '語氣自然、口語化，適合即席朗讀或提示卡使用。）\n');
+    buf.writeln('【年度數據（自動帶入供演講參考】');
+    buf.writeln('- 總會友：${people.totalCount} 人（定期 ${people.regularCount} 人）');
+    buf.writeln('- 慕道友：${people.seekerCount} 人');
+    buf.writeln('- 全年關懷案件：${care.allCases.length} 件（結案 ${care.closedCount} 件）');
+    buf.writeln('- 全年探訪：${care.allVisits.length} 次\n');
+    buf.writeln('演講稿結構（請在每段落提供完整口語化文字）：\n\n'
+        '1. 開場白（2 分鐘）：感謝弟兄姊妹出席，開場禱告引用語，輕鬆拉近距離\n'
+        '2. 過去一年回顧（5 分鐘）：3 個感恩亮點，坦誠提及 1-2 個挑戰\n'
+        '3. 數字背後的故事（3 分鐘）：用上方數據說出有溫度的牧養故事\n'
+        '4. 感謝同工段落（2 分鐘）：感謝義工、長執、部門同工（留空格式）\n'
+        '5. 財務報告簡述（1 分鐘）：口頭摘要版，引導查看書面報告\n'
+        '6. 新年展望（3 分鐘）：3 個方向，熱情有感染力\n'
+        '7. 結束呼召（2 分鐘）：邀請委身，結束禱告\n\n'
+        '請用繁體中文口語化表達，加入[掌聲/停頓]等提示，'
+        '讓演講自然流暢，有笑點也有感動點。');
+    return buf.toString();
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
   /// Generic single-field input dialog — avoids duplicating dialog code.
@@ -1182,6 +1295,36 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         hint: '例：2026 年 6 月 5 日、本月長執會…',
         confirmLabel: '生成議程',
         buildPrompt: _buildElderBoardMeetingPrompt,
+      );
+
+  // ── v2.9 dialog triggers ─────────────────────────────────────────────────
+
+  Future<void> _askMonthlyReportMonth() => _askInput(
+        title: '報告月份',
+        hint: '例：2026 年 5 月、本月…',
+        confirmLabel: '生成模板',
+        buildPrompt: _buildSmallGroupMonthlyReportPrompt,
+      );
+
+  Future<void> _askEvangelismTrainingFormat() => _askInput(
+        title: '培訓形式',
+        hint: '例：4 週課程、半天工作坊、週六退修…',
+        confirmLabel: '生成課程大綱',
+        buildPrompt: _buildEvangelismTrainingPrompt,
+      );
+
+  Future<void> _askNewcomerName() => _askInput(
+        title: '新人姓名',
+        hint: '請輸入已多次出席的新人姓名',
+        confirmLabel: '生成融入計劃',
+        buildPrompt: _buildNewcomerIntegrationPrompt,
+      );
+
+  Future<void> _askAGMYear() => _askInput(
+        title: '年份',
+        hint: '例：2026、2025…',
+        confirmLabel: '生成演講稿',
+        buildPrompt: _buildAGMSpeechPrompt,
       );
 
   // ── UI ──────────────────────────────────────────────────────────────────
@@ -1499,6 +1642,40 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '長執會議議程',
             subtitle: '輸入會議日期，自動嵌入即時數據生成議程與決議追蹤表',
             onTap: _askElderBoardDate,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '成長裝備'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.assignment_outlined,
+            color: Colors.teal,
+            title: '小組長月報模板',
+            subtitle: '輸入月份，生成含出席/靈命/關懷/外展的標準化月報填寫模板',
+            onTap: _askMonthlyReportMonth,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.record_voice_over_outlined,
+            color: Colors.deepOrange,
+            title: '佈道訓練課程',
+            subtitle: '輸入培訓形式，生成裝備會友自然分享信仰的完整訓練大綱',
+            onTap: _askEvangelismTrainingFormat,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.directions_walk_outlined,
+            color: Colors.green,
+            title: '新人整合六個月計劃',
+            subtitle: '輸入新人姓名，生成從訪客到肢體的 6 個月融入路徑圖',
+            onTap: _askNewcomerName,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.mic_outlined,
+            color: Colors.purple,
+            title: '年度大會演講稿',
+            subtitle: '輸入年份，生成整合即時數據的 AGM 口頭報告演講稿（含停頓提示）',
+            onTap: _askAGMYear,
           ),
           const SizedBox(height: 24),
           Container(
