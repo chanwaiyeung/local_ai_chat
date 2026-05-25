@@ -1,9 +1,10 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant v2.1 — 8 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.2 — 12 quick AI functions for pastoral team.
 //
-// v1 (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
-// v2.1 (+ 4 cards): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
+// v1  (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
+// v2.1(+ 4 cards): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
+// v2.2(+ 4 cards): 主日週報草稿 / 講道重點摘要 / 活動海報設計提示 / 小組長牧養建議
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
@@ -218,6 +219,99 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
     return buf.toString();
   }
 
+  // ── v2.2 prompt builders ─────────────────────────────────────────────────
+
+  String _buildBulletinPrompt(String date) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    final buf = StringBuffer();
+    buf.writeln('請為教會「$date」主日崇拜生成週報內容草稿，包含以下版塊：\n'
+        '(1) 本週崇拜資訊（崇拜主題欄、講員欄、司琴欄 — 留空供填寫）；\n'
+        '(2) 本週金句（隨機推薦 1 節相關經文，附章節）；\n'
+        '(3) 教會消息（3 則範例公告，格式：[消息標題] 內容 50 字以內）；\n'
+        '(4) 代禱事項（請根據以下活躍案件整理 3-5 條）；\n'
+        '(5) 本週奉獻提醒（溫馨提示語 1-2 句）；\n'
+        '(6) 下週預告欄（留空格式）。\n');
+
+    final active = care.activeCases.take(5).toList();
+    if (active.isNotEmpty) {
+      buf.writeln('【代禱參考資料】');
+      for (final c in active) {
+        final extra = c.notes.isNotEmpty ? '（${c.notes}）' : '';
+        buf.writeln('- ${c.memberName}：${c.reason}$extra');
+      }
+    }
+    buf.writeln('\n教會概況：${people.totalCount} 位會友，定期出席 ${people.regularCount} 人。');
+    buf.writeln('請用繁體中文，語氣溫暖友善，適合印刷或電子週報。');
+    return buf.toString();
+  }
+
+  String _buildSermonKeyPointsPrompt(String passage) {
+    return '請為聖經章節或主題「$passage」整理 3-5 個講道重點，格式如下：\n\n'
+        '重點一：[標題（5 字以內）]\n'
+        '  - 經文根據：[引用章節]\n'
+        '  - 核心信息：[1-2 句闡述]\n'
+        '  - 生活應用：[1 個具體例子]\n\n'
+        '（重複以上格式，共 3-5 個重點）\n\n'
+        '最後加上：\n'
+        '- 呼召信息（1 段，4-6 句）\n'
+        '- 結束禱告重點（3 條）\n\n'
+        '請用繁體中文，適合主日講道使用，語氣莊重而溫暖。';
+  }
+
+  String _buildPosterDesignPrompt(String eventName) {
+    return '請為教會活動「$eventName」提供完整的海報設計方案，包括：\n\n'
+        '【視覺風格】\n'
+        '(1) 整體設計風格建議（例：現代簡約 / 溫暖復古 / 清新自然）；\n'
+        '(2) 主色調方案（提供 3 個色碼 #RRGGBB，說明情感聯想）；\n'
+        '(3) 字型組合建議（標題字體 + 內文字體，繁體中文適用）；\n\n'
+        '【版面配置】\n'
+        '(4) A4 / Instagram 方形 / Story 三種尺寸的版面草稿描述；\n'
+        '(5) 圖片元素建議（背景意象、裝飾圖形、插圖風格）；\n\n'
+        '【AI 繪圖提示詞】\n'
+        '(6) Midjourney / DALL-E 海報背景圖提示詞（英文，100 字以內）；\n'
+        '(7) Canva 搜尋關鍵字建議（3-5 個英文關鍵字）；\n\n'
+        '請用繁體中文說明，設計建議應符合教會氛圍，溫馨、聖潔、有活力。';
+  }
+
+  String _buildSmallGroupLeaderPrompt(String groupName) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    final buf = StringBuffer();
+    buf.writeln('請為小組或部門「$groupName」提供小組長牧養策略建議。\n');
+
+    final total = people.totalCount;
+    final regular = people.regularCount;
+    final occasional = people.occasionalCount;
+    final inactive = people.inactiveCount;
+
+    buf.writeln('【教會整體出席概況（參考背景）】');
+    buf.writeln('- 總會友：$total 人');
+    buf.writeln('- 定期出席：$regular 人 / 偶爾出席：$occasional 人 / 久未出席：$inactive 人');
+
+    final relatedCases = care.activeCases
+        .where((c) => c.notes.contains(groupName) ||
+            c.memberName.contains(groupName) ||
+            groupName.length <= 2)
+        .take(5)
+        .toList();
+    if (relatedCases.isNotEmpty) {
+      buf.writeln('\n【相關關懷案件】');
+      for (final c in relatedCases) {
+        buf.writeln('- ${c.memberName}：${c.reason}');
+      }
+    }
+
+    buf.writeln('\n請提供：\n'
+        '(1) 小組健康評估框架（4 個維度：靈命成長 / 關係建立 / 外展 / 行政）；\n'
+        '(2) 每月小組聚會建議結構（開場 / 查經 / 分享 / 代禱 / 行動）；\n'
+        '(3) 如何跟進久未出席的小組員（3 個具體步驟）；\n'
+        '(4) 小組長自我靈命保養建議（3 條）；\n'
+        '(5) 本季可操作的小組成長目標範例（2 個）。\n'
+        '請用繁體中文，內容具體實用，適合基層小組長使用。');
+    return buf.toString();
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
   /// Generic single-field input dialog — avoids duplicating dialog code.
@@ -302,6 +396,36 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         buildPrompt: _buildPastoralActionPrompt,
       );
 
+  // ── v2.2 dialog triggers ─────────────────────────────────────────────────
+
+  Future<void> _askBulletinDate() => _askInput(
+        title: '主日日期',
+        hint: '例：2026 年 6 月 1 日、下週主日…',
+        confirmLabel: '生成週報',
+        buildPrompt: _buildBulletinPrompt,
+      );
+
+  Future<void> _askSermonPassage() => _askInput(
+        title: '講道章節或主題',
+        hint: '例：路加福音 15:11-32、浪子回頭…',
+        confirmLabel: '生成重點',
+        buildPrompt: _buildSermonKeyPointsPrompt,
+      );
+
+  Future<void> _askPosterEvent() => _askInput(
+        title: '活動名稱',
+        hint: '例：2026 聖誕崇拜、母親節感恩主日…',
+        confirmLabel: '生成設計方案',
+        buildPrompt: _buildPosterDesignPrompt,
+      );
+
+  Future<void> _askGroupName() => _askInput(
+        title: '小組 ／ 部門名稱',
+        hint: '例：青年小組、恩典小組、詩歌部…',
+        confirmLabel: '生成建議',
+        buildPrompt: _buildSmallGroupLeaderPrompt,
+      );
+
   // ── UI ──────────────────────────────────────────────────────────────────
 
   @override
@@ -379,6 +503,40 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '牧養行動建議',
             subtitle: '輸入會友姓名，生成短中長期具體牧養行動計劃',
             onTap: _askPastoralName,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '行政事工'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.newspaper_outlined,
+            color: Colors.cyan,
+            title: '主日週報草稿',
+            subtitle: '輸入主日日期，自動生成含代禱、公告、奉獻提醒的完整週報',
+            onTap: _askBulletinDate,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.format_list_numbered_outlined,
+            color: Colors.purple,
+            title: '講道重點摘要',
+            subtitle: '輸入聖經章節或主題，生成 3-5 個講道重點與呼召信息',
+            onTap: _askSermonPassage,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.palette_outlined,
+            color: Colors.red,
+            title: '活動海報設計提示',
+            subtitle: '輸入活動名稱，生成色調、版面、AI 繪圖提示詞全套設計方案',
+            onTap: _askPosterEvent,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.diversity_3_outlined,
+            color: Colors.brown,
+            title: '小組長牧養建議',
+            subtitle: '輸入小組或部門名稱，生成小組健康評估與具體牧養策略',
+            onTap: _askGroupName,
           ),
           const SizedBox(height: 24),
           Container(
