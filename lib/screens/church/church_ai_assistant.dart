@@ -1,6 +1,6 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant v2.16 — 68 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.18 — 76 quick AI functions for pastoral team.
 //
 // v1   (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
 // v2.1 (+ 4): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
@@ -19,6 +19,8 @@
 // v2.14(+ 4): 直播崇拜腳本 / 家庭事工方案 / 社群媒體月計劃 / 人生轉變關懷計劃
 // v2.15(+ 4): 線上奉獻設定 / 兒主線上課程 / 直播設備指南 / 線上小組手冊
 // v2.16(+ 4): 禱告會主題流程 / 婚姻輔導課程 / 兒童事工培訓手冊 / 緊急事工計劃
+// v2.17(+ 4): 合唱團排練計劃 / 長者事工方案 / 圖書館管理系統 / 教牧問責框架
+// v2.18(+ 4): 受洗準備課程 / 追思禮拜流程 / 教會網站更新計劃 / 跨教會合作提案
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
@@ -1825,6 +1827,216 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         '請用繁體中文，計劃實際可執行，讓教會在危機中仍能成為社區的光和鹽。';
   }
 
+  // ── v2.17 prompt builders ────────────────────────────────────────────────
+
+  String _buildChoirRehearsalPrompt(String concertOrSeason) {
+    return '請為「$concertOrSeason」設計一份教會詩班/合唱團排練計劃，'
+        '幫助詩班指揮和幹事有效組織排練。\n\n'
+        '排練計劃包括：\n\n'
+        '【一、計劃概覽】\n'
+        '1. 排練時間表（按週次，建議提前 6-8 週開始）\n'
+        '2. 曲目清單格式（曲名 ｜ 難度 ｜ 所需排練次數 ｜ 聲部挑戰）\n'
+        '3. 每次排練時長建議（90-120 分鐘）及時間分配\n\n'
+        '【二、標準排練流程（每次）】\n'
+        '4. 開場暖身（15 分鐘：肢體放鬆 + 發聲練習 3-4 個練習說明）\n'
+        '5. 主要排練段落（60-75 分鐘：舊曲鞏固 → 新曲學習 → 合唱整合）\n'
+        '6. 結束禱告與下週預告（5-10 分鐘）\n\n'
+        '【三、各聲部練習指引】\n'
+        '7. 女高音/女低音/男高音/男低音：各聲部常見難點提示（各 2-3 點）\n'
+        '8. 聲部分組練習時間表（何時全體合，何時分聲部）\n\n'
+        '【四、行政事項】\n'
+        '9. 詩班成員出席管理（請假程序 + 替補安排）\n'
+        '10. 演出前最後一次彩排清單（10 項技術確認）\n'
+        '11. 演出當日流程（集合時間/換衣/音效測試/上台程序）\n\n'
+        '請用繁體中文，讓沒有正式音樂訓練的詩班幹事也能照著規劃。';
+  }
+
+  String _buildSeniorMinistryPrompt(String theme) {
+    final people = globalPersonController;
+    final seniorEst = (people.regularCount ~/ 4).clamp(5, 30);
+    return '請為主題「$theme」設計一份長者事工活動方案，'
+        '關懷教會中 60 歲以上的長者弟兄姊妹（估計約 $seniorEst 人）。\n\n'
+        '（注意：此方案針對長者的特殊需要，有別於一般會眾活動設計。）\n\n'
+        '活動方案包括：\n\n'
+        '【一、活動設計原則】\n'
+        '1. 長者友善設計考量（行動/視力/聽力/科技障礙，各 2 個配套）\n'
+        '2. 適合長者的活動形式（4 個：聚餐/探訪/手工/查經，各說明優點）\n\n'
+        '【二、主題活動方案（半天，3-4 小時）】\n'
+        '3. 活動名稱與標語（溫馨，讓長者感到被重視）\n'
+        '4. 詳細流程（含：交通接送安排說明 / 座位布置建議 / 每段活動說明）\n'
+        '5. 適合長者的遊戲/互動（2 個，不需快速反應，重在回憶與分享）\n'
+        '6. 長者分享時段（生命見證引導問題 3 條）\n'
+        '7. 簡短靈修信息（15 分鐘，主題呼應，適合長者生命階段的聖經信息）\n\n'
+        '【三、持續關懷計劃】\n'
+        '8. 月度長者關懷行事曆（12 個月各 1 個簡易關懷行動）\n'
+        '9. 長者獨居/健康狀況追蹤系統（簡易格式）\n'
+        '10. 培育長者成為教會禱告夥伴的計劃（發揮長者的屬靈影響力）\n\n'
+        '請用繁體中文，充滿對長者的尊重與感恩，讓他們感受到教會的珍視。';
+  }
+
+  String _buildChurchLibraryPrompt(String librarySize) {
+    return '請為教會圖書館（藏書規模：$librarySize）設計一套管理系統，'
+        '幫助圖書義工有效運作教會資源庫。\n\n'
+        '管理系統包括：\n\n'
+        '【一、館藏整理】\n'
+        '1. 圖書分類系統（建議 8-10 個類別，適合教會藏書）\n'
+        '2. 書目登記表格式（書名/作者/ISBN/分類/位置/狀態/購入日期）\n'
+        '3. 年度館藏更新流程（如何評估舊書/添購新書）\n\n'
+        '【二、借閱管理】\n'
+        '4. 借閱制度（借閱天數/冊數/續借/逾期處理）\n'
+        '5. 借閱記錄表格式（借閱者/書名/借出日/歸還日/狀態）\n'
+        '6. 低科技版（紙本）vs 高科技版（試算表/App）的管理方案比較\n\n'
+        '【三、推廣與使用】\n'
+        '7. 每月推薦書目公告格式（週報/WhatsApp，50 字推薦語）\n'
+        '8. 主題書單設計（按節日/系列講道/生命需要，各 5-8 本建議格式）\n'
+        '9. 新書購入建議清單框架（各部門如何提交採購申請）\n\n'
+        '【四、義工培訓】\n'
+        '10. 圖書館義工職責清單（10 項）\n'
+        '11. 每月維護清單（整理/清潔/更新/報告）\n\n'
+        '【五、數碼整合選項】\n'
+        '12. 免費圖書管理軟體推薦（3 個，含優缺點）\n'
+        '13. 電子書/有聲書資源建議（適合教會使用的平台）\n\n'
+        '請用繁體中文，系統輕量實用，讓義工不需特殊訓練也能管理。';
+  }
+
+  String _buildPastoralAccountabilityPrompt(String staffCount) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    return '請為一間有「$staffCount 位教牧同工」的教會設計「教牧問責與關顧框架」，'
+        '幫助主任牧師/長執會與同工建立健康的問責關係。\n\n'
+        '（注意：此框架關注在職同工的日常問責與牧養，'
+        '有別於牧者個人的靈修休假計劃或人事危機處理。）\n\n'
+        '教會背景：${people.totalCount} 位會友，活躍關懷 ${care.activeCount} 件。\n\n'
+        '框架包括：\n\n'
+        '【一、月度一對一談話框架（主任牧師與各同工）】\n'
+        '1. 談話頻率與時長建議（每月 1 次，45-60 分鐘）\n'
+        '2. 標準談話議題（6 個，涵蓋：靈命/工作進度/挑戰/關係/需要/禱告）\n'
+        '3. 談話記錄模板（保密存檔）\n\n'
+        '【二、同工屬靈健康評估】\n'
+        '4. 每季同工靈命自評問卷（8 題，5 分量表）\n'
+        '5. 倦怠預警指標（6 個，主任牧師需特別留意的信號）\n'
+        '6. 如何在同工遇困難時給予支持而非只評估績效\n\n'
+        '【三、長執會對教牧同工的問責】\n'
+        '7. 教牧年度考核框架（3 個維度：屬靈/事工/個人成長）\n'
+        '8. 考核對話指引（長執如何給建設性回饋，避免傷害關係）\n'
+        '9. 薪酬與福利年度檢討框架（客觀依據清單）\n\n'
+        '【四、同工之間的橫向問責】\n'
+        '10. 同工月度分享會議程（45 分鐘：感恩/挑戰/代禱/行動）\n'
+        '11. 同工之間衝突處理的 3 個步驟\n\n'
+        '請用繁體中文，框架要平衡問責與牧養，讓同工感受到被支持而非被監控。';
+  }
+
+  // ── v2.18 prompt builders ────────────────────────────────────────────────
+
+  String _buildBaptismPreparationCoursePrompt(String sessions) {
+    return '請為慕道友設計一套「受洗準備課程」大綱，共 $sessions 次聚會，'
+        '幫助他們在信仰上做好受洗的準備。\n\n'
+        '（注意：此為多次課程大綱，有別於單一受洗見證引導問卷。）\n\n'
+        '課程大綱：\n\n'
+        '【課程目標】\n'
+        '完成課程後，慕道友能：\n'
+        '1. 清楚說出福音核心信息\n'
+        '2. 明白受洗的聖經意義與承諾\n'
+        '3. 能以 3 分鐘分享個人信仰見證\n'
+        '4. 對教會生活有基本了解與歸屬感\n\n'
+        '【各次課程】（請生成每次的完整內容）\n'
+        '第一次：我相信什麼？（福音核心 + 基督徒身份）\n'
+        '第二次：受洗的意義（聖經基礎 + 舊我新我）\n'
+        '第三次：禱告與聖經（個人靈修的建立）\n'
+        '第四次：教會生活與服事（群體 + 恩賜 + 委身）\n'
+        '第五次（若有）：我的信仰見證（整理與演練）\n\n'
+        '每次課程格式：\n'
+        '- 主題與目標（各 1-2 條）\n'
+        '- 核心聖經（2 節，附解釋）\n'
+        '- 教導內容大綱（3 個重點）\n'
+        '- 互動問題（2-3 條）\n'
+        '- 本週行動（1 個具體操練）\n\n'
+        '附：受洗典禮前的最終確認問題（5 題，由牧者詢問）\n'
+        '請用繁體中文，語氣引導而非施壓，讓學員在愛中做委身決定。';
+  }
+
+  String _buildMemorialServicePrompt(String deceasedName) {
+    return '請為「$deceasedName」的追思禮拜生成一份完整崇拜程序稿，'
+        '可直接在教會或殯儀館中使用。\n\n'
+        '（注意：此為追思禮拜的崇拜程序與主禮詞，有別於牧者的喪禮安慰套件。）\n\n'
+        '程序稿格式（每個環節：時間 ｜ 負責人 ｜ 台詞/備注）：\n\n'
+        '【第一部分：安靜等候與入場（10 分鐘）】\n'
+        '- 背景音樂建議（安慰性的詩歌，3 首推薦）\n'
+        '- 家屬入場引導詞（司儀，溫柔莊重）\n\n'
+        '【第二部分：崇拜開始（5 分鐘）】\n'
+        '- 主禮開場白（牧者，引用安慰經文，帶出追思主題）\n'
+        '- 開場詩歌（1 首，可會眾同唱）\n'
+        '- 開場禱告（牧者，4-6 句，為家屬禱告）\n\n'
+        '【第三部分：追憶與感恩（15-20 分鐘）】\n'
+        '- 生平介紹（司儀或家屬代表，3-4 分鐘，可用相片投影）\n'
+        '- 家屬致詞（引導語 + 時間限制說明）\n'
+        '- 友人/同事/弟兄姊妹追憶（最多 2 位，各 2-3 分鐘）\n'
+        '- 特別詩歌/視頻（過渡引導語）\n\n'
+        '【第四部分：信息與希望（10 分鐘）】\n'
+        '- 牧者信息大綱（3 點，以盼望為核心，包含安慰經文）\n'
+        '- 回應詩歌（1 首）\n\n'
+        '【第五部分：結束（10 分鐘）】\n'
+        '- 家屬代表感謝詞引導語\n'
+        '- 牧者祝禱（為家屬前路代禱，5-6 句）\n'
+        '- 退場安排（出席者如何退場，花籃/掌聲等）\n\n'
+        '請用繁體中文，語氣莊嚴溫柔，以盼望代替悲傷，讓出席者在哀傷中仍感受神的同在。\n'
+        '用[方括號]標示需個人化填寫的部分。';
+  }
+
+  String _buildWebsiteContentPlanPrompt(String focus) {
+    final people = globalPersonController;
+    final care = globalCareController;
+    return '請為教會網站生成一份「內容更新計劃」，重點方向：$focus。\n\n'
+        '（注意：此為網站內容計劃，有別於社群媒體月計劃。）\n\n'
+        '教會概況：${people.totalCount} 位會友，活躍關懷 ${care.activeCount} 件。\n\n'
+        '計劃包括：\n\n'
+        '【一、網站現況評估框架】\n'
+        '1. 網站健康自評清單（10 項：聯絡資訊/崇拜時間/最新消息/圖片新鮮度等）\n'
+        '2. 訪客視角審視：一個第一次來的人最想找的 5 件事\n\n'
+        '【二、核心頁面內容範本】\n'
+        '3. 首頁英雄區文案（標題 + 副標題 + 行動呼籲按鈕，3 個版本選擇）\n'
+        '4. 「認識我們」頁面架構（異象/歷史/牧者/長執，各段落 50-80 字範本）\n'
+        '5. 「加入我們」頁面文案（針對第一次訪客，溫暖邀請，150 字）\n'
+        '6. 崇拜時間/地點頁面的必要資訊清單（10 項）\n\n'
+        '【三、動態內容更新計劃（季度）】\n'
+        '7. 每季必須更新的頁面清單（含更新頻率建議）\n'
+        '8. 講道上傳標準流程（標題格式/縮圖要求/分類標籤建議）\n'
+        '9. 活動頁面標準格式範本\n\n'
+        '【四、SEO 基礎提升】\n'
+        '10. 教會網站常用關鍵字建議（10 個，繁體中文搜尋習慣）\n'
+        '11. Meta 描述範本（首頁，150 字以內）\n\n'
+        '【五、義工管理】\n'
+        '12. 網站更新義工職責清單（每週/每月）\n\n'
+        '請用繁體中文，讓沒有技術背景的同工也能照著執行。';
+  }
+
+  String _buildInterChurchCollabPrompt(String collaborationType) {
+    final people = globalPersonController;
+    return '請為教會生成一份「跨教會合作提案」草稿，合作類型：$collaborationType。\n\n'
+        '提案教會背景：${people.totalCount} 位會友（定期 ${people.regularCount} 人）。\n\n'
+        '提案文件結構：\n\n'
+        '【一、提案摘要（Executive Summary）】\n'
+        '1. 合作目標（1 段，3-4 句，說明為何需要合作）\n'
+        '2. 預期效益（分別對各教會的 3 個好處）\n'
+        '3. 合作時間框架（初步建議）\n\n'
+        '【二、$collaborationType 合作方案詳情】\n'
+        '4. 合作內容描述（具體說明做什麼，如何運作）\n'
+        '5. 各教會分工建議（責任矩陣，誰負責什麼）\n'
+        '6. 資源貢獻框架（人力/財務/場地/專業技能，各教會貢獻形式）\n\n'
+        '【三、治理架構】\n'
+        '7. 聯合委員會組成建議（各教會代表名額 + 決策機制）\n'
+        '8. 財務透明機制（共同預算/收支報告/審計安排）\n'
+        '9. 爭議解決程序（3 個步驟）\n\n'
+        '【四、神學與文化對齊】\n'
+        '10. 合作前的對話議題清單（5 個需要確認共識的問題：教義/崇拜風格/目標群體等）\n'
+        '11. 尊重各教會獨特性的 3 個承諾\n\n'
+        '【五、實施路線圖】\n'
+        '12. 第 1-3 個月：探索期行動清單\n'
+        '13. 第 4-6 個月：試驗期里程碑\n'
+        '14. 評估標準（6 個月後如何決定是否繼續）\n\n'
+        '請用繁體中文，語氣開放尊重，體現基督身體的合一精神，避免一方主導感。';
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
   /// Generic single-field input dialog — avoids duplicating dialog code.
@@ -2357,6 +2569,66 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         hint: '例：疫症防控、颱風/自然災害、社會動盪…',
         confirmLabel: '生成事工計劃',
         buildPrompt: _buildEmergencyMinistryPrompt,
+      );
+
+  // ── v2.17 dialog triggers ────────────────────────────────────────────────
+
+  Future<void> _askChoirConcert() => _askInput(
+        title: '演出或季節',
+        hint: '例：聖誕音樂會、感恩節崇拜、復活節演出…',
+        confirmLabel: '生成排練計劃',
+        buildPrompt: _buildChoirRehearsalPrompt,
+      );
+
+  Future<void> _askSeniorMinistryTheme() => _askInput(
+        title: '活動主題',
+        hint: '例：感恩敬老日、長者生命見證、健康生活…',
+        confirmLabel: '生成活動方案',
+        buildPrompt: _buildSeniorMinistryPrompt,
+      );
+
+  Future<void> _askLibrarySize() => _askInput(
+        title: '藏書規模',
+        hint: '例：約 200 本、500 本以上、小型 50 本…',
+        confirmLabel: '生成管理系統',
+        buildPrompt: _buildChurchLibraryPrompt,
+      );
+
+  Future<void> _askStaffCount() => _askInput(
+        title: '教牧同工人數',
+        hint: '例：1 位牧師、3 位全職、5 位含兼職…',
+        confirmLabel: '生成問責框架',
+        buildPrompt: _buildPastoralAccountabilityPrompt,
+      );
+
+  // ── v2.18 dialog triggers ────────────────────────────────────────────────
+
+  Future<void> _askBaptismSessions() => _askInput(
+        title: '課程次數',
+        hint: '例：4 次、5 次、6 週課程…',
+        confirmLabel: '生成課程大綱',
+        buildPrompt: _buildBaptismPreparationCoursePrompt,
+      );
+
+  Future<void> _askDeceasedName() => _askInput(
+        title: '逝者姓名',
+        hint: '請輸入逝者的姓名',
+        confirmLabel: '生成追思程序稿',
+        buildPrompt: _buildMemorialServicePrompt,
+      );
+
+  Future<void> _askWebsiteFocus() => _askInput(
+        title: '網站更新重點',
+        hint: '例：全面翻新、吸引新訪客、增加講道資源…',
+        confirmLabel: '生成更新計劃',
+        buildPrompt: _buildWebsiteContentPlanPrompt,
+      );
+
+  Future<void> _askCollaborationType() => _askInput(
+        title: '合作類型',
+        hint: '例：聯合佈道會、共同社關事工、資源共享…',
+        confirmLabel: '生成合作提案',
+        buildPrompt: _buildInterChurchCollabPrompt,
       );
 
   // ── UI ──────────────────────────────────────────────────────────────────
@@ -2946,6 +3218,74 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '緊急事工計劃',
             subtitle: '輸入緊急類型，生成事工持續運作、會眾關懷升級與社區外展的應急方案',
             onTap: _askEmergencyType,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '事工支援'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.music_note_outlined,
+            color: Colors.purple,
+            title: '詩班排練計劃',
+            subtitle: '輸入演出名稱，生成排練時間表、標準流程、聲部指引與演出當日清單',
+            onTap: _askChoirConcert,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.elderly_outlined,
+            color: Colors.amber,
+            title: '長者事工活動方案',
+            subtitle: '輸入活動主題，生成長者友善的半天活動設計與月度關懷行事曆',
+            onTap: _askSeniorMinistryTheme,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.local_library_outlined,
+            color: Colors.brown,
+            title: '教會圖書館管理系統',
+            subtitle: '輸入藏書規模，生成分類系統、借閱制度、推廣方案與義工職責清單',
+            onTap: _askLibrarySize,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.how_to_reg_outlined,
+            color: Colors.teal,
+            title: '教牧同工問責框架',
+            subtitle: '輸入同工人數，生成月度一對一談話框架、靈命評估與長執問責指引',
+            onTap: _askStaffCount,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '聯合更新'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.water_drop_outlined,
+            color: Colors.blue,
+            title: '受洗準備課程大綱',
+            subtitle: '輸入課程次數，生成多次課程大綱（福音/受洗意義/靈修/教會/見證演練）',
+            onTap: _askBaptismSessions,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.wb_twilight_outlined,
+            color: Colors.blueGrey,
+            title: '追思禮拜程序稿',
+            subtitle: '輸入逝者姓名，生成含家屬致詞、信息大綱、詩歌建議的完整崇拜程序',
+            onTap: _askDeceasedName,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.web_outlined,
+            color: Colors.green,
+            title: '教會網站內容更新計劃',
+            subtitle: '輸入更新重點，生成核心頁面文案、季度更新清單與SEO基礎建議',
+            onTap: _askWebsiteFocus,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.handshake_outlined,
+            color: Colors.purple,
+            title: '跨教會合作提案',
+            subtitle: '輸入合作類型，生成含分工矩陣、治理架構、6個月路線圖的正式提案',
+            onTap: _askCollaborationType,
           ),
           const SizedBox(height: 24),
           Container(
