@@ -1,17 +1,18 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant v2.9 — 40 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.10 — 44 quick AI functions for pastoral team.
 //
-// v1  (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
-// v2.1(+ 4 cards): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
-// v2.2(+ 4 cards): 主日週報草稿 / 講道重點摘要 / 活動海報設計提示 / 小組長牧養建議
-// v2.3(+ 4 cards): 新人歡迎信 / 會友關懷離開信 / 牧養週訊 / 兒童主日學教案
-// v2.4(+ 4 cards): 部門會議議程 / 年度事工計劃 / 志工招募文案 / 感謝狀草稿
-// v2.5(+ 4 cards): 牧養禱告信 / 受洗見證引導 / 長執就職感言 / 年終牧函
-// v2.6(+ 4 cards): 佈道會邀請文案 / 喪禮安慰信 / 人生里程碑禱告 / 宣教報告草稿
-// v2.7(+ 4 cards): 教會年報摘要 / 婚禮崇拜程序 / 嬰兒奉獻典禮程序 / 多週查經課程
-// v2.8(+ 4 cards): 佈道後跟進計劃 / 小組長培訓大綱 / 青少年事工方案 / 長執會議議程
-// v2.9(+ 4 cards): 小組長月報模板 / 佈道訓練課程 / 新人整合計劃 / 年度大會演講稿
+// v1   (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
+// v2.1 (+ 4): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
+// v2.2 (+ 4): 主日週報草稿 / 講道重點摘要 / 活動海報設計提示 / 小組長牧養建議
+// v2.3 (+ 4): 新人歡迎信 / 會友關懷離開信 / 牧養週訊 / 兒童主日學教案
+// v2.4 (+ 4): 部門會議議程 / 年度事工計劃 / 志工招募文案 / 感謝狀草稿
+// v2.5 (+ 4): 牧養禱告信 / 受洗見證引導 / 長執就職感言 / 年終牧函
+// v2.6 (+ 4): 佈道會邀請文案 / 喪禮安慰信 / 人生里程碑禱告 / 宣教報告草稿
+// v2.7 (+ 4): 教會年報摘要 / 婚禮崇拜程序 / 嬰兒奉獻典禮程序 / 多週查經課程
+// v2.8 (+ 4): 佈道後跟進計劃 / 小組長培訓大綱 / 青少年事工方案 / 長執會議議程
+// v2.9 (+ 4): 小組長月報模板 / 佈道訓練課程 / 新人整合計劃 / 年度大會演講稿
+// v2.10(+ 4): 年度預算草案 / 小組倍增計劃 / 牧者靈修休假計劃 / 危機處理指引
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
@@ -1003,6 +1004,112 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
     return buf.toString();
   }
 
+  // ── v2.10 prompt builders ────────────────────────────────────────────────
+
+  String _buildAnnualBudgetPrompt(String year) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    return '請為「$year 年度」生成一份教會預算草案框架，'
+        '協助財務同工與長執會制定全年收支計劃。\n\n'
+        '教會規模：${people.totalCount} 位會友（定期出席 ${people.regularCount} 人）。\n'
+        '關懷事工：活躍案件 ${care.activeCount} 件，需預留關懷探訪資源。\n\n'
+        '預算草案結構：\n\n'
+        '【A. 收入預算】\n'
+        '1. 定期奉獻（按出席人數估算範圍）\n'
+        '2. 什一收入（估算欄）\n'
+        '3. 特別奉獻（聖誕/感恩/建堂等，列出場合）\n'
+        '4. 活動收入（報名費等）\n'
+        '5. 其他收入\n'
+        '   → 收入合計欄\n\n'
+        '【B. 支出預算（按優先順序）】\n'
+        '1. 人事費用（牧者薪酬、兼職同工，佔比建議）\n'
+        '2. 場地租金/按揭\n'
+        '3. 崇拜事工（音響/詩歌版權/投影）\n'
+        '4. 關懷事工（探訪/慰問/危機支援，參考 ${care.activeCount} 件案件）\n'
+        '5. 兒童/青少年事工\n'
+        '6. 宣教奉獻（建議比例）\n'
+        '7. 行政費用（印刷/辦公/保險）\n'
+        '8. 訓練發展（同工培訓/會議）\n'
+        '9. 緊急備用金（建議 3 個月支出）\n'
+        '   → 支出合計欄 → 預計結餘\n\n'
+        '【C. 財務健康指標】\n'
+        '- 人事費用佔總收入建議上限（%）\n'
+        '- 宣教奉獻建議下限（%）\n'
+        '- 備用金目標（月數）\n\n'
+        '請用繁體中文，每項提供「建議金額範圍」或「計算公式」，'
+        '方便財務同工填入實際數字。';
+  }
+
+  String _buildCellMultiplicationPrompt(String groupName) {
+    final people = globalPersonController;
+    return '請為「$groupName」設計一份小組倍增（分植）計劃，'
+        '幫助組長和牧者有策略地培育下一代領袖並健康分組。\n\n'
+        '教會目前：${people.totalCount} 位會友（定期 ${people.regularCount} 人），'
+        '小組倍增有助達到理想的牧養比例。\n\n'
+        '倍增計劃結構：\n\n'
+        '【評估階段（現在）】\n'
+        '1. 倍增時機評估表（5 個指標：人數/領袖成熟度/組員委身/外展果效/財務）\n'
+        '2. 潛力領袖識別框架（3 個特質 + 觀察期建議）\n\n'
+        '【培育階段（3-6 個月）】\n'
+        '3. 副組長培育路徑（月度里程碑：帶查經→帶關懷→帶聚會）\n'
+        '4. 組員心理準備：如何溝通「分組是祝福」的信息框架\n'
+        '5. 送舊迎新禮儀建議（告別聚會流程 + 新組第一次聚會設計）\n\n'
+        '【分植後支援（3 個月）】\n'
+        '6. 新組第 1 個月重點行動清單（牧者 + 新組長各 3 項）\n'
+        '7. 倍增後追蹤評估（第 4 週 / 第 8 週 / 第 12 週各 1 次）\n'
+        '8. 危機處理：若分組出現問題，牧者介入的 3 個步驟\n\n'
+        '請用繁體中文，避免讓「分組」感覺是懲罰，強調倍增的屬靈意義。';
+  }
+
+  String _buildPastorSabbaticalPrompt(String duration) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    return '請為牧者生成一份「$duration」靈修休假計劃，'
+        '包含安排交接、個人更新和復元的完整框架。\n\n'
+        '教會背景：${people.totalCount} 位會友，活躍關懷案件 ${care.activeCount} 件，'
+        '需在牧者休假前做好妥善交接。\n\n'
+        '計劃結構：\n\n'
+        '【休假前準備（出發前 2-4 週）】\n'
+        '1. 交接清單：需移交給代理牧者/長執的事項（8-10 項）\n'
+        '2. 緊急聯絡指引：哪些情況才需要打擾牧者（3-4 個明確標準）\n'
+        '3. 代理安排：主日講道/探訪/長執會議的臨時安排建議\n'
+        '4. 告別信：給會眾的簡短說明（100 字，溫暖不讓人擔心）\n\n'
+        '【休假期間靈修計劃】\n'
+        '5. 每日靈修框架（早禱 / 聖經閱讀 / 靈修日記 / 傍晚反思）\n'
+        '6. 休假中建議的靈命更新活動（靜修 / 閱讀清單 / 創意表達）\n'
+        '7. 身體健康：運動/飲食/睡眠的簡單目標\n'
+        '8. 關係修復：家庭時間優先事項（若已婚/有子女）\n\n'
+        '【復返後重新融入（回來後 2 週）】\n'
+        '9. 復返第一週行動清單（輕緩接手，不立即全負荷）\n'
+        '10. 分享更新：向長執和會眾分享靈修收穫的簡短框架\n\n'
+        '請用繁體中文，語氣鼓勵，讓牧者真正得到休息而非帶著罪惡感離開。';
+  }
+
+  String _buildCrisisManagementPrompt(String crisisType) {
+    final people = globalPersonController;
+    return '請為教會「$crisisType」類型的危機生成一份處理指引，'
+        '幫助牧者和長執在壓力下有序應對。\n\n'
+        '教會規模：${people.totalCount} 位會友（${people.regularCount} 人定期出席）。\n\n'
+        '危機處理指引結構：\n\n'
+        '【第一步：立即評估（危機發生後 24 小時內）】\n'
+        '1. 事件嚴重性評分表（1-5 級，各級別描述 + 對應行動）\n'
+        '2. 第一時間通知對象清單（誰必須在 24 小時內知道）\n'
+        '3. 緊急應對核心小組組成（牧者/長執/指定同工，各自職責）\n\n'
+        '【第二步：對內溝通（受影響會友）】\n'
+        '4. 對直接相關會友的溝通指引（面談話術 + 禁忌語）\n'
+        '5. 對一般會眾的通知範本（簡短、誠實、不恐慌，100 字以內）\n'
+        '6. 社群媒體管理：是否公開、如何回應詢問的 3 個原則\n\n'
+        '【第三步：對外溝通（如需要）】\n'
+        '7. 媒體詢問回應指引（統一發言人原則 + 標準回應格式）\n'
+        '8. 法律考量提醒（哪些情況需諮詢法律顧問）\n\n'
+        '【第四步：牧養與恢復】\n'
+        '9. 受影響會友的牧養跟進計劃（3 個月時間軸）\n'
+        '10. 全教會療癒儀式建議（特別祈禱會 / 牧者公開信 / 小組討論）\n'
+        '11. 危機後學習：事後檢討會議框架（3 個問題）\n\n'
+        '請用繁體中文，語氣沉穩而有希望，讓教會在危機中仍能見到神的帶領。\n'
+        '注意：請避免對具體情況作出法律建議，提醒查詢專業人士。';
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
   /// Generic single-field input dialog — avoids duplicating dialog code.
@@ -1325,6 +1432,36 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         hint: '例：2026、2025…',
         confirmLabel: '生成演講稿',
         buildPrompt: _buildAGMSpeechPrompt,
+      );
+
+  // ── v2.10 dialog triggers ────────────────────────────────────────────────
+
+  Future<void> _askBudgetYear() => _askInput(
+        title: '預算年度',
+        hint: '例：2027 年度、下一財政年度…',
+        confirmLabel: '生成預算草案',
+        buildPrompt: _buildAnnualBudgetPrompt,
+      );
+
+  Future<void> _askMultiplyGroupName() => _askInput(
+        title: '小組名稱',
+        hint: '例：恩典小組、青年小組 B…',
+        confirmLabel: '生成倍增計劃',
+        buildPrompt: _buildCellMultiplicationPrompt,
+      );
+
+  Future<void> _askSabbaticalDuration() => _askInput(
+        title: '靈修休假時長',
+        hint: '例：2 週、1 個月、3 個月安息年…',
+        confirmLabel: '生成計劃',
+        buildPrompt: _buildPastorSabbaticalPrompt,
+      );
+
+  Future<void> _askCrisisType() => _askInput(
+        title: '危機類型',
+        hint: '例：會友衝突、財務醜聞、牧者離職、意外事故…',
+        confirmLabel: '生成處理指引',
+        buildPrompt: _buildCrisisManagementPrompt,
       );
 
   // ── UI ──────────────────────────────────────────────────────────────────
@@ -1676,6 +1813,40 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '年度大會演講稿',
             subtitle: '輸入年份，生成整合即時數據的 AGM 口頭報告演講稿（含停頓提示）',
             onTap: _askAGMYear,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '策略治理'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.account_balance_outlined,
+            color: Colors.green,
+            title: '年度預算草案',
+            subtitle: '輸入預算年度，生成收入/支出框架、財務健康指標與計算公式',
+            onTap: _askBudgetYear,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.call_split_outlined,
+            color: Colors.orange,
+            title: '小組倍增計劃',
+            subtitle: '輸入小組名稱，生成評估、培育、分植、復甦後支援的完整路徑',
+            onTap: _askMultiplyGroupName,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.self_improvement_outlined,
+            color: Colors.teal,
+            title: '牧者靈修休假計劃',
+            subtitle: '輸入休假時長，生成交接清單、靈修框架與復返後重融入計劃',
+            onTap: _askSabbaticalDuration,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.warning_amber_outlined,
+            color: Colors.red,
+            title: '教會危機處理指引',
+            subtitle: '輸入危機類型，生成評估、對內對外溝通、牧養恢復的四步驟指引',
+            onTap: _askCrisisType,
           ),
           const SizedBox(height: 24),
           Container(
