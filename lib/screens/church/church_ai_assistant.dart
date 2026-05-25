@@ -1,6 +1,6 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant v2.6 — 28 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.7 — 32 quick AI functions for pastoral team.
 //
 // v1  (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
 // v2.1(+ 4 cards): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
@@ -9,6 +9,7 @@
 // v2.4(+ 4 cards): 部門會議議程 / 年度事工計劃 / 志工招募文案 / 感謝狀草稿
 // v2.5(+ 4 cards): 牧養禱告信 / 受洗見證引導 / 長執就職感言 / 年終牧函
 // v2.6(+ 4 cards): 佈道會邀請文案 / 喪禮安慰信 / 人生里程碑禱告 / 宣教報告草稿
+// v2.7(+ 4 cards): 教會年報摘要 / 婚禮崇拜程序 / 嬰兒奉獻典禮程序 / 多週查經課程
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
@@ -678,6 +679,103 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         '請用繁體中文，語氣真誠感恩，讓會眾感受到宣教的使命感。';
   }
 
+  // ── v2.7 prompt builders ─────────────────────────────────────────────────
+
+  String _buildAnnualReportPrompt(String year) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    final buf = StringBuffer();
+    buf.writeln('請為「$year 年」生成一份教會年報摘要草稿，'
+        '格式正式，適合印刷成冊或 PDF 對外發布。\n');
+    buf.writeln('【年度數據（自動帶入）】');
+    buf.writeln('- 總會友人數：${people.totalCount} 人');
+    buf.writeln(
+        '  （正式會員 ${people.memberCount} / 慕道友 ${people.seekerCount}）');
+    buf.writeln('  （定期出席 ${people.regularCount} / 偶爾 ${people.occasionalCount}'
+        ' / 久缺 ${people.inactiveCount}）');
+    buf.writeln('- 全年關懷案件：${care.allCases.length} 件'
+        '（活躍 ${care.activeCount} / 已結案 ${care.closedCount}）');
+    buf.writeln('- 全年探訪記錄：${care.allVisits.length} 次\n');
+    buf.writeln('年報結構：\n'
+        '(1) 封面頁元素（教會名稱 / 年份 / 主題經文，留空）；\n'
+        '(2) 牧者序言（200 字，感恩回顧 + 展望，請留[方括號]個人化）；\n'
+        '(3) 教會簡介（歷史沿革、異象使命，各 2-3 句，留空格式）；\n'
+        '(4) $year 年主要事工回顧（按季度，每季 2-3 項，留空格式）；\n'
+        '(5) 關懷與牧養統計摘要（用上方數據整理成段落）；\n'
+        '(6) 財務摘要（收支欄位表格，留空）；\n'
+        '(7) 感謝義工頁（格式：姓名 / 服事崗位，留空）；\n'
+        '(8) 展望新年（3 個方向，簡潔）；\n'
+        '(9) 封底元素（聯絡資訊、網址、社群，留空）。\n'
+        '請用繁體中文，語氣正式而溫暖。');
+    return buf.toString();
+  }
+
+  String _buildWeddingServicePrompt(String coupleName) {
+    return '請為「$coupleName」的婚禮崇拜生成一份完整的典禮程序稿，'
+        '包含司儀詞、牧者引導詞和所有禱告，可直接在婚禮中使用。\n\n'
+        '程序稿結構（每個環節附：時間估算 / 司儀詞 / 牧者詞 / 備注）：\n'
+        '1. 賓客入場（10 分鐘）\n'
+        '   - 背景詩歌建議 2 首\n'
+        '2. 新人進場（司儀引導詞）\n'
+        '3. 開場禱告（牧者，4-6 句）\n'
+        '4. 詩歌敬拜（1-2 首，建議曲目）\n'
+        '5. 聖經讀段（推薦章節 2 個，附朗讀者引導語）\n'
+        '6. 婚禮講道提綱（牧者，3 點式，10 分鐘）\n'
+        '7. 婚誓（繁體中文版本，男女方各一段，莊嚴而真誠）\n'
+        '8. 戒指禮（司儀詞 + 牧者祝福語）\n'
+        '9. 宣告成婚（牧者宣告詞，引用聖經 創 2:24 或 可 10:9）\n'
+        '10. 簽署婚書（背景音樂建議）\n'
+        '11. 婚禮禱告（牧者，為新人未來生活代禱，8-10 句）\n'
+        '12. 新人退場（司儀詞 + 詩歌建議）\n\n'
+        '請用繁體中文，語氣莊嚴喜樂，在[方括號]標示需個人化填寫的部分。';
+  }
+
+  String _buildDedicationServicePrompt(String babyInfo) {
+    // babyInfo: "嬰兒名字" or "父母姓名｜嬰兒名字"
+    final parts = babyInfo.split('｜');
+    final babyName = parts.length > 1 ? parts[1].trim() : parts[0].trim();
+    final parentNames = parts.length > 1 ? parts[0].trim() : '';
+
+    return '請為嬰兒「$babyName」'
+        '${parentNames.isNotEmpty ? '（父母：$parentNames）' : ''}'
+        '的奉獻禮生成完整典禮程序稿，可直接在主日崇拜中使用。\n\n'
+        '程序稿（每個環節附：時間 / 引導語 / 注意事項）：\n'
+        '1. 嬰兒奉獻宣告（司儀介紹，30 秒）\n'
+        '2. 父母上台（司儀引導詞，溫馨）\n'
+        '3. 牧者與家庭對話（問答式，3 個承諾問題）：\n'
+        '   - 問父母：承諾在基督信仰中養育孩子（1 問）\n'
+        '   - 問會眾：承諾支持與代禱（1 問）\n'
+        '   - 問祖父母（如在場）：承諾的話（選用）\n'
+        '4. 抱嬰兒禱告（牧者，8-10 句，溫柔有力，呼求神保守嬰兒一生）\n'
+        '5. 為父母禱告（牧者，4-6 句，祈求智慧與力量）\n'
+        '6. 為家庭代禱（會眾同心，牧者帶領 3-4 句）\n'
+        '7. 奉獻詩歌（1 首推薦，牧者引導轉接詞）\n'
+        '8. 拍照留念（司儀安排詞）\n\n'
+        '請用繁體中文，語氣溫暖喜悅，充滿對新生命的感恩。\n'
+        '在[方括號]標示需個人化填寫的部分。';
+  }
+
+  String _buildBibleSeriesPrompt(String seriesTitle) {
+    return '請為「$seriesTitle」設計一套完整的多週小組查經課程，'
+        '適合 8-12 人的小組，每週 90 分鐘。\n\n'
+        '課程總覽：\n'
+        '(1) 系列目標（3 條學習目標，說明完成後小組成員能…）；\n'
+        '(2) 建議週數（根據主題建議 4-8 週）；\n'
+        '(3) 所需材料清單（聖經版本建議、筆記本、備用資源）。\n\n'
+        '每週課程格式（生成第 1 週完整版，其餘週數提供標題與核心經文）：\n\n'
+        '【第 1 週：[標題]】\n'
+        '- 主題經文：[章節]\n'
+        '- 預習功課：[1-2 項，讓組員提前閱讀]\n'
+        '- 開場暖身（10 分鐘）：[破冰問題 1 條]\n'
+        '- 觀察環節（15 分鐘）：[3 條觀察問題，What does it say?]\n'
+        '- 詮釋環節（25 分鐘）：[3 條詮釋問題，What does it mean?]\n'
+        '- 應用環節（20 分鐘）：[3 條應用問題，How do I live it?]\n'
+        '- 代禱分享（10 分鐘）：[引導組員分享代禱事項的提示語]\n'
+        '- 下週功課：[預習任務]\n\n'
+        '[第 2-N 週：僅提供標題、主題經文與核心問題各 1 條]\n\n'
+        '請用繁體中文，問題由淺入深，鼓勵真實分享而非標準答案。';
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
   /// Generic single-field input dialog — avoids duplicating dialog code.
@@ -910,6 +1008,36 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         hint: '例：泰北短宣 2026、本地社區外展…',
         confirmLabel: '生成宣教報告',
         buildPrompt: _buildMissionReportPrompt,
+      );
+
+  // ── v2.7 dialog triggers ─────────────────────────────────────────────────
+
+  Future<void> _askAnnualReportYear() => _askInput(
+        title: '年份',
+        hint: '例：2026、2025…',
+        confirmLabel: '生成年報',
+        buildPrompt: _buildAnnualReportPrompt,
+      );
+
+  Future<void> _askWeddingCouple() => _askInput(
+        title: '新人姓名',
+        hint: '例：陳大明 & 李小花',
+        confirmLabel: '生成程序稿',
+        buildPrompt: _buildWeddingServicePrompt,
+      );
+
+  Future<void> _askDedicationBaby() => _askInput(
+        title: '嬰兒名字（選填父母：父母姓名｜嬰兒名字）',
+        hint: '例：恩典  或  陳大明 & 李小花｜陳恩典',
+        confirmLabel: '生成程序稿',
+        buildPrompt: _buildDedicationServicePrompt,
+      );
+
+  Future<void> _askBibleSeriesTitle() => _askInput(
+        title: '查經系列名稱或主題',
+        hint: '例：約翰福音、登山寶訓、保羅書信…',
+        confirmLabel: '生成課程',
+        buildPrompt: _buildBibleSeriesPrompt,
       );
 
   // ── UI ──────────────────────────────────────────────────────────────────
@@ -1159,6 +1287,40 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '宣教報告草稿',
             subtitle: '輸入宣教行動名稱，生成含恩典時刻、挑戰與跟進計劃的完整報告',
             onTap: _askMissionName,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '典禮崇拜'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.bar_chart_outlined,
+            color: Colors.blueGrey,
+            title: '教會年報摘要',
+            subtitle: '輸入年份，自動整合會友與關懷數據，生成正式年報全文框架',
+            onTap: _askAnnualReportYear,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.favorite_outlined,
+            color: Colors.pink,
+            title: '婚禮崇拜程序稿',
+            subtitle: '輸入新人姓名，生成含司儀詞、婚誓、戒指禮、禱告的完整流程',
+            onTap: _askWeddingCouple,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.child_friendly_outlined,
+            color: Colors.lightBlue,
+            title: '嬰兒奉獻典禮程序',
+            subtitle: '輸入嬰兒名字，生成含牧者對話、奉獻禱告、會眾回應的完整程序稿',
+            onTap: _askDedicationBaby,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.menu_book_outlined,
+            color: Colors.brown,
+            title: '多週查經課程設計',
+            subtitle: '輸入查經系列主題，生成多週課程大綱（含觀察/詮釋/應用問題）',
+            onTap: _askBibleSeriesTitle,
           ),
           const SizedBox(height: 24),
           Container(
