@@ -1,6 +1,6 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant v2.5 — 24 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.6 — 28 quick AI functions for pastoral team.
 //
 // v1  (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
 // v2.1(+ 4 cards): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
@@ -8,6 +8,7 @@
 // v2.3(+ 4 cards): 新人歡迎信 / 會友關懷離開信 / 牧養週訊 / 兒童主日學教案
 // v2.4(+ 4 cards): 部門會議議程 / 年度事工計劃 / 志工招募文案 / 感謝狀草稿
 // v2.5(+ 4 cards): 牧養禱告信 / 受洗見證引導 / 長執就職感言 / 年終牧函
+// v2.6(+ 4 cards): 佈道會邀請文案 / 喪禮安慰信 / 人生里程碑禱告 / 宣教報告草稿
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
@@ -599,6 +600,84 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
     return buf.toString();
   }
 
+  // ── v2.6 prompt builders ─────────────────────────────────────────────────
+
+  String _buildEvangelismInvitePrompt(String eventName) {
+    final people = globalPersonController;
+    return '請為教會佈道會「$eventName」生成完整的邀請文案套件，'
+        '目標對象：未信主的朋友、家人、同事。\n\n'
+        '教會目前有 ${people.totalCount} 位會友。\n\n'
+        '文案套件包括：\n'
+        '(1) 邀請卡正面文案（20 字以內標題 + 30 字副標，吸引非信徒）；\n'
+        '(2) 邀請卡背面資訊欄（日期/時間/地點/停車，留空供填寫）；\n'
+        '(3) 口頭邀請話術（3 個版本：朋友版 / 同事版 / 家人版，各 2-3 句）；\n'
+        '(4) WhatsApp/Line 分享短文（100 字，包含活動亮點，不過度宗教化）；\n'
+        '(5) 社群媒體 Instagram 短文（3 句 + 5 個 hashtag）；\n'
+        '(6) 反對意見回應指引（3 個常見拒絕理由 + 溫和回應方式）。\n\n'
+        '請用繁體中文，語氣友善、現代、不強迫，讓會友容易開口邀請。';
+  }
+
+  String _buildFuneralComfortPrompt(String name) {
+    final care = globalCareController;
+    final related = care.allCases
+        .where((c) =>
+            c.memberName.contains(name) || name.contains(c.memberName))
+        .take(2)
+        .toList();
+
+    final buf = StringBuffer();
+    buf.writeln('請為喪親的「$name」生成牧關支援套件，幫助牧者在哀傷陪伴中有所依循。\n');
+
+    if (related.isNotEmpty) {
+      buf.writeln('【相關背景】');
+      for (final c in related) {
+        buf.writeln('- ${c.reason}');
+      }
+      buf.writeln();
+    }
+
+    buf.writeln('套件包括：\n'
+        '(1) 安慰信（150-200 字，真誠溫暖，不說空話，引用 1 節安慰經文）；\n'
+        '(2) 追思禮拜程序建議（含詩歌建議 2 首、追思分享引導問題 3 條）；\n'
+        '(3) 哀傷陪伴指引（牧者探訪時的 5 個注意事項 + 3 句禁忌語）；\n'
+        '(4) 後續關懷時間表（第 1 週 / 第 1 個月 / 3 個月後各 1 個具體行動）；\n'
+        '(5) 聖經安慰金句（5 節，附簡短說明，可用於卡片或分享）。\n'
+        '請用繁體中文，語氣莊重、溫柔，體現基督徒對死亡的盼望而非回避悲傷。');
+    return buf.toString();
+  }
+
+  String _buildLifeMilestonePrayerPrompt(String occasion) {
+    return '請為「$occasion」典禮生成一套完整的禱告詞框架，'
+        '適合在教會典禮中由牧者帶領。\n\n'
+        '套件包括：\n'
+        '(1) 開場禱告（2-3 句，感謝神賜下此美好時刻）；\n'
+        '(2) 主禱文朗讀引導（適合此場合的主禱文簡介語 1 句）；\n'
+        '(3) 主禮祝福禱告（8-10 句，具體為當事人祈求神的恩典，'
+        '根據場合強調不同祝福重點）；\n'
+        '(4) 會眾同心禱告（帶領詞 + 2-3 句會眾可跟著說的回應語）；\n'
+        '(5) 結束祝禱（4-6 句，莊嚴美麗，以「阿們」結束）；\n'
+        '(6) 場合專屬詩歌建議（2 首，附建議用途：進場/結束）。\n\n'
+        '請用繁體中文，語氣莊嚴而喜悅，展現基督信仰對此里程碑的祝聖意義。\n'
+        '請用[方括號]標示牧者需個人化填寫的部分。';
+  }
+
+  String _buildMissionReportPrompt(String mission) {
+    final people = globalPersonController;
+    return '請為「$mission」宣教行動生成一份宣教報告草稿，'
+        '適合在主日宣教報告或長執會提交。\n\n'
+        '教會背景：${people.totalCount} 位會友，定期出席 ${people.regularCount} 人。\n\n'
+        '報告結構：\n'
+        '(1) 封面資訊欄（宣教地點 / 日期 / 參與人數 / 報告人，留空）；\n'
+        '(2) 行程概述（每天一行重點，留空格式供填寫）；\n'
+        '(3) 神蹟與感恩（3-5 個可分享的恩典時刻，格式：事件 + 感受 + 聖經印證）；\n'
+        '(4) 挑戰與禱告事項（2-3 項，坦誠分享困難，請會眾代禱）；\n'
+        '(5) 對差派教會的影響（宣教隊員的個人生命改變，3 個見證框架）；\n'
+        '(6) 後續跟進計劃（3 個短期 + 1 個長期行動）；\n'
+        '(7) 財務使用摘要（支出類別列表，留空）；\n'
+        '(8) 感謝段落（感謝教會支持，鼓勵未來參與，2-3 句）。\n\n'
+        '請用繁體中文，語氣真誠感恩，讓會眾感受到宣教的使命感。';
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
   /// Generic single-field input dialog — avoids duplicating dialog code.
@@ -801,6 +880,36 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         hint: '例：2026、2025…',
         confirmLabel: '生成牧函',
         buildPrompt: _buildYearEndPastoralLetterPrompt,
+      );
+
+  // ── v2.6 dialog triggers ─────────────────────────────────────────────────
+
+  Future<void> _askEvangelismEvent() => _askInput(
+        title: '佈道會名稱',
+        hint: '例：2026 聖誕佈道會、青年福音夜…',
+        confirmLabel: '生成邀請文案',
+        buildPrompt: _buildEvangelismInvitePrompt,
+      );
+
+  Future<void> _askFuneralName() => _askInput(
+        title: '喪親者姓名',
+        hint: '請輸入需要牧關支援的會友姓名',
+        confirmLabel: '生成安慰套件',
+        buildPrompt: _buildFuneralComfortPrompt,
+      );
+
+  Future<void> _askMilestoneOccasion() => _askInput(
+        title: '典禮類別',
+        hint: '例：嬰兒奉獻禮、婚禮、金婚感恩禮…',
+        confirmLabel: '生成禱告詞',
+        buildPrompt: _buildLifeMilestonePrayerPrompt,
+      );
+
+  Future<void> _askMissionName() => _askInput(
+        title: '宣教行動名稱',
+        hint: '例：泰北短宣 2026、本地社區外展…',
+        confirmLabel: '生成宣教報告',
+        buildPrompt: _buildMissionReportPrompt,
       );
 
   // ── UI ──────────────────────────────────────────────────────────────────
@@ -1016,6 +1125,40 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '年終牧函草稿',
             subtitle: '輸入年份，自動整合年度數據生成全教會年終牧師信',
             onTap: _askYearEndYear,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '外展宣教'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.campaign_rounded,
+            color: Colors.red,
+            title: '佈道會邀請文案',
+            subtitle: '輸入佈道會名稱，生成邀請卡、口頭話術與社群媒體文案套件',
+            onTap: _askEvangelismEvent,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.sentiment_very_dissatisfied_outlined,
+            color: Colors.grey,
+            title: '喪禮安慰套件',
+            subtitle: '輸入喪親者姓名，生成安慰信、追思禮拜程序與哀傷陪伴指引',
+            onTap: _askFuneralName,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.church_outlined,
+            color: Colors.purple,
+            title: '人生里程碑禱告',
+            subtitle: '輸入典禮類別（嬰兒奉獻/婚禮/金婚），生成完整典禮禱告詞框架',
+            onTap: _askMilestoneOccasion,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.flight_outlined,
+            color: Colors.teal,
+            title: '宣教報告草稿',
+            subtitle: '輸入宣教行動名稱，生成含恩典時刻、挑戰與跟進計劃的完整報告',
+            onTap: _askMissionName,
           ),
           const SizedBox(height: 24),
           Container(
