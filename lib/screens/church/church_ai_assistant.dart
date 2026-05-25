@@ -1,11 +1,12 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant v2.3 — 16 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.4 — 20 quick AI functions for pastoral team.
 //
 // v1  (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
 // v2.1(+ 4 cards): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
 // v2.2(+ 4 cards): 主日週報草稿 / 講道重點摘要 / 活動海報設計提示 / 小組長牧養建議
 // v2.3(+ 4 cards): 新人歡迎信 / 會友關懷離開信 / 牧養週訊 / 兒童主日學教案
+// v2.4(+ 4 cards): 部門會議議程 / 年度事工計劃 / 志工招募文案 / 感謝狀草稿
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
@@ -413,6 +414,92 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         '請用繁體中文，語言生動活潑，避免過深神學術語。';
   }
 
+  // ── v2.4 prompt builders ─────────────────────────────────────────────────
+
+  String _buildMeetingAgendaPrompt(String dept) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    final buf = StringBuffer();
+    buf.writeln('請為「$dept」生成一份部門會議議程草稿，格式專業、結構清晰，'
+        '可直接在會議中使用。\n');
+    buf.writeln('【教會目前概況（背景參考）】');
+    buf.writeln('- 總會友：${people.totalCount} 人 ／ 活躍關懷案件：${care.activeCount} 件');
+    buf.writeln('- 紅燈案件：${care.redCount} 件（需優先處理）\n');
+    buf.writeln('議程結構（請依以下格式生成）：\n'
+        '【$dept 會議議程】\n'
+        '日期：_______ ／ 時間：_______ ／ 地點：_______\n'
+        '主持：_______ ／ 記錄：_______\n\n'
+        '1. 開會禱告（5 分鐘）\n'
+        '2. 上次會議行動事項跟進（10 分鐘）\n'
+        '   - [請列出 3 個常見待跟進項目範例]\n'
+        '3. 本月重點報告（15 分鐘）\n'
+        '   - [請針對 $dept 列出 3 個常見報告項目]\n'
+        '4. 討論事項（20 分鐘）\n'
+        '   - [請列出 2-3 個 $dept 常見討論議題]\n'
+        '5. 行動事項確認（5 分鐘）\n'
+        '   - 負責人：_______ ／ 完成日期：_______\n'
+        '6. 下次會議日期：_______\n'
+        '7. 結束禱告\n\n'
+        '請用繁體中文，實際內容請根據 $dept 的常見職責填寫。');
+    return buf.toString();
+  }
+
+  String _buildMinistryPlanPrompt(String dept) {
+    final people = globalPersonController;
+    return '請為「$dept」生成一份年度事工計劃草稿，涵蓋 12 個月，'
+        '格式適合提交長執會或教牧會議審閱。\n\n'
+        '教會會友人數：${people.totalCount} 人（定期出席 ${people.regularCount} 人）。\n\n'
+        '計劃結構：\n'
+        '1. 事工異象與目標（2-3 句，說明本年度重點方向）\n'
+        '2. 年度目標（3 個 SMART 目標，可量化）\n'
+        '3. 月度活動計劃（1 月至 12 月，每月 1-2 個重點活動）\n'
+        '4. 人力需求（義工人數、技能要求）\n'
+        '5. 預算概估（分：場地 / 物資 / 宣傳 / 其他）\n'
+        '6. 成效評估方式（如何知道目標達成）\n'
+        '7. 緊急聯絡人欄位（留空）\n\n'
+        '請用繁體中文，計劃要實際可行，適合 $dept 的常見事工範圍。';
+  }
+
+  String _buildVolunteerRecruitPrompt(String role) {
+    return '請為教會服事崗位「$role」生成一套完整的志工招募文案，包括：\n\n'
+        '(1) 招募海報標題（10 字以內，吸引人）；\n'
+        '(2) 崗位介紹（50 字，說明這份服事的意義與影響力）；\n'
+        '(3) 主要職責（條列 3-5 項）；\n'
+        '(4) 適合對象（技能、性格、時間承諾）；\n'
+        '(5) 時間要求（每週/每月幾小時，清晰說明）；\n'
+        '(6) 提供支援（培訓、同行、屬靈陪伴）；\n'
+        '(7) 報名方式欄位（留空：聯絡人、電話、截止日期）；\n'
+        '(8) WhatsApp 群組分享版本（100 字以內，包含 emoji 讓視覺更活潑）。\n\n'
+        '請用繁體中文，語氣熱情邀請，強調服事的屬靈意義，避免只列職責。';
+  }
+
+  String _buildAppreciationLetterPrompt(String input) {
+    // input format: "姓名|事由" or just "姓名"
+    final parts = input.split('|');
+    final name = parts[0].trim();
+    final reason = parts.length > 1 ? parts[1].trim() : '';
+    final people = globalPersonController;
+    final person = people.findByName(name);
+
+    final buf = StringBuffer();
+    buf.writeln('請為「$name」撰寫一封教會感謝狀，'
+        '語氣真誠溫暖，讓收信人感受到被珍視與肯定。\n');
+    if (reason.isNotEmpty) buf.writeln('感謝事由：$reason\n');
+    if (person != null && person.notes.isNotEmpty) {
+      buf.writeln('會友備註（參考）：${person.notes}\n');
+    }
+    buf.writeln('感謝狀結構：\n'
+        '(1) 稱謂（親愛的 $name 弟兄/姊妹）；\n'
+        '(2) 開場感謝（1-2 句，具體說明感謝什麼）；\n'
+        '(3) 肯定段落（描述此人服事的影響與貢獻，3-4 句，生動有畫面感）；\n'
+        '(4) 屬靈鼓勵（引用 1 節聖經，附上個人化鼓勵語）；\n'
+        '(5) 結語祝福（1-2 句，溫暖有力）；\n'
+        '(6) 署名欄（教會名稱 ／ 牧師姓名 ／ 日期，留空）。\n\n'
+        '請用繁體中文，約 200 字，可作為正式感謝狀列印或電郵發送。\n'
+        '格式提示：以「感謝狀」為標題，正文居中，莊重而溫馨。');
+    return buf.toString();
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
   /// Generic single-field input dialog — avoids duplicating dialog code.
@@ -555,6 +642,36 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         hint: '例：神愛世人、大衛打倒歌利亞、感恩…',
         confirmLabel: '生成教案',
         buildPrompt: _buildSundaySchoolPrompt,
+      );
+
+  // ── v2.4 dialog triggers ─────────────────────────────────────────────────
+
+  Future<void> _askMeetingDept() => _askInput(
+        title: '部門名稱',
+        hint: '例：長執會、詩歌部、關懷小組、青年部…',
+        confirmLabel: '生成議程',
+        buildPrompt: _buildMeetingAgendaPrompt,
+      );
+
+  Future<void> _askMinistryDept() => _askInput(
+        title: '事工部門',
+        hint: '例：兒童主日學、青年事工、社關部…',
+        confirmLabel: '生成計劃',
+        buildPrompt: _buildMinistryPlanPrompt,
+      );
+
+  Future<void> _askVolunteerRole() => _askInput(
+        title: '服事崗位',
+        hint: '例：司琴義工、主日學老師、關懷探訪員…',
+        confirmLabel: '生成招募文案',
+        buildPrompt: _buildVolunteerRecruitPrompt,
+      );
+
+  Future<void> _askAppreciationTarget() => _askInput(
+        title: '姓名（選填事由：姓名｜事由）',
+        hint: '例：陳大明  或  陳大明｜主日學服事 3 年',
+        confirmLabel: '生成感謝狀',
+        buildPrompt: _buildAppreciationLetterPrompt,
       );
 
   // ── UI ──────────────────────────────────────────────────────────────────
@@ -702,6 +819,40 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '兒童主日學教案',
             subtitle: '輸入主日學主題，生成含遊戲、故事、手工的完整教案',
             onTap: _askSundaySchoolTopic,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '組織管理'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.event_note_outlined,
+            color: Colors.teal,
+            title: '部門會議議程',
+            subtitle: '輸入部門名稱，生成含行動事項跟進與討論議題的完整會議議程',
+            onTap: _askMeetingDept,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.calendar_month_outlined,
+            color: Colors.deepPurple,
+            title: '年度事工計劃',
+            subtitle: '輸入事工部門，生成 12 個月活動計劃、預算概估與成效評估',
+            onTap: _askMinistryDept,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.person_add_outlined,
+            color: Colors.indigo,
+            title: '志工招募文案',
+            subtitle: '輸入服事崗位，生成海報文案、職責說明與 WhatsApp 分享版本',
+            onTap: _askVolunteerRole,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.workspace_premium_outlined,
+            color: Colors.orange,
+            title: '感謝狀草稿',
+            subtitle: '輸入姓名（選填事由），生成可列印的正式感謝狀',
+            onTap: _askAppreciationTarget,
           ),
           const SizedBox(height: 24),
           Container(
