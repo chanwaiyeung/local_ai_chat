@@ -1,12 +1,13 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant v2.4 — 20 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.5 — 24 quick AI functions for pastoral team.
 //
 // v1  (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
 // v2.1(+ 4 cards): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
 // v2.2(+ 4 cards): 主日週報草稿 / 講道重點摘要 / 活動海報設計提示 / 小組長牧養建議
 // v2.3(+ 4 cards): 新人歡迎信 / 會友關懷離開信 / 牧養週訊 / 兒童主日學教案
 // v2.4(+ 4 cards): 部門會議議程 / 年度事工計劃 / 志工招募文案 / 感謝狀草稿
+// v2.5(+ 4 cards): 牧養禱告信 / 受洗見證引導 / 長執就職感言 / 年終牧函
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
@@ -500,6 +501,104 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
     return buf.toString();
   }
 
+  // ── v2.5 prompt builders ─────────────────────────────────────────────────
+
+  String _buildPastoralPrayerLetterPrompt(String name) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    final buf = StringBuffer();
+    buf.writeln('請為會友「$name」撰寫一封牧養禱告信，'
+        '目的是讓對方感受到牧者真誠的關懷與代禱。\n');
+
+    final person = people.findByName(name);
+    if (person != null) {
+      buf.writeln('【會友資料】');
+      buf.writeln('出席狀況：${person.attendance}');
+      if (person.notes.isNotEmpty) buf.writeln('備註：${person.notes}');
+    }
+
+    final related = care.allCases
+        .where((c) =>
+            c.memberName.contains(name) || name.contains(c.memberName))
+        .take(3)
+        .toList();
+    if (related.isNotEmpty) {
+      buf.writeln('\n【關懷背景】');
+      for (final c in related) {
+        final last = care.lastVisitFor(c.id);
+        buf.writeln('- ${c.reason}');
+        if (last != null) buf.writeln('  最近探訪摘要：${last.summary}');
+      }
+    }
+
+    buf.writeln('\n信件結構：\n'
+        '(1) 稱謂與問候（溫暖親切，提及名字）；\n'
+        '(2) 牧者代禱段落（根據上述背景寫出 3 個具體代禱點，引用 1 節聖經）；\n'
+        '(3) 屬靈鼓勵（2-3 句，針對當前處境給予力量）；\n'
+        '(4) 邀請對話（表達願意傾聽，不施壓）；\n'
+        '(5) 祝福結語 + 署名欄（留空）。\n'
+        '請用繁體中文，約 200 字，語氣如同牧者親筆書寫。');
+    return buf.toString();
+  }
+
+  String _buildBaptismWitnessPrompt(String name) {
+    return '請為準備受洗的慕道友「$name」設計一套受洗見證引導問卷，'
+        '幫助輔導員與受洗者整理信仰歷程。\n\n'
+        '問卷結構（共 3 個部分）：\n\n'
+        '【第一部分：信仰歷程（6 條問題）】\n'
+        '- 您是如何第一次接觸基督教的？\n'
+        '- [再列出 5 條引導回顧信仰旅程的問題]\n\n'
+        '【第二部分：生命改變（4 條問題）】\n'
+        '- 信主後您在哪方面有最大的改變？\n'
+        '- [再列出 3 條探討生命轉變的問題]\n\n'
+        '【第三部分：未來方向（3 條問題）】\n'
+        '- 受洗後您希望如何在教會生活中成長？\n'
+        '- [再列出 2 條關於未來屬靈承諾的問題]\n\n'
+        '最後提供：\n'
+        '- 受洗見證撰寫框架（200-300 字，3 段式：過去 / 遇見主 / 現在）\n'
+        '- 受洗典禮常見問答 3 條（Q&A 格式）\n\n'
+        '請用繁體中文，問題簡單易懂，適合初信者作答。';
+  }
+
+  String _buildElderOrdainationPrompt(String name) {
+    final people = globalPersonController;
+    return '請為即將就職的長老或執事「$name」撰寫一份就職感言草稿框架，'
+        '幫助他/她在就職典禮上分享屬靈心志。\n\n'
+        '教會現有 ${people.totalCount} 位會友（定期出席 ${people.regularCount} 人）。\n\n'
+        '感言結構（約 300-400 字，可朗讀 2-3 分鐘）：\n'
+        '(1) 開場感謝（感謝神、教會弟兄姊妹、家人，各 1-2 句）；\n'
+        '(2) 蒙召見證（簡述神如何引領走上服事之路，3-4 句）；\n'
+        '(3) 服事心志（3 個承諾，具體說明如何牧養/服事弟兄姊妹）；\n'
+        '(4) 主題經文（引用 1 節與服事相關的聖經，附上個人詮釋）；\n'
+        '(5) 對教會的期望（1-2 句，盼望教會同心合意）；\n'
+        '(6) 結束禱告（簡短，20 字以內，可帶領會眾同聲禱告）。\n\n'
+        '請用繁體中文，語氣謙遜而有力，展現屬靈深度與服事熱忱。\n'
+        '請留[方括號]標示需個人化填寫的部分。';
+  }
+
+  String _buildYearEndPastoralLetterPrompt(String year) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    final buf = StringBuffer();
+    buf.writeln('請為教會生成「$year 年」年終牧師信（牧函）草稿，'
+        '寄送給全體會友，語氣溫暖、有屬靈深度。\n');
+    buf.writeln('【教會年度概況】');
+    buf.writeln('- 總會友：${people.totalCount} 人'
+        '（定期 ${people.regularCount} / 偶爾 ${people.occasionalCount} / 久缺 ${people.inactiveCount}）');
+    buf.writeln('- 全年關懷案件：${care.allCases.length} 件'
+        '（目前活躍 ${care.activeCount} 件）');
+    buf.writeln('\n牧函結構（約 400-500 字）：\n'
+        '(1) 年度回顧段落（感恩主恩，提及 2-3 個教會亮點，留空供填寫具體事件）；\n'
+        '(2) 挑戰與成長（坦誠分享困難，但以感恩和信心回應，2-3 句）；\n'
+        '(3) 主題經文（為全年選一節聖經，附上牧者詮釋與應用）；\n'
+        '(4) 展望新年（3 個教會方向 / 目標，簡潔有力）；\n'
+        '(5) 對弟兄姊妹的個人寄語（溫暖、鼓勵、看見每個人）；\n'
+        '(6) 祝福禱告結語（4-6 句，可帶領讀者同禱）；\n'
+        '(7) 署名欄（牧師名 / 教會名 / 日期，留空）。\n'
+        '請用繁體中文，語氣如同牧者親筆，讓每位會友感受到被牧者記念。');
+    return buf.toString();
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
   /// Generic single-field input dialog — avoids duplicating dialog code.
@@ -672,6 +771,36 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         hint: '例：陳大明  或  陳大明｜主日學服事 3 年',
         confirmLabel: '生成感謝狀',
         buildPrompt: _buildAppreciationLetterPrompt,
+      );
+
+  // ── v2.5 dialog triggers ─────────────────────────────────────────────────
+
+  Future<void> _askPrayerLetterName() => _askInput(
+        title: '會友姓名',
+        hint: '請輸入要寄送禱告信的會友姓名',
+        confirmLabel: '生成禱告信',
+        buildPrompt: _buildPastoralPrayerLetterPrompt,
+      );
+
+  Future<void> _askBaptismName() => _askInput(
+        title: '慕道友姓名',
+        hint: '請輸入準備受洗者的姓名',
+        confirmLabel: '生成見證引導',
+        buildPrompt: _buildBaptismWitnessPrompt,
+      );
+
+  Future<void> _askElderName() => _askInput(
+        title: '長老 ／ 執事姓名',
+        hint: '請輸入即將就職者的姓名',
+        confirmLabel: '生成感言草稿',
+        buildPrompt: _buildElderOrdainationPrompt,
+      );
+
+  Future<void> _askYearEndYear() => _askInput(
+        title: '年份',
+        hint: '例：2026、2025…',
+        confirmLabel: '生成牧函',
+        buildPrompt: _buildYearEndPastoralLetterPrompt,
       );
 
   // ── UI ──────────────────────────────────────────────────────────────────
@@ -853,6 +982,40 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '感謝狀草稿',
             subtitle: '輸入姓名（選填事由），生成可列印的正式感謝狀',
             onTap: _askAppreciationTarget,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '屬靈里程'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.mail_outlined,
+            color: Colors.deepPurple,
+            title: '牧養禱告信',
+            subtitle: '輸入會友姓名，生成結合關懷記錄的個人化禱告信',
+            onTap: _askPrayerLetterName,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.water_outlined,
+            color: Colors.blue,
+            title: '受洗見證引導',
+            subtitle: '輸入慕道友姓名，生成見證問卷、撰寫框架與受洗問答',
+            onTap: _askBaptismName,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.how_to_reg_outlined,
+            color: Colors.indigo,
+            title: '長執就職感言',
+            subtitle: '輸入長老或執事姓名，生成就職典禮感言草稿框架',
+            onTap: _askElderName,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.celebration_outlined,
+            color: Colors.green,
+            title: '年終牧函草稿',
+            subtitle: '輸入年份，自動整合年度數據生成全教會年終牧師信',
+            onTap: _askYearEndYear,
           ),
           const SizedBox(height: 24),
           Container(
