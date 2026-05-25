@@ -1,6 +1,6 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant v2.18 — 76 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.19 — 80 quick AI functions for pastoral team.
 //
 // v1   (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
 // v2.1 (+ 4): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
@@ -21,6 +21,7 @@
 // v2.16(+ 4): 禱告會主題流程 / 婚姻輔導課程 / 兒童事工培訓手冊 / 緊急事工計劃
 // v2.17(+ 4): 合唱團排練計劃 / 長者事工方案 / 圖書館管理系統 / 教牧問責框架
 // v2.18(+ 4): 受洗準備課程 / 追思禮拜流程 / 教會網站更新計劃 / 跨教會合作提案
+// v2.19(+ 4): 財務審計報告 / 青年領袖培訓營 / 建築擴建提案 / 多代事工整合計劃
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
@@ -2037,6 +2038,120 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         '請用繁體中文，語氣開放尊重，體現基督身體的合一精神，避免一方主導感。';
   }
 
+  // ── v2.19 prompt builders ────────────────────────────────────────────────
+
+  String _buildFinancialAuditPrompt(String year) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    return '請為「$year 年度」生成一份教會財務審計報告草稿，'
+        '供核數師、財務委員會或長執會使用。\n\n'
+        '（注意：此為審計報告，有別於預算草案或財務報告。\n'
+        '審計報告的目的是核實財務記錄的準確性並評估內部控制。）\n\n'
+        '教會背景：${people.totalCount} 位會友，活躍關懷 ${care.activeCount} 件。\n\n'
+        '審計報告框架：\n\n'
+        '【一、審計報告封面頁】\n'
+        '1. 報告標題格式（教會名稱 / 年度 / 審計機構或委員，留空）\n'
+        '2. 報告日期與分發對象清單\n\n'
+        '【二、管理層聲明書】\n'
+        '3. 管理層責任聲明草稿（財務記錄完整性聲明，100 字範本）\n\n'
+        '【三、獨立審計意見】\n'
+        '4. 標準無保留意見草稿（適用於財務狀況良好的教會）\n'
+        '5. 若發現問題的有條件意見草稿（1 個常見問題場景）\n\n'
+        '【四、財務報表審計重點】\n'
+        '6. 收入審計清單（需核查的 8 個收入類別）\n'
+        '7. 支出審計清單（需核查的 10 個支出類別）\n'
+        '8. 銀行對賬程序（月末結餘核對步驟）\n\n'
+        '【五、內部控制評估】\n'
+        '9. 教會財務內部控制的 10 個最佳實踐（自評清單）\n'
+        '10. 常見內部控制弱點（5 個風險點 + 改善建議）\n\n'
+        '【六、管理建議書（Management Letter）】\n'
+        '11. 標準建議書格式（發現 → 風險 → 建議 → 管理層回應，4 欄）\n\n'
+        '請用繁體中文，報告格式正式，讓教會具備良好的財務透明度。';
+  }
+
+  String _buildYouthLeadershipCampPrompt(String duration) {
+    final people = globalPersonController;
+    final youthEst = (people.regularCount ~/ 8).clamp(8, 25);
+    return '請為教會青年領袖培訓營設計完整方案，時長：$duration，'
+        '目標是裝備 $youthEst 位有潛力的青年成為未來的教會領袖。\n\n'
+        '（注意：此為領袖培訓為主題的青年營會，融合領袖訓練與營會體驗，'
+        '有別於一般主題青年營或小組長培訓課程。）\n\n'
+        '培訓營方案：\n\n'
+        '【一、培訓目標】\n'
+        '1. 領袖培訓成果（完成後學員能做到的 5 件事）\n'
+        '2. 招募標準（誰適合參加，3 個條件）\n\n'
+        '【二、完整行程（以兩天一夜為例，可調整）】\n'
+        '第一天：\n'
+        '- 報到 + 破冰（認識彼此 + 自我評估）\n'
+        '- 信息一：領袖的身份（servant leadership 的聖經基礎）\n'
+        '- 領袖技能工作坊一：有效溝通（角色扮演練習）\n'
+        '- 晚間：領袖危機模擬（小組處理虛擬場景）\n'
+        '第二天：\n'
+        '- 早晨靈修：領袖的靈命核心\n'
+        '- 信息二：領袖如何影響與裝備他人\n'
+        '- 領袖技能工作坊二：決策框架 + 衝突處理\n'
+        '- 領袖承諾儀式 + 結束委任禱告\n\n'
+        '【三、特色元素】\n'
+        '3. 領袖恩賜評估工具（簡化版，15 題）\n'
+        '4. 導師配對計劃（培訓後 3 個月的跟進安排）\n'
+        '5. 「第一個任務」設計（每位學員回去後的具體領袖機會）\n\n'
+        '請用繁體中文，語氣賦權激勵，讓青年感受到被看見和被委以重任。';
+  }
+
+  String _buildBuildingExpansionPrompt(String projectType) {
+    final people = globalPersonController;
+    return '請為教會「$projectType」建築項目生成一份完整的長執會提案文件，'
+        '幫助教會有序推進建築計劃。\n\n'
+        '教會背景：${people.totalCount} 位會友（定期 ${people.regularCount} 人）。\n\n'
+        '提案文件結構：\n\n'
+        '【一、需求評估】\n'
+        '1. 現有設施不足的 5 個具體問題（容量/功能/安全/使用率）\n'
+        '2. 未來 5-10 年事工增長預測（3 個場景）\n'
+        '3. 為何現在是適合時機（3 個理由）\n\n'
+        '【二、項目描述】\n'
+        '4. $projectType 方案說明（範圍/面積/主要功能，留空格式）\n'
+        '5. 比較方案（至少 2 個替代選項及優缺點）\n\n'
+        '【三、財務計劃】\n'
+        '6. 概算費用框架（建築/裝修/設備/專業費用/後備金，各類別）\n'
+        '7. 資金來源策略（儲蓄/奉獻運動/貸款/補助，各比例建議）\n'
+        '8. 建堂奉獻運動框架（目標/時間/推廣方式）\n\n'
+        '【四、項目管理】\n'
+        '9. 建築委員會組成建議（人數/職責/任期）\n'
+        '10. 項目時間線（可行性研究→設計→審批→建造→入伙，各階段）\n'
+        '11. 風險管理（5 個主要風險 + 應對措施）\n\n'
+        '【五、屬靈考量】\n'
+        '12. 建堂神學基礎（3 節聖經 + 屬靈動機自我審視問題）\n'
+        '13. 向會眾溝通的框架（異象分享 + Q&A 準備 + 代禱邀請）\n\n'
+        '請用繁體中文，提案既有信心也有謹慎，讓長執會做出明智決定。';
+  }
+
+  String _buildMultiGenerationalMinistryPrompt(String focus) {
+    final people = globalPersonController;
+    return '請為教會設計一份「多代事工整合計劃」，重點：$focus，'
+        '幫助不同年代的會友在教會中共同生活、相互學習。\n\n'
+        '（注意：此計劃超越家庭事工或青少年事工，聚焦不同世代之間的刻意連結。）\n\n'
+        '教會背景：${people.totalCount} 位會友（各年齡層均有）。\n\n'
+        '計劃框架：\n\n'
+        '【一、現況評估】\n'
+        '1. 多代整合健康指標自評（5 項：代際互動頻率/跨代服事/跨代友誼等）\n'
+        '2. 常見代際隔閡（4 個，具體描述）\n'
+        '3. 本教會在多代整合的優勢（引導長執識別 3 個現有資產）\n\n'
+        '【二、跨代連結活動設計】\n'
+        '4. 代際配對計劃（長者導師 × 青年學員，配對原則 + 月度互動框架）\n'
+        '5. 全教會跨代服事項目（3 個，讓不同年代共同參與的服事）\n'
+        '6. 代際分享主日（長者與青年同台見證，半年一次，程序設計）\n\n'
+        '【三、崇拜整合】\n'
+        '7. 多代友善崇拜設計原則（詩歌/信息/禱告/參與形式各 2 條建議）\n'
+        '8. 兒童 / 青少年 / 青年 / 壯年 / 長者各年齡層的崇拜整合方式\n\n'
+        '【四、小組多代化】\n'
+        '9. 從年齡同質小組到多代小組的過渡策略（3 個步驟）\n'
+        '10. 多代小組的特殊引導技巧（5 個）\n\n'
+        '【五、文化建立】\n'
+        '11. 教會多代文化宣言（1 段，4-5 句）\n'
+        '12. 每年的代際感恩節日（2 個建議，慶祝方式）\n\n'
+        '請用繁體中文，充分尊重不同世代的差異，以「合一多元」為精神。';
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
   /// Generic single-field input dialog — avoids duplicating dialog code.
@@ -2629,6 +2744,36 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         hint: '例：聯合佈道會、共同社關事工、資源共享…',
         confirmLabel: '生成合作提案',
         buildPrompt: _buildInterChurchCollabPrompt,
+      );
+
+  // ── v2.19 dialog triggers ────────────────────────────────────────────────
+
+  Future<void> _askAuditYear() => _askInput(
+        title: '審計年度',
+        hint: '例：2026 年度、2025-2026 財政年度…',
+        confirmLabel: '生成審計報告',
+        buildPrompt: _buildFinancialAuditPrompt,
+      );
+
+  Future<void> _askLeaderCampDuration() => _askInput(
+        title: '培訓營時長',
+        hint: '例：兩天一夜、三天兩夜、週末培訓…',
+        confirmLabel: '生成培訓營方案',
+        buildPrompt: _buildYouthLeadershipCampPrompt,
+      );
+
+  Future<void> _askBuildingProject() => _askInput(
+        title: '建築項目類型',
+        hint: '例：禮拜堂擴建、新購堂址、翻新改建…',
+        confirmLabel: '生成擴建提案',
+        buildPrompt: _buildBuildingExpansionPrompt,
+      );
+
+  Future<void> _askMultiGenFocus() => _askInput(
+        title: '整合重點方向',
+        hint: '例：代際導師配對、跨代崇拜整合、多代小組化…',
+        confirmLabel: '生成整合計劃',
+        buildPrompt: _buildMultiGenerationalMinistryPrompt,
       );
 
   // ── UI ──────────────────────────────────────────────────────────────────
@@ -3286,6 +3431,40 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '跨教會合作提案',
             subtitle: '輸入合作類型，生成含分工矩陣、治理架構、6個月路線圖的正式提案',
             onTap: _askCollaborationType,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '建造拓展'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.fact_check_outlined,
+            color: Colors.blueGrey,
+            title: '財務年度審計報告',
+            subtitle: '輸入審計年度，生成管理層聲明、審計意見、內部控制評估與建議書框架',
+            onTap: _askAuditYear,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.military_tech_outlined,
+            color: Colors.amber,
+            title: '青年領袖培訓營方案',
+            subtitle: '輸入培訓時長，生成以裝備未來領袖為核心的培訓營行程與技能工作坊',
+            onTap: _askLeaderCampDuration,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.domain_add_outlined,
+            color: Colors.brown,
+            title: '建築擴建提案',
+            subtitle: '輸入建築項目，生成需求評估、財務計劃、建堂奉獻框架與屬靈考量',
+            onTap: _askBuildingProject,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.diversity_1_outlined,
+            color: Colors.teal,
+            title: '多代事工整合計劃',
+            subtitle: '輸入整合重點，生成代際配對、跨代服事、多代崇拜與小組多代化策略',
+            onTap: _askMultiGenFocus,
           ),
           const SizedBox(height: 24),
           Container(
