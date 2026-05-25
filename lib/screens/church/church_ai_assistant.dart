@@ -1,6 +1,6 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant v2.7 — 32 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.8 — 36 quick AI functions for pastoral team.
 //
 // v1  (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
 // v2.1(+ 4 cards): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
@@ -10,6 +10,7 @@
 // v2.5(+ 4 cards): 牧養禱告信 / 受洗見證引導 / 長執就職感言 / 年終牧函
 // v2.6(+ 4 cards): 佈道會邀請文案 / 喪禮安慰信 / 人生里程碑禱告 / 宣教報告草稿
 // v2.7(+ 4 cards): 教會年報摘要 / 婚禮崇拜程序 / 嬰兒奉獻典禮程序 / 多週查經課程
+// v2.8(+ 4 cards): 佈道後跟進計劃 / 小組長培訓大綱 / 青少年事工方案 / 長執會議議程
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
@@ -776,6 +777,119 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         '請用繁體中文，問題由淺入深，鼓勵真實分享而非標準答案。';
   }
 
+  // ── v2.8 prompt builders ─────────────────────────────────────────────────
+
+  String _buildPostEvangelismFollowUpPrompt(String eventName) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    return '請為「$eventName」佈道會結束後，生成一份新信徒跟進計劃，'
+        '幫助教會同工在黃金 72 小時內有效牧養決志者。\n\n'
+        '教會背景：${people.totalCount} 位會友，目前活躍關懷案件 ${care.activeCount} 件。\n\n'
+        '跟進計劃結構：\n\n'
+        '【第一階段：72 小時內】\n'
+        '(1) 感謝信範本（給決志者，100 字，溫暖真誠，附邀請下次聚會）；\n'
+        '(2) 首次跟進電話話術（3-5 句，自我介紹 + 關心 + 邀請）；\n'
+        '(3) 新信徒資料表欄位（姓名/電話/Email/如何決志，留空格式）。\n\n'
+        '【第二階段：首兩週】\n'
+        '(4) 新信徒第一次見面議程（30 分鐘，分享信仰/回答問題/禱告）；\n'
+        '(5) 建議送出的資源（聖經版本、入門小冊、WhatsApp 群組）；\n'
+        '(6) 配對輔導員原則（如何為新信徒選擇合適的跟進同工）。\n\n'
+        '【第三階段：首 3 個月】\n'
+        '(7) 新信徒栽培路徑圖（每月里程碑：第 1 月 / 第 2 月 / 第 3 月）；\n'
+        '(8) 受洗準備時間表（建議接觸受洗課程的時機）；\n'
+        '(9) 融入小組策略（如何自然地邀請新信徒加入小組）。\n\n'
+        '請用繁體中文，語氣積極實際，讓普通義工也能按步執行。';
+  }
+
+  String _buildSmallGroupLeaderTrainingPrompt(String duration) {
+    final people = globalPersonController;
+    return '請為教會設計一套「小組長培訓課程」大綱，培訓時長：$duration。\n\n'
+        '教會規模：${people.totalCount} 位會友（${people.regularCount} 人定期出席）。\n\n'
+        '課程目標：培育有效帶領小組、牧養組員的小組長。\n\n'
+        '培訓大綱結構：\n\n'
+        '【模組一：小組長的身份認同（25%）】\n'
+        '- 學習目標（3 條）\n'
+        '- 核心內容：服事呼召、僕人領袖、靈命自我照顧\n'
+        '- 實踐練習：個人靈命評估表（5 題）\n\n'
+        '【模組二：帶領查經的技巧（25%）】\n'
+        '- 學習目標（3 條）\n'
+        '- 核心內容：歸納式查經法、提問技巧、避免單向教導\n'
+        '- 實踐練習：模擬帶領查經 10 分鐘\n\n'
+        '【模組三：牧養與關係建立（25%）】\n'
+        '- 學習目標（3 條）\n'
+        '- 核心內容：主動關心、危機識別、轉介牧者的時機\n'
+        '- 實踐練習：角色扮演 —— 如何回應組員的哀傷\n\n'
+        '【模組四：小組倍增與傳承（25%）】\n'
+        '- 學習目標（3 條）\n'
+        '- 核心內容：識別潛力領袖、授權文化、健康分組\n'
+        '- 實踐練習：制定本組未來 6 個月倍增計劃\n\n'
+        '附：培訓後評估問卷（5 條問題）\n'
+        '請用繁體中文，內容實用，避免純理論。';
+  }
+
+  String _buildYouthMinistryPlanPrompt(String theme) {
+    final people = globalPersonController;
+    final youthCount = people.seekerCount + (people.totalCount ~/ 5);
+    return '請為主題「$theme」設計一份青少年事工活動方案，'
+        '適合 13-25 歲青少年，約 ${youthCount > 0 ? youthCount : 20} 人參與。\n\n'
+        '活動方案結構：\n\n'
+        '(1) 活動名稱與標語（中英對照，各 10 字以內）；\n'
+        '(2) 活動目標（3 個，說明參與後青少年能…）；\n'
+        '(3) 活動形式選項（至少 3 種：退修營 / 主日延伸 / 週間活動，各附時長）；\n\n'
+        '【完整方案（選其中一種形式展開，建議半天活動）】\n'
+        '(4) 詳細流程（時間軸，每段 15-30 分鐘，含：\n'
+        '    - 暖場遊戲 / 敬拜讚美 / 信息 / 小組分享 / 回應與禱告）；\n'
+        '(5) 信息大綱（3 點，結合主題與青少年生活處境）；\n'
+        '(6) 小組討論問題（3 條，適合青少年真實表達）；\n'
+        '(7) 遊戲活動設計（1 個暖場遊戲，附規則與所需材料）；\n'
+        '(8) 物資清單（場地/音響/食物/文具，分類列出）；\n'
+        '(9) 社群宣傳文案（Instagram 版 + WhatsApp 版，各 1 則）；\n'
+        '(10) 跟進建議（活動後 1 週如何鞏固果效）。\n\n'
+        '請用繁體中文，語氣年輕活潑，貼近青少年文化，避免說教。';
+  }
+
+  String _buildElderBoardMeetingPrompt(String date) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    final buf = StringBuffer();
+    buf.writeln('請為「$date」長執會議生成一份完整的議程與決議追蹤表，'
+        '格式正式，適合教會治理使用。\n');
+    buf.writeln('【教會即時數據（自動帶入）】');
+    buf.writeln('- 總會友：${people.totalCount} 人'
+        '（定期 ${people.regularCount} / 偶爾 ${people.occasionalCount} / 久缺 ${people.inactiveCount}）');
+    buf.writeln('- 活躍關懷案件：${care.activeCount} 件'
+        '（紅燈 ${care.redCount} 需優先處理）');
+    buf.writeln('- 新慕道友：${people.seekerCount} 人\n');
+    buf.writeln('會議議程格式：\n\n'
+        '【$date 長執會議議程】\n'
+        '會議時間：_______ ／ 地點：_______\n'
+        '出席：_______ ／ 列席：_______ ／ 記錄：_______\n\n'
+        '1. 開會禱告（5 分鐘）\n'
+        '2. 確認上次會議記錄（5 分鐘）\n'
+        '3. 牧者報告（15 分鐘）\n'
+        '   3.1 教牧關懷：活躍案件 ${care.activeCount} 件（含紅燈 ${care.redCount} 件），[具體說明]\n'
+        '   3.2 屬靈動態：[近期教會屬靈狀況]\n'
+        '   3.3 待長執會決議事項：[列出需要決議的事項]\n'
+        '4. 部門報告（20 分鐘，各部門 3-5 分鐘）\n'
+        '   - 敬拜部：[留空]\n'
+        '   - 兒童/青少年部：[留空]\n'
+        '   - 關懷部：[留空]\n'
+        '   - 財務：[留空]\n'
+        '5. 討論與決議（20 分鐘）\n'
+        '   [請列出 3 個教會常見需要長執決議的議題作範例]\n'
+        '6. 代禱事項（10 分鐘）\n'
+        '7. 下次會議日期：_______ ／ 散會禱告\n\n'
+        '---\n'
+        '【決議追蹤表】\n'
+        '| 決議事項 | 負責人 | 完成期限 | 狀態 | 備注 |\n'
+        '|----------|--------|----------|------|------|\n'
+        '| [範例 1] | ______ | ________ | 進行中 | |\n'
+        '| [範例 2] | ______ | ________ | 待辦 | |\n'
+        '| [範例 3] | ______ | ________ | 已完成 | |\n\n'
+        '請用繁體中文，格式正式，符合教會治理規範。');
+    return buf.toString();
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
   /// Generic single-field input dialog — avoids duplicating dialog code.
@@ -1038,6 +1152,36 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         hint: '例：約翰福音、登山寶訓、保羅書信…',
         confirmLabel: '生成課程',
         buildPrompt: _buildBibleSeriesPrompt,
+      );
+
+  // ── v2.8 dialog triggers ─────────────────────────────────────────────────
+
+  Future<void> _askPostEvangelismEvent() => _askInput(
+        title: '佈道會名稱',
+        hint: '例：2026 聖誕佈道會、青年福音夜…',
+        confirmLabel: '生成跟進計劃',
+        buildPrompt: _buildPostEvangelismFollowUpPrompt,
+      );
+
+  Future<void> _askLeaderTrainingDuration() => _askInput(
+        title: '培訓時長',
+        hint: '例：4 小時、2 天 1 夜、6 週課程…',
+        confirmLabel: '生成培訓大綱',
+        buildPrompt: _buildSmallGroupLeaderTrainingPrompt,
+      );
+
+  Future<void> _askYouthTheme() => _askInput(
+        title: '青少年事工主題',
+        hint: '例：身份認同、友誼、信仰與學業…',
+        confirmLabel: '生成活動方案',
+        buildPrompt: _buildYouthMinistryPlanPrompt,
+      );
+
+  Future<void> _askElderBoardDate() => _askInput(
+        title: '會議日期',
+        hint: '例：2026 年 6 月 5 日、本月長執會…',
+        confirmLabel: '生成議程',
+        buildPrompt: _buildElderBoardMeetingPrompt,
       );
 
   // ── UI ──────────────────────────────────────────────────────────────────
@@ -1321,6 +1465,40 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '多週查經課程設計',
             subtitle: '輸入查經系列主題，生成多週課程大綱（含觀察/詮釋/應用問題）',
             onTap: _askBibleSeriesTitle,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '領袖發展'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.follow_the_signs_outlined,
+            color: Colors.deepOrange,
+            title: '佈道後跟進計劃',
+            subtitle: '輸入佈道會名稱，生成 72 小時黃金跟進到 3 個月栽培的完整路徑',
+            onTap: _askPostEvangelismEvent,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.school_outlined,
+            color: Colors.indigo,
+            title: '小組長培訓大綱',
+            subtitle: '輸入培訓時長，生成四大模組（身份/查經/牧養/倍增）完整培訓課程',
+            onTap: _askLeaderTrainingDuration,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.sports_esports_outlined,
+            color: Colors.purple,
+            title: '青少年事工方案',
+            subtitle: '輸入活動主題，生成含流程、信息大綱、遊戲設計與宣傳文案的完整方案',
+            onTap: _askYouthTheme,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.gavel_outlined,
+            color: Colors.brown,
+            title: '長執會議議程',
+            subtitle: '輸入會議日期，自動嵌入即時數據生成議程與決議追蹤表',
+            onTap: _askElderBoardDate,
           ),
           const SizedBox(height: 24),
           Container(
