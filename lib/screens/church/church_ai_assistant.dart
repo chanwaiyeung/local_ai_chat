@@ -1,11 +1,14 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant — 4 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.1 — 8 quick AI functions for pastoral team.
+//
+// v1 (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
+// v2.1 (+ 4 cards): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
 //
-// WRITE: only this file + church_hub_screen.dart (FAB).
+// WRITE: only this file.
 // NEVER TOUCH: controllers, models, services, l10n, main.dart.
 
 import 'package:flutter/material.dart';
@@ -134,20 +137,107 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
     return buf.toString();
   }
 
+  // ── v2.1 prompt builders ─────────────────────────────────────────────────
+
+  String _buildGroupDiscussionPrompt(String topic) {
+    return '請為小組查經或小組聚會設計一套討論問題，主題／經文：「$topic」。\n'
+        '要求：\n'
+        '(1) 破冰問題 1 條（輕鬆、生活化）；\n'
+        '(2) 深入查經問題 4 條（引導小組思考經文意義與應用）；\n'
+        '(3) 生活應用問題 2 條（促進個人行動）；\n'
+        '(4) 結束禱告重點 1 條。\n'
+        '請用繁體中文，每條問題後附上簡短「引導提示」供帶領者參考。';
+  }
+
+  String _buildEventCopyPrompt(String eventName) {
+    return '請為教會活動「$eventName」生成完整宣傳文案套件，包括：\n'
+        '(1) 活動主題句（15 字以內，吸引人）；\n'
+        '(2) 海報副標題（25 字以內）；\n'
+        '(3) 活動介紹段落（3-4 句，說明活動內容與對象）；\n'
+        '(4) WhatsApp／Line 分享短文（100 字以內）；\n'
+        '(5) 三個可用的 hashtag 建議；\n'
+        '(6) 呼召行動句（Call to Action，例：立即報名、歡迎帶朋友參加）。\n'
+        '請用繁體中文，風格溫暖親切，適合教會社群。';
+  }
+
+  String _buildFinanceReportPrompt(String period) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    return '請為教會生成「$period」財務報告草稿範本，包括：\n'
+        '(1) 報告標題與日期欄位；\n'
+        '(2) 收入項目清單（奉獻、什一、特別奉獻、其他）及合計欄；\n'
+        '(3) 支出項目清單（人事、房租/場地、事工、行政、其他）及合計欄；\n'
+        '(4) 結餘計算欄；\n'
+        '(5) 重點摘要段落（給長執會閱讀）；\n'
+        '(6) 財務健康指標建議（例：緊急備用金≥3個月支出）。\n\n'
+        '教會目前概況（供參考）：\n'
+        '- 會友人數：${people.totalCount} 人（定期出席 ${people.regularCount} 人）\n'
+        '- 活躍關懷案件：${care.activeCount} 件\n\n'
+        '請用繁體中文，表格部分用文字列出欄位名稱，方便貼入 Excel。';
+  }
+
+  String _buildPastoralActionPrompt(String name) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    final buf = StringBuffer();
+    buf.writeln('請為會友「$name」制定具體的牧養行動計劃，'
+        '包含短期（本週）、中期（本月）和長期（3 個月）的跟進步驟。\n');
+
+    final person = people.findByName(name);
+    if (person != null) {
+      buf.writeln('【會友基本資料】');
+      buf.writeln('姓名：${person.name} ／ 類型：${person.personType}');
+      buf.writeln('出席狀況：${person.attendance}');
+      if (person.notes.isNotEmpty) buf.writeln('備註：${person.notes}');
+    } else {
+      buf.writeln('（通訊錄中未找到「$name」，請根據以下關懷記錄判斷）');
+    }
+
+    final related = care.allCases
+        .where((c) => c.memberName.contains(name) || name.contains(c.memberName))
+        .toList();
+    if (related.isNotEmpty) {
+      buf.writeln('\n【關懷案件歷史（${related.length} 件）】');
+      for (final c in related.take(10)) {
+        buf.writeln('- [${c.status}] ${c.reason}（緊急度：${c.urgency}）');
+        final visits = care.visitsForCase(c.id);
+        for (final v in visits.take(3)) {
+          buf.writeln('  探訪 ${v.visitDate.year}/${v.visitDate.month}/${v.visitDate.day}'
+              '：${v.summary}（狀況：${v.condition}）');
+        }
+      }
+    }
+
+    buf.writeln('\n請根據以上資料，生成：\n'
+        '(1) 當前屬靈需要評估；\n'
+        '(2) 本週具體跟進行動（1-2 項）；\n'
+        '(3) 本月牧養目標；\n'
+        '(4) 3 個月長期培育方向；\n'
+        '(5) 可邀請參與的教會活動或事工建議。\n'
+        '請用繁體中文，具體可執行，避免空泛。');
+    return buf.toString();
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
-  Future<void> _askSermonTopic() async {
+  /// Generic single-field input dialog — avoids duplicating dialog code.
+  Future<void> _askInput({
+    required String title,
+    required String hint,
+    required String confirmLabel,
+    required String Function(String) buildPrompt,
+  }) async {
     final ctrl = TextEditingController();
-    final topic = await showDialog<String>(
+    final value = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('講道題目'),
+        title: Text(title),
         content: TextField(
           controller: ctrl,
           autofocus: true,
-          decoration: const InputDecoration(
-            hintText: '例：盼望、悔改、恩典…',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            hintText: hint,
+            border: const OutlineInputBorder(),
           ),
           onSubmitted: (v) => Navigator.pop(ctx, v.trim()),
         ),
@@ -158,47 +248,59 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
-            child: const Text('生成'),
+            child: Text(confirmLabel),
           ),
         ],
       ),
     );
     ctrl.dispose();
-    if (topic == null || topic.isEmpty) return;
-    _run(_buildSermonPrompt(topic));
+    if (value == null || value.isEmpty) return;
+    _run(buildPrompt(value));
   }
 
-  Future<void> _askMemberName() async {
-    final ctrl = TextEditingController();
-    final name = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('會友姓名'),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: '請輸入會友姓名',
-            border: OutlineInputBorder(),
-          ),
-          onSubmitted: (v) => Navigator.pop(ctx, v.trim()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
-            child: const Text('查詢'),
-          ),
-        ],
-      ),
-    );
-    ctrl.dispose();
-    if (name == null || name.isEmpty) return;
-    _run(_buildMemberStatusPrompt(name));
-  }
+  Future<void> _askSermonTopic() => _askInput(
+        title: '講道題目',
+        hint: '例：盼望、悔改、恩典…',
+        confirmLabel: '生成',
+        buildPrompt: _buildSermonPrompt,
+      );
+
+  Future<void> _askMemberName() => _askInput(
+        title: '會友姓名',
+        hint: '請輸入會友姓名',
+        confirmLabel: '查詢',
+        buildPrompt: _buildMemberStatusPrompt,
+      );
+
+  // ── v2.1 dialog triggers ─────────────────────────────────────────────────
+
+  Future<void> _askGroupTopic() => _askInput(
+        title: '小組主題 ／ 聖經章節',
+        hint: '例：約翰福音 3:16、寬恕、信心…',
+        confirmLabel: '生成',
+        buildPrompt: _buildGroupDiscussionPrompt,
+      );
+
+  Future<void> _askEventName() => _askInput(
+        title: '活動名稱',
+        hint: '例：2026 青年退修會、感恩節晚宴…',
+        confirmLabel: '生成文案',
+        buildPrompt: _buildEventCopyPrompt,
+      );
+
+  Future<void> _askFinancePeriod() => _askInput(
+        title: '報告期間',
+        hint: '例：2026 年 5 月、2026 年第二季…',
+        confirmLabel: '生成草稿',
+        buildPrompt: _buildFinanceReportPrompt,
+      );
+
+  Future<void> _askPastoralName() => _askInput(
+        title: '會友姓名',
+        hint: '請輸入需要牧養建議的會友姓名',
+        confirmLabel: '生成建議',
+        buildPrompt: _buildPastoralActionPrompt,
+      );
 
   // ── UI ──────────────────────────────────────────────────────────────────
 
@@ -243,6 +345,40 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '會友近況查詢',
             subtitle: '輸入會友姓名，AI 整合關懷記錄並給出牧關建議',
             onTap: _askMemberName,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '事工輔助'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.groups_2_outlined,
+            color: Colors.orange,
+            title: '小組討論問題',
+            subtitle: '輸入查經主題或經文，生成破冰、深入與應用問題套組',
+            onTap: _askGroupTopic,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.campaign_outlined,
+            color: Colors.pink,
+            title: '活動文案與海報提示',
+            subtitle: '輸入活動名稱，AI 生成海報標題、介紹段落與分享短文',
+            onTap: _askEventName,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.receipt_long_outlined,
+            color: Colors.green,
+            title: '財務報告草稿',
+            subtitle: '輸入報告期間，自動生成財務報告範本與健康指標建議',
+            onTap: _askFinancePeriod,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.edit_note_outlined,
+            color: Colors.deepOrange,
+            title: '牧養行動建議',
+            subtitle: '輸入會友姓名，生成短中長期具體牧養行動計劃',
+            onTap: _askPastoralName,
           ),
           const SizedBox(height: 24),
           Container(
@@ -302,6 +438,35 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ============================================================================
+// Section divider
+// ============================================================================
+
+class _SectionDivider extends StatelessWidget {
+  const _SectionDivider({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Expanded(child: Divider()),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  letterSpacing: 1.2,
+                ),
+          ),
+        ),
+        const Expanded(child: Divider()),
+      ],
     );
   }
 }
