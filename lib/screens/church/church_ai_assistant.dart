@@ -1,6 +1,6 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant v2.13 — 56 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.14 — 60 quick AI functions for pastoral team.
 //
 // v1   (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
 // v2.1 (+ 4): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
@@ -16,6 +16,7 @@
 // v2.11(+ 4): 青少年年度計劃 / 長執退修議程 / 靈命成長追蹤 / 禱告文化建立計劃
 // v2.12(+ 4): 教會異象宣言 / 新堂會設立計劃 / 短宣隊招募培訓 / 轉會推薦信
 // v2.13(+ 4): 年度讀經計劃 / 青年營會方案 / 志工管理系統 / 牧師交棒計劃
+// v2.14(+ 4): 直播崇拜腳本 / 家庭事工方案 / 社群媒體月計劃 / 人生轉變關懷計劃
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
@@ -1465,6 +1466,143 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         '強調傳承是教會生命力的見證。';
   }
 
+  // ── v2.14 prompt builders ────────────────────────────────────────────────
+
+  String _buildLivestreamScriptPrompt(String sermonTitle) {
+    return '請為主題「$sermonTitle」的主日線上崇拜直播生成完整腳本，'
+        '供司儀、技術同工和牧者使用。\n\n'
+        '腳本格式（三欄：時間戳 ｜ 誰說/做什麼 ｜ 台詞/備注）：\n\n'
+        '【直播前準備（-15 分鐘至開始）】\n'
+        '- 技術檢查清單（音訊/畫面/字幕/直播連結測試，5 項）\n'
+        '- 直播預告畫面文字（30 字倒數提示）\n\n'
+        '【開場段落（0:00-5:00）】\n'
+        '- 直播歡迎詞（30 秒，熱情迎接線上會眾，請他們在留言區打招呼）\n'
+        '- 技術提示（如何開啟字幕/如何奉獻/如何分享直播）\n'
+        '- 過渡到敬拜的引導語\n\n'
+        '【敬拜時段（5:00-25:00）】\n'
+        '- 每首詩歌前後的司儀接駁詞（各 1-2 句）\n'
+        '- 螢幕字幕顯示指示（歌詞何時顯示）\n'
+        '- 奉獻提示插入時機建議\n\n'
+        '【信息時段（25:00-55:00）】\n'
+        '- 牧者介紹語（司儀，20 秒）\n'
+        '- 畫面切換指示（全螢幕牧者/PPT 投影/金句字卡）\n'
+        '- 重要金句字幕顯示指示（3-5 個時機）\n\n'
+        '【回應與結束（55:00-70:00）】\n'
+        '- 回應邀請語（司儀，線上觀眾如何回應信息）\n'
+        '- 線上代禱方式介紹（留言/表單/私訊）\n'
+        '- 結束告別語（歡迎下週/分享直播/點讚提醒）\n'
+        '- 直播後剪輯上傳建議（標題格式/縮圖提示）\n\n'
+        '請用繁體中文，腳本清晰，讓義工技術組也能照著執行。';
+  }
+
+  String _buildFamilyMinistryPrompt(String theme) {
+    final people = globalPersonController;
+    final familyEst = (people.regularCount ~/ 3).clamp(5, 30);
+    return '請為主題「$theme」設計一份家庭事工活動方案，'
+        '目標：讓父母與孩子同時參與，建立家庭屬靈生命。\n\n'
+        '估計參與家庭數：約 $familyEst 個家庭。\n\n'
+        '活動方案（建議半天活動，3-4 小時）：\n\n'
+        '【一、活動概覽】\n'
+        '1. 活動名稱與標語（中英各一，吸引家長和孩子）\n'
+        '2. 適合年齡段（建議 2-12 歲子女的家庭）\n'
+        '3. 活動目標（3 個，涵蓋家長/孩子/家庭關係）\n\n'
+        '【二、分組學習時段（60 分鐘，親子分開）】\n'
+        '4. 兒童組課程大綱（與主題相關，適合 4-12 歲）\n'
+        '5. 家長組課程大綱（裝備父母的對應主題，30 分鐘教導 + 30 分鐘討論）\n\n'
+        '【三、親子合一時段（60 分鐘，家庭同樂）】\n'
+        '6. 親子互動遊戲（2 個，與主題相關，不需器材）\n'
+        '7. 家庭挑戰任務（每個家庭共同完成，15 分鐘）\n'
+        '8. 家庭禱告時刻（引導語 + 家長帶孩子禱告的框架）\n\n'
+        '【四、後勤與宣傳】\n'
+        '9. 物資清單\n'
+        '10. 宣傳文案（WhatsApp 家長群版本，80 字）\n\n'
+        '【五、回家功課】\n'
+        '11. 本週家庭靈修材料（5 天，每天 10 分鐘親子靈修活動）\n\n'
+        '請用繁體中文，語氣溫馨，讓家庭感受到教會對家庭的重視。';
+  }
+
+  String _buildSocialMediaCalendarPrompt(String month) {
+    final people = globalPersonController;
+    final care = globalCareController;
+    return '請為教會生成「$month」社群媒體內容月計劃，'
+        '涵蓋 Facebook / Instagram / WhatsApp 三個平台。\n\n'
+        '教會概況：${people.totalCount} 位會友，活躍關懷 ${care.activeCount} 件。\n\n'
+        '月計劃結構：\n\n'
+        '【一、月度主題與策略】\n'
+        '1. 本月社群主題（1 句話，與教會事工節奏配合）\n'
+        '2. 發文頻率建議（各平台每週幾次，說明理由）\n'
+        '3. 本月重點活動/節日（需要特別發文的日期）\n\n'
+        '【二、內容類型組合（建議比例）】\n'
+        '4. 七種內容類型及比例：\n'
+        '   - 靈感/金句（30%）\n'
+        '   - 活動宣傳（20%）\n'
+        '   - 會友見證/故事（15%）\n'
+        '   - 聖經問答互動（15%）\n'
+        '   - 幕後生活/教會文化（10%）\n'
+        '   - 代禱邀請（5%）\n'
+        '   - 節日/節氣相關（5%）\n\n'
+        '【三、週計劃範本（4 週）】\n'
+        '每週格式：週一至週日，各平台當天發什麼內容（主題 + 30 字文案草稿）\n\n'
+        '【四、高互動貼文範本（3 則）】\n'
+        '5. 靈感金句帖（含建議配圖描述 + 30 字文案）\n'
+        '6. 互動問題帖（引發留言的問題 + 20 字引導語）\n'
+        '7. 見證徵集帖（邀請會友分享，50 字文案）\n\n'
+        '【五、實用提示】\n'
+        '8. 最佳發文時間（各平台，根據一般教會會眾習慣）\n'
+        '9. 5 個免費設計工具推薦（Canva 等）\n'
+        '10. 危機處理：若出現負面留言的 3 個回應原則\n\n'
+        '請用繁體中文，計劃實際可執行，讓義工媒體組照著做。';
+  }
+
+  String _buildLifeTransitionCarePrompt(String input) {
+    // input: "姓名" or "姓名｜轉變類型"
+    final parts = input.split('｜');
+    final name = parts[0].trim();
+    final transition = parts.length > 1 ? parts[1].trim() : '';
+    final care = globalCareController;
+    final people = globalPersonController;
+    final person = people.findByName(name);
+
+    final buf = StringBuffer();
+    buf.writeln('請為會友「$name」在人生重大轉變期間制定牧養關懷計劃。');
+    if (transition.isNotEmpty) buf.writeln('轉變類型：$transition\n');
+
+    if (person != null) {
+      buf.writeln('【會友資料】出席：${person.attendance}');
+      if (person.notes.isNotEmpty) buf.writeln('備註：${person.notes}');
+    }
+
+    final related = care.allCases
+        .where((c) =>
+            c.memberName.contains(name) || name.contains(c.memberName))
+        .take(2)
+        .toList();
+    if (related.isNotEmpty) {
+      buf.writeln('【相關關懷記錄】');
+      for (final c in related) {
+        buf.writeln('- ${c.reason}（${c.status}）');
+      }
+    }
+
+    buf.writeln('\n關懷計劃結構：\n\n'
+        '【一、轉變期特別需要分析】\n'
+        '1. 此類轉變（${transition.isNotEmpty ? transition : "搬家/轉職/退休/離婚/子女離家"}）'
+        '的常見屬靈與情感挑戰（5 個）\n'
+        '2. 需要優先關注的 3 個牧養層面\n\n'
+        '【二、即時關懷（轉變發生後 1 個月內）】\n'
+        '3. 首次探訪/通話議程（30 分鐘，3 個討論重點）\n'
+        '4. 實際支援行動建議（禱告/食物/協助搬遷/介紹新環境資源）\n'
+        '5. 傳送給對方的鼓勵經文（3 節，附個人化應用）\n\n'
+        '【三、3 個月陪伴期】\n'
+        '6. 每月一次的跟進問題（3 個月各有 3 條問題）\n'
+        '7. 里程碑慶祝：轉變滿 1 個月/3 個月的認可方式\n\n'
+        '【四、重新融入教會生活】\n'
+        '8. 若已搬離：推薦接觸新城市教會的方式（3 個步驟）\n'
+        '9. 若仍在本教會：如何在新人生階段找到新的事奉崗位\n\n'
+        '請用繁體中文，展現教會對生命各個階段的全人關懷。');
+    return buf.toString();
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
   /// Generic single-field input dialog — avoids duplicating dialog code.
@@ -1907,6 +2045,36 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         hint: '例：1 年內、2-3 年過渡期、5 年長期規劃…',
         confirmLabel: '生成交棒計劃',
         buildPrompt: _buildPastoralSuccessionPrompt,
+      );
+
+  // ── v2.14 dialog triggers ────────────────────────────────────────────────
+
+  Future<void> _askLivestreamSermon() => _askInput(
+        title: '講道題目',
+        hint: '例：從恐懼到信心、愛的功課…',
+        confirmLabel: '生成直播腳本',
+        buildPrompt: _buildLivestreamScriptPrompt,
+      );
+
+  Future<void> _askFamilyMinistryTheme() => _askInput(
+        title: '活動主題',
+        hint: '例：同心守約、父母的榜樣、家的意義…',
+        confirmLabel: '生成活動方案',
+        buildPrompt: _buildFamilyMinistryPrompt,
+      );
+
+  Future<void> _askSocialMediaMonth() => _askInput(
+        title: '計劃月份',
+        hint: '例：2026 年 7 月、下個月…',
+        confirmLabel: '生成月計劃',
+        buildPrompt: _buildSocialMediaCalendarPrompt,
+      );
+
+  Future<void> _askLifeTransitionInput() => _askInput(
+        title: '會友姓名（選填轉變類型：姓名｜類型）',
+        hint: '例：陳大明  或  陳大明｜搬遷至台北',
+        confirmLabel: '生成關懷計劃',
+        buildPrompt: _buildLifeTransitionCarePrompt,
       );
 
   // ── UI ──────────────────────────────────────────────────────────────────
@@ -2394,6 +2562,40 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '牧師交棒計劃',
             subtitle: '輸入交棒時間線，生成繼任者培育、過渡交接、新牧者支援完整框架',
             onTap: _askSuccessionTimeline,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '數位家庭'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.live_tv_outlined,
+            color: Colors.red,
+            title: '線上直播崇拜腳本',
+            subtitle: '輸入講道題目，生成含技術指示、司儀台詞、互動提示的完整直播腳本',
+            onTap: _askLivestreamSermon,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.family_restroom_outlined,
+            color: Colors.orange,
+            title: '家庭事工活動方案',
+            subtitle: '輸入活動主題，生成親子分組學習、合一遊戲與家庭靈修的半天方案',
+            onTap: _askFamilyMinistryTheme,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.calendar_view_month_outlined,
+            color: Colors.pink,
+            title: '社群媒體月計劃',
+            subtitle: '輸入月份，生成FB/IG/WhatsApp三平台的4週內容日曆與高互動貼文範本',
+            onTap: _askSocialMediaMonth,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.transfer_within_a_station_outlined,
+            color: Colors.teal,
+            title: '人生轉變關懷計劃',
+            subtitle: '輸入會友姓名（選填轉變類型），生成搬家/轉職/退休等過渡期牧養計劃',
+            onTap: _askLifeTransitionInput,
           ),
           const SizedBox(height: 24),
           Container(
