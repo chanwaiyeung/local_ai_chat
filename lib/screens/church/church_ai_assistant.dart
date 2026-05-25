@@ -1,10 +1,11 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant v2.2 — 12 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.3 — 16 quick AI functions for pastoral team.
 //
 // v1  (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
 // v2.1(+ 4 cards): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
 // v2.2(+ 4 cards): 主日週報草稿 / 講道重點摘要 / 活動海報設計提示 / 小組長牧養建議
+// v2.3(+ 4 cards): 新人歡迎信 / 會友關懷離開信 / 牧養週訊 / 兒童主日學教案
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
@@ -14,6 +15,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../controllers/church/care_controller.dart';
 import '../../main.dart';
 import '../personal_query_screen.dart';
 
@@ -312,6 +314,105 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
     return buf.toString();
   }
 
+  // ── v2.3 prompt builders ─────────────────────────────────────────────────
+
+  String _buildWelcomeLetterPrompt(String name) {
+    final people = globalPersonController;
+    return '請為新來教會的朋友「$name」撰寫一封歡迎信，風格溫暖、真誠，'
+        '不過度宗教化，讓初來者感到被接納。\n\n'
+        '信件結構：\n'
+        '(1) 開場問候（提及名字，表達真誠喜悅）；\n'
+        '(2) 簡短介紹教會氛圍與核心價值（3-4 句）；\n'
+        '(3) 邀請參加的活動或小組（列 2-3 個具體選項）；\n'
+        '(4) 提供聯絡方式欄位（留空供填寫：牧師姓名、電話、email）；\n'
+        '(5) 溫馨結語（鼓勵、祝福語）；\n'
+        '(6) 署名欄位（教會名稱 + 牧師姓名，留空）。\n\n'
+        '目前教會有 ${people.totalCount} 位會友，定期出席 ${people.regularCount} 人，'
+        '歡迎氛圍友善多元。\n'
+        '請用繁體中文，約 200-300 字，適合列印或電子郵件發送。';
+  }
+
+  String _buildFarewellCarePrompt(String name) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    final buf = StringBuffer();
+    buf.writeln('請為久未出席或即將離開教會的會友「$name」撰寫一封關懷信，'
+        '語氣溫柔、不施壓、充滿愛，目的是維繫關係而非強迫回歸。\n');
+
+    final person = people.findByName(name);
+    if (person != null) {
+      buf.writeln('【會友資料】出席狀況：${person.attendance}');
+      if (person.notes.isNotEmpty) buf.writeln('備註：${person.notes}');
+    }
+
+    final related = care.allCases
+        .where((c) =>
+            c.memberName.contains(name) || name.contains(c.memberName))
+        .take(3)
+        .toList();
+    if (related.isNotEmpty) {
+      buf.writeln('【相關關懷背景】');
+      for (final c in related) {
+        buf.writeln('- ${c.reason}');
+      }
+    }
+
+    buf.writeln('\n信件結構：\n'
+        '(1) 開場：表達真誠惦念，不提責備；\n'
+        '(2) 回顧：一句美好的共同回憶（可留通用版）；\n'
+        '(3) 關心：詢問近況，表示願意傾聽；\n'
+        '(4) 留門：告訴對方教會永遠歡迎他/她回來；\n'
+        '(5) 結語：祝福語 + 署名欄（留空）。\n'
+        '請用繁體中文，約 150-200 字，語氣像朋友而非機構。');
+    return buf.toString();
+  }
+
+  String _buildPastoralNewsletterPrompt(String period) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    final buf = StringBuffer();
+    buf.writeln('請為「$period」生成一份教會牧養週訊草稿，'
+        '適合以 WhatsApp 群組或 Email 發送給教牧同工。\n');
+    buf.writeln('【本期教牧資料】');
+    buf.writeln('- 活躍關懷案件：${care.activeCount} 件'
+        '（紅燈 ${care.redCount} / 黃燈 ${care.yellowCount} / 綠燈 ${care.greenCount}）');
+    buf.writeln('- 總會友：${people.totalCount} 人'
+        '（定期 ${people.regularCount} / 偶爾 ${people.occasionalCount} / 久缺 ${people.inactiveCount}）');
+
+    final redCases = care.casesByAlert(CareAlertLevel.red).take(5).toList();
+    if (redCases.isNotEmpty) {
+      buf.writeln('\n【需緊急跟進（紅燈）】');
+      for (final c in redCases) {
+        final days = care.daysSinceLastTouch(c) ?? 0;
+        buf.writeln('- ${c.memberName}｜${c.reason}｜已 $days 天未探訪');
+      }
+    }
+
+    buf.writeln('\n週訊結構：\n'
+        '(1) 本期關懷重點（根據以上紅燈案件，2-3 句）；\n'
+        '(2) 感恩事項（鼓勵同工，1-2 項，留空供填寫）；\n'
+        '(3) 本週行動清單（每位同工各 1-2 項待辦，格式：【負責人】事項）；\n'
+        '(4) 下次同工會議提醒欄（留空）；\n'
+        '(5) 牧者話語（鼓勵性金句或禱告，2-3 句）。\n'
+        '請用繁體中文，語氣專業而溫暖，適合同工團隊閱讀。');
+    return buf.toString();
+  }
+
+  String _buildSundaySchoolPrompt(String topic) {
+    return '請為兒童主日學設計一份完整教案，主題：「$topic」。\n\n'
+        '適合年齡：4-12 歲（可分低年級 4-7 歲 / 高年級 8-12 歲兩版本）\n\n'
+        '教案結構：\n'
+        '(1) 學習目標（3 條，使用「孩子能…」句式）；\n'
+        '(2) 主題經文（1 節，附章節，選孩子易懂的版本）；\n'
+        '(3) 開場暖身活動（5 分鐘，互動遊戲或問題）；\n'
+        '(4) 故事講述大綱（10 分鐘，3-4 個情節點，生動具畫面感）；\n'
+        '(5) 互動問答（3 條問題，由淺入深）；\n'
+        '(6) 手工 ／ 繪畫活動建議（10 分鐘，材料清單 + 步驟）；\n'
+        '(7) 結束禱告（兒童能跟著說的短禱告，5 句以內）；\n'
+        '(8) 帶回家的信息（1 句話，讓孩子告訴父母今天學到什麼）。\n\n'
+        '請用繁體中文，語言生動活潑，避免過深神學術語。';
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
   /// Generic single-field input dialog — avoids duplicating dialog code.
@@ -426,6 +527,36 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         buildPrompt: _buildSmallGroupLeaderPrompt,
       );
 
+  // ── v2.3 dialog triggers ─────────────────────────────────────────────────
+
+  Future<void> _askWelcomeName() => _askInput(
+        title: '新來者姓名',
+        hint: '例：陳大明、Sarah…',
+        confirmLabel: '生成歡迎信',
+        buildPrompt: _buildWelcomeLetterPrompt,
+      );
+
+  Future<void> _askFarewellName() => _askInput(
+        title: '會友姓名',
+        hint: '請輸入久未出席或離開的會友姓名',
+        confirmLabel: '生成關懷信',
+        buildPrompt: _buildFarewellCarePrompt,
+      );
+
+  Future<void> _askNewsletterPeriod() => _askInput(
+        title: '週訊期間',
+        hint: '例：2026 年 6 月第 1 週、本週…',
+        confirmLabel: '生成週訊',
+        buildPrompt: _buildPastoralNewsletterPrompt,
+      );
+
+  Future<void> _askSundaySchoolTopic() => _askInput(
+        title: '主日學主題',
+        hint: '例：神愛世人、大衛打倒歌利亞、感恩…',
+        confirmLabel: '生成教案',
+        buildPrompt: _buildSundaySchoolPrompt,
+      );
+
   // ── UI ──────────────────────────────────────────────────────────────────
 
   @override
@@ -537,6 +668,40 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '小組長牧養建議',
             subtitle: '輸入小組或部門名稱，生成小組健康評估與具體牧養策略',
             onTap: _askGroupName,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '牧養文書'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.mark_email_read_outlined,
+            color: Colors.lightBlue,
+            title: '新人歡迎信',
+            subtitle: '輸入新來者姓名，生成溫暖個人化歡迎信（可列印或電郵發送）',
+            onTap: _askWelcomeName,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.favorite_border,
+            color: Colors.pinkAccent,
+            title: '會友關懷離開信',
+            subtitle: '輸入會友姓名，生成不施壓、維繫關係的溫柔關懷信',
+            onTap: _askFarewellName,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.connect_without_contact_outlined,
+            color: Colors.amber,
+            title: '教牧週訊草稿',
+            subtitle: '輸入週訊期間，自動整合紅燈案件、行動清單與牧者話語',
+            onTap: _askNewsletterPeriod,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.child_care_outlined,
+            color: Colors.lightGreen,
+            title: '兒童主日學教案',
+            subtitle: '輸入主日學主題，生成含遊戲、故事、手工的完整教案',
+            onTap: _askSundaySchoolTopic,
           ),
           const SizedBox(height: 24),
           Container(
