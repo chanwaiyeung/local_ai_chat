@@ -1,6 +1,6 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant v2.14 — 60 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.15 — 64 quick AI functions for pastoral team.
 //
 // v1   (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
 // v2.1 (+ 4): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
@@ -17,6 +17,7 @@
 // v2.12(+ 4): 教會異象宣言 / 新堂會設立計劃 / 短宣隊招募培訓 / 轉會推薦信
 // v2.13(+ 4): 年度讀經計劃 / 青年營會方案 / 志工管理系統 / 牧師交棒計劃
 // v2.14(+ 4): 直播崇拜腳本 / 家庭事工方案 / 社群媒體月計劃 / 人生轉變關懷計劃
+// v2.15(+ 4): 線上奉獻設定 / 兒主線上課程 / 直播設備指南 / 線上小組手冊
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
@@ -1603,6 +1604,112 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
     return buf.toString();
   }
 
+  // ── v2.15 prompt builders ────────────────────────────────────────────────
+
+  String _buildOnlineGivingGuidePrompt(String platform) {
+    final people = globalPersonController;
+    return '請為教會生成一份「線上奉獻系統」設定與推廣指南，'
+        '參考平台/情境：$platform。\n\n'
+        '教會規模：${people.totalCount} 位會友（定期 ${people.regularCount} 人）。\n\n'
+        '指南內容：\n\n'
+        '【一、平台選擇建議】\n'
+        '1. 適合教會使用的線上奉獻工具比較表（3-5 個選項）：\n'
+        '   - 格式：平台名稱 ｜ 手續費 ｜ 支援方式 ｜ 難易度 ｜ 適合規模\n'
+        '2. 針對「$platform」的具體設定步驟（5-8 步）\n\n'
+        '【二、推廣與教育】\n'
+        '3. 向會眾介紹線上奉獻的主日講解稿（2 分鐘，含示範邀請語）\n'
+        '4. 週報/WhatsApp 說明文（100 字，簡單清晰）\n'
+        '5. 線上奉獻操作指引（給長者/不熟科技會友，圖文說明框架）\n\n'
+        '【三、財務治理】\n'
+        '6. 線上奉獻記錄與核對流程（每週/每月步驟）\n'
+        '7. 年度奉獻收據發送時間表與格式\n'
+        '8. 常見問題解答（Q&A，5 條）\n\n'
+        '【四、教牧考量】\n'
+        '9. 如何在靈命上平衡實體奉獻與線上奉獻的牧養信息（3 點）\n'
+        '10. 對無法使用數碼工具的會友的配套關懷\n\n'
+        '請用繁體中文，讓財務同工和科技義工都能照著執行。';
+  }
+
+  String _buildOnlineSundaySchoolPrompt(String topic) {
+    return '請為兒童主日學主題「$topic」設計一份專為線上（Zoom/視訊）教學的課程大綱。\n\n'
+        '（注意：此為線上版本，需應對注意力短暫、家長在旁、技術限制等挑戰，\n'
+        '有別於實體主日學教案。）\n\n'
+        '課程設計（45-60 分鐘線上課，適合 4-12 歲）：\n\n'
+        '【技術準備】\n'
+        '1. 老師設備清單（攝影機/麥克風/背景/道具）\n'
+        '2. 家長預備提示（提前 5 分鐘傳給家長的準備事項）\n\n'
+        '【課程流程（線上優化版）】\n'
+        '3. 開場簽到遊戲（5 分鐘，Zoom 互動功能：舉手/反應/改名字）\n'
+        '4. 故事時間（10 分鐘，視覺化說故事技巧 + 3 個互動提問）\n'
+        '5. 互動活動（10 分鐘，孩子在家可做的手工/繪畫，老師示範）\n'
+        '6. 聖經金句教唱（5 分鐘，配動作，培養記憶）\n'
+        '7. 分組討論（10 分鐘，2-3 人小組 Breakout Room，討論問題 2 條）\n'
+        '8. 禱告與結束（5 分鐘，孩子輪流帶短禱告）\n\n'
+        '【家長參與】\n'
+        '9. 課後家庭活動（15 分鐘，家長帶孩子在家延伸學習）\n'
+        '10. 本週帶回家的 1 句話（孩子向家人分享今天學到什麼）\n\n'
+        '【技術應急指引】\n'
+        '11. 孩子中途離線怎麼辦（3 個應急步驟）\n'
+        '12. 課程錄影處理建議（是否錄影/如何保護兒童隱私）\n\n'
+        '請用繁體中文，讓義工老師輕鬆上手線上教學。';
+  }
+
+  String _buildLivestreamEquipmentPrompt(String budget) {
+    return '請為教會生成一份線上直播設備清單與設定指南，預算範圍：$budget。\n\n'
+        '（注意：此為設備與技術設定指南，有別於直播崇拜腳本。）\n\n'
+        '指南內容：\n\n'
+        '【一、設備清單（按預算分級）】\n'
+        '入門級（HKD 3,000-8,000 / TWD 15,000-40,000）：\n'
+        '- 攝影機 / 網路攝影機：[推薦型號 2 個 + 理由]\n'
+        '- 麥克風：[推薦型號 2 個]\n'
+        '- 照明：[推薦方案]\n'
+        '- 電腦/設備：[最低規格要求]\n\n'
+        '進階級（按 $budget 調整）：\n'
+        '- [進階推薦清單，含切換器/多機位建議]\n\n'
+        '【二、軟體設定】\n'
+        '- OBS Studio 基本設定步驟（5 步）\n'
+        '- YouTube/Facebook 直播設定步驟（各 3 步）\n'
+        '- 字幕工具推薦（2 個免費選項）\n\n'
+        '【三、崇拜場地設定建議】\n'
+        '- 攝影機擺位圖（文字描述：台前正面 + 側面補充機位）\n'
+        '- 燈光設置原則（3 個基本燈位說明）\n'
+        '- 聲音收音注意事項（5 個常見錯誤 + 解決方法）\n\n'
+        '【四、直播前檢查清單】\n'
+        '- 崇拜前 30 分鐘技術測試步驟（8 項）\n'
+        '- 緊急備用方案（設備故障時的 3 個應急方案）\n\n'
+        '【五、義工培訓】\n'
+        '- 技術義工入職培訓大綱（2 小時課程）\n'
+        '- 常見技術問題 Q&A（5 條）\n\n'
+        '請用繁體中文，讓沒有技術背景的義工也能按步設定。';
+  }
+
+  String _buildOnlineSmallGroupHandbookPrompt(String platform) {
+    final people = globalPersonController;
+    return '請為教會生成一份「線上小組引導手冊」，'
+        '使用平台：$platform，幫助小組長帶領線上聚會。\n\n'
+        '（注意：此手冊針對線上小組的獨特挑戰，有別於實體小組牧養建議。）\n\n'
+        '教會：${people.totalCount} 位會友，部分小組已轉為線上或混合形式。\n\n'
+        '手冊內容：\n\n'
+        '【第一章：線上小組的獨特挑戰與機遇（2 頁）】\n'
+        '1. 線上聚會 vs 實體聚會的 5 個主要差異\n'
+        '2. 線上小組的 3 個優勢（跨地域/靈活時間/錄影回放）\n\n'
+        '【第二章：$platform 使用指引（2 頁）】\n'
+        '3. 組長必學功能（5 個：靜音/分組/投票/共享螢幕/錄影）\n'
+        '4. 組員入會前的技術準備指引（發給組員的說明，200 字）\n'
+        '5. 技術問題快速處理（5 個常見問題 + 1 行解決方法）\n\n'
+        '【第三章：線上查經技巧（3 頁）】\n'
+        '6. 開場暖身（線上適用，5 種方式）\n'
+        '7. 保持互動的 7 個技巧（輪流發言/聊天室/投票/Breakout Room）\n'
+        '8. 如何應對「沉默的螢幕」（3 個應對策略）\n'
+        '9. 線上代禱分享的引導方式（文字禱告 vs 語音禱告）\n\n'
+        '【第四章：關係建立（1 頁）】\n'
+        '10. 線上建立真實關係的 5 個習慣\n'
+        '11. 如何識別組員的屬靈/情緒需要（不在現場時的信號）\n\n'
+        '【第五章：線上聚會結構範本（1 頁）】\n'
+        '12. 90 分鐘標準線上聚會流程（逐段時間分配）\n\n'
+        '請用繁體中文，格式像真正的小冊子，讓組長可以列印使用。';
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
   /// Generic single-field input dialog — avoids duplicating dialog code.
@@ -2075,6 +2182,36 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         hint: '例：陳大明  或  陳大明｜搬遷至台北',
         confirmLabel: '生成關懷計劃',
         buildPrompt: _buildLifeTransitionCarePrompt,
+      );
+
+  // ── v2.15 dialog triggers ────────────────────────────────────────────────
+
+  Future<void> _askOnlineGivingPlatform() => _askInput(
+        title: '奉獻平台或情境',
+        hint: '例：PayMe、轉數快、Stripe、一般QR code…',
+        confirmLabel: '生成設定指南',
+        buildPrompt: _buildOnlineGivingGuidePrompt,
+      );
+
+  Future<void> _askOnlineSundaySchoolTopic() => _askInput(
+        title: '主日學主題',
+        hint: '例：神愛世人、感恩節、大衛的故事…',
+        confirmLabel: '生成線上課程',
+        buildPrompt: _buildOnlineSundaySchoolPrompt,
+      );
+
+  Future<void> _askLivestreamBudget() => _askInput(
+        title: '直播設備預算範圍',
+        hint: '例：HKD 5,000 入門、TWD 30,000 中級、不限預算…',
+        confirmLabel: '生成設備清單',
+        buildPrompt: _buildLivestreamEquipmentPrompt,
+      );
+
+  Future<void> _askOnlineGroupPlatform() => _askInput(
+        title: '線上平台',
+        hint: '例：Zoom、Google Meet、Microsoft Teams…',
+        confirmLabel: '生成引導手冊',
+        buildPrompt: _buildOnlineSmallGroupHandbookPrompt,
       );
 
   // ── UI ──────────────────────────────────────────────────────────────────
@@ -2596,6 +2733,40 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '人生轉變關懷計劃',
             subtitle: '輸入會友姓名（選填轉變類型），生成搬家/轉職/退休等過渡期牧養計劃',
             onTap: _askLifeTransitionInput,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '數位事工'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.payment_outlined,
+            color: Colors.green,
+            title: '線上奉獻系統指南',
+            subtitle: '輸入奉獻平台，生成設定步驟、推廣文案、財務治理與牧養考量全套指南',
+            onTap: _askOnlineGivingPlatform,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.video_call_outlined,
+            color: Colors.blue,
+            title: '兒主線上課程設計',
+            subtitle: '輸入主日學主題，生成針對Zoom線上教學優化的完整課程流程與技術指引',
+            onTap: _askOnlineSundaySchoolTopic,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.videocam_outlined,
+            color: Colors.red,
+            title: '直播設備清單與設定',
+            subtitle: '輸入預算範圍，生成設備採購清單、OBS設定步驟與義工培訓大綱',
+            onTap: _askLivestreamBudget,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.groups_outlined,
+            color: Colors.indigo,
+            title: '線上小組引導手冊',
+            subtitle: '輸入視訊平台，生成含技術技巧、互動方法、關係建立的可列印小冊子',
+            onTap: _askOnlineGroupPlatform,
           ),
           const SizedBox(height: 24),
           Container(
