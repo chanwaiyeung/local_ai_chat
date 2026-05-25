@@ -1,6 +1,6 @@
 // lib/screens/church/church_ai_assistant.dart
 //
-// ChurchAiAssistant v2.15 — 64 quick AI functions for pastoral team.
+// ChurchAiAssistant v2.16 — 68 quick AI functions for pastoral team.
 //
 // v1   (4 cards): 生成探訪摘要 / 整理代禱事項 / 講道PPT大綱 / 會友近況查詢
 // v2.1 (+ 4): 小組討論問題 / 活動文案海報 / 財務報告草稿 / 牧養行動建議
@@ -18,6 +18,7 @@
 // v2.13(+ 4): 年度讀經計劃 / 青年營會方案 / 志工管理系統 / 牧師交棒計劃
 // v2.14(+ 4): 直播崇拜腳本 / 家庭事工方案 / 社群媒體月計劃 / 人生轉變關懷計劃
 // v2.15(+ 4): 線上奉獻設定 / 兒主線上課程 / 直播設備指南 / 線上小組手冊
+// v2.16(+ 4): 禱告會主題流程 / 婚姻輔導課程 / 兒童事工培訓手冊 / 緊急事工計劃
 //
 // Each card builds a context-aware prompt from live controller data and
 // opens PersonalQueryScreen with that pre-filled query.
@@ -1710,6 +1711,120 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         '請用繁體中文，格式像真正的小冊子，讓組長可以列印使用。';
   }
 
+  // ── v2.16 prompt builders ────────────────────────────────────────────────
+
+  String _buildPrayerMeetingPrompt(String theme) {
+    final care = globalCareController;
+    return '請為主題「$theme」設計一場教會禱告會的完整主題與流程，'
+        '時長 60-90 分鐘，適合 10-50 人的聚集禱告。\n\n'
+        '（注意：此為具體禱告聚會設計，有別於禱告文化建立的長期策略計劃。）\n\n'
+        '目前活躍關懷案件 ${care.activeCount} 件，可整合入代禱事項。\n\n'
+        '禱告會設計：\n\n'
+        '【一、主題與經文】\n'
+        '1. 禱告主題的聖經根據（2-3 節經文，附禱告應用說明）\n'
+        '2. 本次禱告會目標（3 個，讓參與者知道在求什麼）\n\n'
+        '【二、流程設計（90 分鐘版）】\n'
+        '0:00-10:00 靜心進入（敬拜詩歌 1-2 首 + 靜默等候）\n'
+        '10:00-20:00 禱告信息（牧者分享主題背景，10 分鐘）\n'
+        '20:00-40:00 引導性代禱時段一（圍繞主題，引導語 + 靜默禱告 + 開口分享）\n'
+        '40:00-55:00 引導性代禱時段二（關懷案件/個人需要）\n'
+        '55:00-70:00 認罪與感恩禱告（小組 3-4 人）\n'
+        '70:00-85:00 宣告禱告（站立，積極宣告神的應許）\n'
+        '85:00-90:00 結束敬拜與祝禱\n\n'
+        '【三、帶領者工具】\n'
+        '3. 每個時段的引導語範本（各 2-3 句，自然過渡）\n'
+        '4. 處理「無人開口」的 3 個應對方式\n'
+        '5. 適合主題的詩歌建議（3 首，附使用時機）\n\n'
+        '【四、跟進】\n'
+        '6. 禱告記錄表（讓參與者記下禱告事項，追蹤答覆）\n'
+        '7. 下次禱告會預告文案（WhatsApp，50 字）\n\n'
+        '請用繁體中文，流程設計讓初次帶禱告會的同工也能按步引導。';
+  }
+
+  String _buildMarriageCounselingPrompt(String format) {
+    final people = globalPersonController;
+    return '請為教會設計一套「婚姻輔導/豐盛婚姻」課程大綱，格式：$format。\n\n'
+        '教會規模：${people.totalCount} 位會友（估計已婚夫婦約 ${(people.regularCount ~/ 3).clamp(5, 40)} 對）。\n\n'
+        '課程目標：裝備夫婦建立以基督為中心的健康婚姻。\n\n'
+        '課程大綱：\n\n'
+        '【模組一：婚姻的屬靈基礎（第 1-2 次）】\n'
+        '- 核心聖經：創 2:18-25、弗 5:22-33\n'
+        '- 主題：神設立婚姻的目的；委身的意義\n'
+        '- 夫婦練習：「我娶/嫁你的原因」見證分享\n\n'
+        '【模組二：溝通與衝突處理（第 3-4 次）】\n'
+        '- 核心聖經：雅 1:19、弗 4:26\n'
+        '- 主題：傾聽技巧；健康衝突的 5 個原則\n'
+        '- 夫婦練習：角色扮演——如何表達需要而非指責\n\n'
+        '【模組三：愛的行動（第 5-6 次）】\n'
+        '- 核心聖經：林前 13 章；五種愛語\n'
+        '- 主題：發現配偶的愛語；具體愛的行動\n'
+        '- 夫婦練習：愛語問卷 + 本月愛的行動承諾\n\n'
+        '【模組四：家庭財務與目標（第 7 次）】\n'
+        '- 主題：共同財務觀；設立家庭屬靈目標\n\n'
+        '【模組五：親密關係與更新（第 8 次）】\n'
+        '- 主題：身體親密的神聖性；婚姻更新與委身禮\n'
+        '- 結業儀式：夫婦在教會面前重申婚誓\n\n'
+        '附：每次課程的討論問題（各 3 條）、推薦參考書目（3 本）\n'
+        '請用繁體中文，內容敏感但正面，避免令夫婦感到被評判。';
+  }
+
+  String _buildChildrensVolunteerTrainingPrompt(String role) {
+    return '請為教會兒童事工「$role」崗位生成一份完整的義工培訓手冊，'
+        '幫助新義工安全有效地服事孩子。\n\n'
+        '（注意：此為兒童事工義工的崗位培訓手冊，有別於一般志工管理系統或主日學教案。）\n\n'
+        '手冊結構（可列印小冊子格式）：\n\n'
+        '【第一章：兒童事工的使命與心志（1 頁）】\n'
+        '1. 我們為何服事孩子（3 節聖經 + 2 個原則）\n'
+        '2. $role 崗位對教會的重要性\n\n'
+        '【第二章：兒童保護政策（重要，2 頁）】\n'
+        '3. 兒童保護 5 大原則（絕不獨處/報告機制/肢體接觸守則）\n'
+        '4. 可疑情況如何處理（舉報流程 3 步）\n'
+        '5. 社交媒體與兒童的守則（4 條）\n\n'
+        '【第三章：$role 崗位職責（2 頁）】\n'
+        '6. 主要職責清單（8-10 項，每項一行）\n'
+        '7. 標準課堂/聚會流程（逐段時間分配）\n'
+        '8. 點名與接送程序（安全規程）\n'
+        '9. 緊急情況處理（孩子受傷/生病/哭鬧的步驟）\n\n'
+        '【第四章：與孩子互動技巧（1 頁）】\n'
+        '10. 有效管理課堂秩序的 5 個方法（正面管教）\n'
+        '11. 禁止言行清單（絕不說的 5 句話）\n'
+        '12. 如何回應孩子的屬靈問題（3 個原則）\n\n'
+        '【第五章：自我照顧與成長（0.5 頁）】\n'
+        '13. 義工倦怠預防（3 個習慣）\n'
+        '14. 進修與支援資源\n\n'
+        '請用繁體中文，兒童保護部分要清晰嚴格，其餘語氣鼓勵溫暖。';
+  }
+
+  String _buildEmergencyMinistryPrompt(String emergencyType) {
+    final care = globalCareController;
+    final people = globalPersonController;
+    return '請為教會制定一份「$emergencyType 緊急事工計劃」，'
+        '幫助教會在非常時期持續牧養會眾並服事社區。\n\n'
+        '（注意：此計劃聚焦於如何在緊急情況下維持事工運作，'
+        '有別於危機公關處理指引。）\n\n'
+        '教會背景：${people.totalCount} 位會友（定期 ${people.regularCount} 人），'
+        '活躍關懷案件 ${care.activeCount} 件。\n\n'
+        '緊急事工計劃：\n\n'
+        '【一、事工持續運作計劃】\n'
+        '1. 緊急崇拜安排（線上轉移 / 小規模分散聚會 / 錄影崇拜的選項）\n'
+        '2. 牧養通訊替代方案（WhatsApp群組/電話樹/特別週報）\n'
+        '3. 緊急情況下的事工優先順序（哪些事工暫停，哪些必須繼續）\n\n'
+        '【二、會眾關懷升級計劃】\n'
+        '4. 脆弱群體識別與支援（長者/獨居/有小孩家庭的優先關懷清單）\n'
+        '5. 緊急關懷呼叫系統（如何快速接觸所有 ${people.totalCount} 位會友）\n'
+        '6. 物資互助計劃（食物/藥品/生活必需品的調配機制）\n\n'
+        '【三、社區外展】\n'
+        '7. 緊急情況下的社區服務計劃（3 個可立即執行的服事）\n'
+        '8. 與其他教會/機構的協作機制\n\n'
+        '【四、財務應急】\n'
+        '9. 緊急奉獻基金設立與使用原則\n'
+        '10. 教會運作最低財務需求評估\n\n'
+        '【五、復原計劃】\n'
+        '11. 從緊急狀態恢復正常事工的 3 個階段\n'
+        '12. 事後心理與屬靈關懷需要評估\n\n'
+        '請用繁體中文，計劃實際可執行，讓教會在危機中仍能成為社區的光和鹽。';
+  }
+
   // ── input dialogs ────────────────────────────────────────────────────────
 
   /// Generic single-field input dialog — avoids duplicating dialog code.
@@ -2212,6 +2327,36 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         hint: '例：Zoom、Google Meet、Microsoft Teams…',
         confirmLabel: '生成引導手冊',
         buildPrompt: _buildOnlineSmallGroupHandbookPrompt,
+      );
+
+  // ── v2.16 dialog triggers ────────────────────────────────────────────────
+
+  Future<void> _askPrayerMeetingTheme() => _askInput(
+        title: '禱告會主題',
+        hint: '例：為城市禱告、感恩節禱告會、突破禱告…',
+        confirmLabel: '生成流程設計',
+        buildPrompt: _buildPrayerMeetingPrompt,
+      );
+
+  Future<void> _askMarriageCourseFormat() => _askInput(
+        title: '課程形式',
+        hint: '例：8 週課程、週末婚姻退修、單次婚姻講座…',
+        confirmLabel: '生成課程大綱',
+        buildPrompt: _buildMarriageCounselingPrompt,
+      );
+
+  Future<void> _askChildrensVolunteerRole() => _askInput(
+        title: '服事崗位',
+        hint: '例：主日學老師、兒童崇拜帶領、嬰兒室義工…',
+        confirmLabel: '生成培訓手冊',
+        buildPrompt: _buildChildrensVolunteerTrainingPrompt,
+      );
+
+  Future<void> _askEmergencyType() => _askInput(
+        title: '緊急情況類型',
+        hint: '例：疫症防控、颱風/自然災害、社會動盪…',
+        confirmLabel: '生成事工計劃',
+        buildPrompt: _buildEmergencyMinistryPrompt,
       );
 
   // ── UI ──────────────────────────────────────────────────────────────────
@@ -2767,6 +2912,40 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             title: '線上小組引導手冊',
             subtitle: '輸入視訊平台，生成含技術技巧、互動方法、關係建立的可列印小冊子',
             onTap: _askOnlineGroupPlatform,
+          ),
+          const SizedBox(height: 24),
+          _SectionDivider(label: '關懷裝備'),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.nights_stay_outlined,
+            color: Colors.deepPurple,
+            title: '禱告會主題與流程',
+            subtitle: '輸入禱告主題，生成90分鐘完整流程、引導語範本與禱告記錄表',
+            onTap: _askPrayerMeetingTheme,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.favorite_outlined,
+            color: Colors.pink,
+            title: '婚姻輔導課程大綱',
+            subtitle: '輸入課程形式，生成5模組婚姻課程（溝通/愛語/財務/親密/更新）',
+            onTap: _askMarriageCourseFormat,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.escalator_warning_outlined,
+            color: Colors.orange,
+            title: '兒童事工義工培訓手冊',
+            subtitle: '輸入服事崗位，生成含兒童保護政策、職責清單、互動技巧的可列印手冊',
+            onTap: _askChildrensVolunteerRole,
+          ),
+          const SizedBox(height: 12),
+          _AiCard(
+            icon: Icons.emergency_outlined,
+            color: Colors.red,
+            title: '緊急事工計劃',
+            subtitle: '輸入緊急類型，生成事工持續運作、會眾關懷升級與社區外展的應急方案',
+            onTap: _askEmergencyType,
           ),
           const SizedBox(height: 24),
           Container(
