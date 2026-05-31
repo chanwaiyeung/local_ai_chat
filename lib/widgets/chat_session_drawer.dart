@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../models/message.dart';
 import '../services/chat_session_service.dart';
@@ -98,3 +98,5 @@ class ChatSessionDrawer extends StatelessWidget {
         '${local.minute.toString().padLeft(2, '0')}';
   }
 }
+
+

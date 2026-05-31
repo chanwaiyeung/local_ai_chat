@@ -92,3 +92,5 @@ class CurrencyService extends ChangeNotifier {
     return '$symbol${amount.toStringAsFixed(2)}';
   }
 }
+
+

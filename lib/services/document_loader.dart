@@ -1,4 +1,4 @@
-// lib/services/document_loader.dart
+﻿// lib/services/document_loader.dart
 //
 // Reads a file from disk and returns plain text, ready for the chunker.
 // Dispatches by extension. Adding a format = adding one case.
@@ -310,3 +310,5 @@ int _naturalCompare(String a, String b) {
   }
   return ar.length.compareTo(br.length);
 }
+
+

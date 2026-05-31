@@ -1,0 +1,7 @@
+{
+  "app": "ppt",
+  "tasks": {
+    "outline_presentation": "請將以下內容轉成 8 張 PowerPoint 投影片大綱的 JSON array。每張投影片包含 title (標題)、bullets (要點，JSON 字串陣列)、speaker_notes (備忘錄)、suggested_visual (視覺效果)。請務必僅輸出合法 JSON，不要包含 ```json 標記或額外敘述。",
+    "bible_study_ppt": "請將查經教材或經文主題規劃成 8 張小組查經簡報投影片大綱。回傳格式必須符合包含 title、bullets (要點，JSON 字串陣列)、speaker_notes 與 suggested_visual 的 JSON array，且僅輸出 JSON。"
+  }
+}

@@ -1,4 +1,4 @@
-// lib/screens/church/care_dashboard_screen.dart
+﻿// lib/screens/church/care_dashboard_screen.dart
 import 'package:flutter/material.dart';
 import '../../controllers/church/care_controller.dart';
 import '../../models/church/care_case.dart';
@@ -623,3 +623,5 @@ class _PersonRow extends StatelessWidget {
     return /* l10n: yearsAgo */ '${(days / 365).floor()} 年前';
   }
 }
+
+

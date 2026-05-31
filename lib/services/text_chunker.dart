@@ -1,4 +1,4 @@
-// lib/services/text_chunker.dart
+﻿// lib/services/text_chunker.dart
 
 import 'vector_store.dart';
 
@@ -99,3 +99,5 @@ class TextChunker {
     return chunks;
   }
 }
+
+

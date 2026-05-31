@@ -1,4 +1,4 @@
-class CitationLinkTarget {
+﻿class CitationLinkTarget {
   const CitationLinkTarget({
     required this.docName,
     required this.chunkIndex,
@@ -33,3 +33,5 @@ String _decodeCitationDocName(String docName) {
     return docName;
   }
 }
+
+

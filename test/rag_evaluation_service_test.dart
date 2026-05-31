@@ -1,4 +1,4 @@
-import 'package:flutter_test/flutter_test.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
 import 'package:local_ai_chat/models/rag_evaluation_record.dart';
 import 'package:local_ai_chat/services/rag_evaluation_service.dart';
 
@@ -96,3 +96,5 @@ RagEvaluationRecord _record(
     createdAt: DateTime.parse('2026-04-26T12:00:00.000'),
   );
 }
+
+

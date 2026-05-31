@@ -1,4 +1,4 @@
-import 'vector_store.dart';
+﻿import 'vector_store.dart';
 
 typedef LongContextRetriever = Future<List<ScoredChunk>> Function(
   String query, {
@@ -225,3 +225,5 @@ class LongContextOptimizer {
     return result;
   }
 }
+
+

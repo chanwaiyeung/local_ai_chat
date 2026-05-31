@@ -1,4 +1,4 @@
-// test/api_client_test.dart
+﻿// test/api_client_test.dart
 //
 // Pure-Dart tests for ApiClient (no Flutter UI involved). Verifies:
 //   - Bearer auth header is attached when authToken is set
@@ -130,3 +130,5 @@ void main() {
     });
   });
 }
+
+

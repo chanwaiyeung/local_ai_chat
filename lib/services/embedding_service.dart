@@ -1,4 +1,4 @@
-// lib/services/embedding_service.dart
+﻿// lib/services/embedding_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -136,3 +136,5 @@ class EmbeddingService {
     _http.close();
   }
 }
+
+

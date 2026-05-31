@@ -554,6 +554,432 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get readingModeTitle => '閱讀模式';
+
+  @override
+  String get churchHubTitle => '會友管理';
+
+  @override
+  String get churchNoMembers => '目前尚無會友資料';
+
+  @override
+  String get churchAddMember => '新增會友';
+
+  @override
+  String get churchSearchHint => '搜尋姓名 / 電話';
+
+  @override
+  String get churchDirectoryTitle => '會友通訊錄';
+
+  @override
+  String get searchHint => '搜尋姓名 / 電話 / 小組 / 主日學 / 備註';
+
+  @override
+  String filterMemberCount(int count) {
+    return '會友 ($count)';
+  }
+
+  @override
+  String filterSeekerCount(int count) {
+    return '非會友 ($count)';
+  }
+
+  @override
+  String filterAllCount(int count) {
+    return '全部 ($count)';
+  }
+
+  @override
+  String filterMemberRegularCount(int count) {
+    return '經常參加崇拜的會友 ($count)';
+  }
+
+  @override
+  String filterSeekerRegularCount(int count) {
+    return '經常參加崇拜的非會友 ($count)';
+  }
+
+  @override
+  String filterMemberOccasionalCount(int count) {
+    return '偶爾參加崇拜的會友 ($count)';
+  }
+
+  @override
+  String filterSeekerOccasionalCount(int count) {
+    return '偶爾參加崇拜的非會友 ($count)';
+  }
+
+  @override
+  String filterMemberInactiveCount(int count) {
+    return '久未參加崇拜的會友 ($count)';
+  }
+
+  @override
+  String filterSeekerInactiveCount(int count) {
+    return '久未參加崇拜的非會友 ($count)';
+  }
+
+  @override
+  String get noSearchResults => '無符合搜尋條件嘅會友';
+
+  @override
+  String get emptyDirectory => '通訊錄空白';
+
+  @override
+  String get emptyDirectoryHint => '撳右下角加第一個會友';
+
+  @override
+  String personRowSmallGroup(String group) {
+    return '小組:$group';
+  }
+
+  @override
+  String personRowSundaySchool(String school) {
+    return '主日學:$school';
+  }
+
+  @override
+  String get historyTooltip => '歷史紀錄';
+
+  @override
+  String get closeCaseConfirmTitle => '結案';
+
+  @override
+  String closeCaseConfirmContent(String name) {
+    return '將「$name」這個案件標記為已結案?';
+  }
+
+  @override
+  String get closeCase => '結案';
+
+  @override
+  String get careDashboardTitle => '教會關懷中央看版';
+
+  @override
+  String tabMemberActive(int count) {
+    return '會友 ($count)';
+  }
+
+  @override
+  String tabNewcomerActive(int count) {
+    return '新朋友 ($count)';
+  }
+
+  @override
+  String tabVisitedHistory(int count) {
+    return '已探訪者 ($count)';
+  }
+
+  @override
+  String get careSearchHint => '搜尋會友姓名 / 緣由 / 備註';
+
+  @override
+  String addNewCaseLabel(String label) {
+    return '新增$label案件';
+  }
+
+  @override
+  String get alertRedTitle => '需要立刻處理';
+
+  @override
+  String get alertYellowTitle => '即將需要安排';
+
+  @override
+  String get alertGreenTitle => '在追蹤中';
+
+  @override
+  String get historyNoResults => '沒有符合的人';
+
+  @override
+  String get historyEmpty => '暫無探訪歷史';
+
+  @override
+  String get historyEmptyHint => '在會友 / 新朋友 tab 開新案件並記錄探訪後,會出現喺度';
+
+  @override
+  String get searchNoCaseResults => '沒有符合的案件';
+
+  @override
+  String tabEmptyCaseState(String label) {
+    return '目前沒有$label案件';
+  }
+
+  @override
+  String addNewCaseButton(String label) {
+    return '新增$label案件';
+  }
+
+  @override
+  String get today => '今天';
+
+  @override
+  String daysNoVisit(int days) {
+    return '🕐 $days 天沒探訪';
+  }
+
+  @override
+  String caseRowSummary(String reason, String urgency) {
+    return '$reason  ·  $urgency優先';
+  }
+
+  @override
+  String caseRowLastVisitPrefix(String visitedBy, String date) {
+    return '上次:$visitedBy $date ';
+  }
+
+  @override
+  String get noVisitRecorded => '尚未探訪過';
+
+  @override
+  String get detailsButton => '詳情';
+
+  @override
+  String get logVisitButton => '記探訪';
+
+  @override
+  String get editCaseTooltip => '編輯案件';
+
+  @override
+  String get closeCaseTooltip => '結案';
+
+  @override
+  String get statusActiveBadge => '進行中';
+
+  @override
+  String historyRowLastVisit(String visitedBy, String method, String date) {
+    return '上次:$visitedBy · $method · $date';
+  }
+
+  @override
+  String get historyNoVisitRecorded => '尚未探訪過';
+
+  @override
+  String historyRowStats(int totalVisits, int caseCount) {
+    return '共 $totalVisits 次探訪 · $caseCount 個案件';
+  }
+
+  @override
+  String daysAgo(int days) {
+    return '$days 天前';
+  }
+
+  @override
+  String weeksAgo(int weeks) {
+    return '$weeks 週前';
+  }
+
+  @override
+  String monthsAgo(int months) {
+    return '$months 個月前';
+  }
+
+  @override
+  String yearsAgo(int years) {
+    return '$years 年前';
+  }
+
+  @override
+  String saveFailed(String error) {
+    return '儲存失敗:$error';
+  }
+
+  @override
+  String get deleteConfirmTitle => '確認刪除';
+
+  @override
+  String get deleteConfirmContent => '此會友嘅通訊錄資料會被永久刪除(相關探訪案件不會刪除)。';
+
+  @override
+  String editPersonTitle(String label) {
+    return '編輯$label';
+  }
+
+  @override
+  String addPersonTitle(String label) {
+    return '新增$label';
+  }
+
+  @override
+  String get fieldNameLabel => '姓名 *';
+
+  @override
+  String get fieldNameRequired => '請輸入姓名';
+
+  @override
+  String get fieldPhoneLabel => '電話(可空)';
+
+  @override
+  String get fieldBirthdayLabel => '生日';
+
+  @override
+  String get sectionChurchLife => '教會生命';
+
+  @override
+  String get fieldBaptismDateLabel => '洗禮日期';
+
+  @override
+  String get fieldJoinDateLabel => '轉會 / 加入日期';
+
+  @override
+  String get fieldAttendanceLabel => '出席崇拜';
+
+  @override
+  String get sectionParticipation => '參與';
+
+  @override
+  String get fieldSmallGroupLabel => '所屬小組 / 團契';
+
+  @override
+  String get fieldSmallGroupHint => '例:週三長者團、夫婦團契 B 組';
+
+  @override
+  String get fieldSundaySchoolLabel => '主日學參與';
+
+  @override
+  String get fieldSundaySchoolHint => '例:成人 B 班 - 學生、兒童老師';
+
+  @override
+  String get sectionOthers => '其他';
+
+  @override
+  String get fieldCreatedByLabel => '建立者(傳道人姓名)';
+
+  @override
+  String get fieldNotesLabel => '備註(可空)';
+
+  @override
+  String get commonSaving => '儲存中...';
+
+  @override
+  String get defaultNewcomerReason => '新朋友';
+
+  @override
+  String get deleteCaseConfirmContent => '此案件和所有相關探訪記錄都會被永久刪除。';
+
+  @override
+  String get editCaseTitle => '編輯案件';
+
+  @override
+  String get addNewCaseTitle => '新增關懷案件';
+
+  @override
+  String get fieldNewcomerNameLabel => '新朋友姓名 *';
+
+  @override
+  String get fieldMemberNameLabel => '會友姓名 *';
+
+  @override
+  String get fieldReasonLabel => '緣由 *(例:住院、喪父、新朋友追蹤)';
+
+  @override
+  String get fieldReasonRequired => '請輸入緣由';
+
+  @override
+  String get fieldIdentityLabel => '身分';
+
+  @override
+  String get fieldUrgencyLabel => '優先程度';
+
+  @override
+  String get urgencyLegend => '高 = 3 天紅燈 / 中 = 7 天紅燈 / 低 = 14 天紅燈';
+
+  @override
+  String get notSet => '未設定';
+
+  @override
+  String get clear => '清除';
+
+  @override
+  String get aiHighlight => 'AI 高亮';
+
+  @override
+  String get aiNotes => 'AI 註記';
+
+  @override
+  String get aiGuidedReading => 'AI 導讀';
+
+  @override
+  String get aiMindMap => 'AI 思維導圖';
+
+  @override
+  String get aiWordCard => 'AI 單字';
+
+  @override
+  String get close => '關閉';
+
+  @override
+  String get generateFailed => '生成失敗，請稍後再試。';
+
+  @override
+  String get learningHub => '學習天地';
+
+  @override
+  String get learningHubSubtitle => '日文與英文學習工具';
+
+  @override
+  String get grammarAnalysis => '文法解析';
+
+  @override
+  String get inputSentenceHint => '請輸入日文句子進行解析...';
+
+  @override
+  String get vocabAnalysis => '單字解析';
+
+  @override
+  String get inputWordHint => '請輸入日文單字進行解析...';
+
+  @override
+  String get vocabAnalysisFailed => '單字解析失敗，請稍後再試。';
+
+  @override
+  String get sentenceGeneration => '例句生成';
+
+  @override
+  String get aiSentence => 'AI 例句';
+
+  @override
+  String get inputSentenceWordHint => '請輸入日文單字以生成例句...';
+
+  @override
+  String get sentenceGenerationFailed => '例句生成失敗，請稍後再試。';
+
+  @override
+  String get stopSpeaking => '停止朗讀';
+
+  @override
+  String get speakPronunciation => '語音朗讀';
+
+  @override
+  String get japaneseLab => '日文學習';
+
+  @override
+  String get englishLab => '英文學習';
+
+  @override
+  String get enGrammarAnalysis => '英文文法解析';
+
+  @override
+  String get enInputSentenceHint => '請輸入英文句子進行解析...';
+
+  @override
+  String get enVocabAnalysis => '英文單字解析';
+
+  @override
+  String get enInputWordHint => '請輸入英文單字...';
+
+  @override
+  String get enVocabAnalysisFailed => '英文單字解析失敗，請稍後再試。';
+
+  @override
+  String get enSentenceGeneration => '英文例句與測驗';
+
+  @override
+  String get enAiSentence => 'AI 英文例句與測驗';
+
+  @override
+  String get enInputSentenceWordHint => '請輸入英文單字以生成例句與測驗...';
+
+  @override
+  String get enSentenceGenerationFailed => '生成例句與測驗失敗，請稍後再試。';
 }
 
 /// The translations for Chinese, as used in China (`zh_CN`).
@@ -1106,6 +1532,432 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get readingModeTitle => '阅读模式';
+
+  @override
+  String get churchHubTitle => '会友管理';
+
+  @override
+  String get churchNoMembers => '暂无会友资料';
+
+  @override
+  String get churchAddMember => '新增会友';
+
+  @override
+  String get churchSearchHint => '搜索姓名 / 电话';
+
+  @override
+  String get churchDirectoryTitle => '會友通訊錄';
+
+  @override
+  String get searchHint => '搜尋姓名 / 電話 / 小組 / 主日學 / 備註';
+
+  @override
+  String filterMemberCount(int count) {
+    return '會友 ($count)';
+  }
+
+  @override
+  String filterSeekerCount(int count) {
+    return '非會友 ($count)';
+  }
+
+  @override
+  String filterAllCount(int count) {
+    return '全部 ($count)';
+  }
+
+  @override
+  String filterMemberRegularCount(int count) {
+    return '經常參加崇拜的會友 ($count)';
+  }
+
+  @override
+  String filterSeekerRegularCount(int count) {
+    return '經常參加崇拜的非會友 ($count)';
+  }
+
+  @override
+  String filterMemberOccasionalCount(int count) {
+    return '偶爾參加崇拜的會友 ($count)';
+  }
+
+  @override
+  String filterSeekerOccasionalCount(int count) {
+    return '偶爾參加崇拜的非會友 ($count)';
+  }
+
+  @override
+  String filterMemberInactiveCount(int count) {
+    return '久未參加崇拜的會友 ($count)';
+  }
+
+  @override
+  String filterSeekerInactiveCount(int count) {
+    return '久未參加崇拜的非會友 ($count)';
+  }
+
+  @override
+  String get noSearchResults => '無符合搜尋條件嘅會友';
+
+  @override
+  String get emptyDirectory => '通訊錄空白';
+
+  @override
+  String get emptyDirectoryHint => '撳右下角加第一個會友';
+
+  @override
+  String personRowSmallGroup(String group) {
+    return '小組:$group';
+  }
+
+  @override
+  String personRowSundaySchool(String school) {
+    return '主日學:$school';
+  }
+
+  @override
+  String get historyTooltip => '歷史紀錄';
+
+  @override
+  String get closeCaseConfirmTitle => '結案';
+
+  @override
+  String closeCaseConfirmContent(String name) {
+    return '將「$name」這個案件標記為已結案?';
+  }
+
+  @override
+  String get closeCase => '結案';
+
+  @override
+  String get careDashboardTitle => '教會關懷中央看版';
+
+  @override
+  String tabMemberActive(int count) {
+    return '會友 ($count)';
+  }
+
+  @override
+  String tabNewcomerActive(int count) {
+    return '新朋友 ($count)';
+  }
+
+  @override
+  String tabVisitedHistory(int count) {
+    return '已探訪者 ($count)';
+  }
+
+  @override
+  String get careSearchHint => '搜尋會友姓名 / 緣由 / 備註';
+
+  @override
+  String addNewCaseLabel(String label) {
+    return '新增$label案件';
+  }
+
+  @override
+  String get alertRedTitle => '需要立刻處理';
+
+  @override
+  String get alertYellowTitle => '即將需要安排';
+
+  @override
+  String get alertGreenTitle => '在追蹤中';
+
+  @override
+  String get historyNoResults => '沒有符合的人';
+
+  @override
+  String get historyEmpty => '暫無探訪歷史';
+
+  @override
+  String get historyEmptyHint => '在會友 / 新朋友 tab 開新案件並記錄探訪後,會出現喺度';
+
+  @override
+  String get searchNoCaseResults => '沒有符合的案件';
+
+  @override
+  String tabEmptyCaseState(String label) {
+    return '目前沒有$label案件';
+  }
+
+  @override
+  String addNewCaseButton(String label) {
+    return '新增$label案件';
+  }
+
+  @override
+  String get today => '今天';
+
+  @override
+  String daysNoVisit(int days) {
+    return '🕐 $days 天沒探訪';
+  }
+
+  @override
+  String caseRowSummary(String reason, String urgency) {
+    return '$reason  ·  $urgency優先';
+  }
+
+  @override
+  String caseRowLastVisitPrefix(String visitedBy, String date) {
+    return '上次:$visitedBy $date ';
+  }
+
+  @override
+  String get noVisitRecorded => '尚未探訪過';
+
+  @override
+  String get detailsButton => '詳情';
+
+  @override
+  String get logVisitButton => '記探訪';
+
+  @override
+  String get editCaseTooltip => '編輯案件';
+
+  @override
+  String get closeCaseTooltip => '結案';
+
+  @override
+  String get statusActiveBadge => '進行中';
+
+  @override
+  String historyRowLastVisit(String visitedBy, String method, String date) {
+    return '上次:$visitedBy · $method · $date';
+  }
+
+  @override
+  String get historyNoVisitRecorded => '尚未探訪過';
+
+  @override
+  String historyRowStats(int totalVisits, int caseCount) {
+    return '共 $totalVisits 次探訪 · $caseCount 個案件';
+  }
+
+  @override
+  String daysAgo(int days) {
+    return '$days 天前';
+  }
+
+  @override
+  String weeksAgo(int weeks) {
+    return '$weeks 週前';
+  }
+
+  @override
+  String monthsAgo(int months) {
+    return '$months 個月前';
+  }
+
+  @override
+  String yearsAgo(int years) {
+    return '$years 年前';
+  }
+
+  @override
+  String saveFailed(String error) {
+    return '儲存失敗:$error';
+  }
+
+  @override
+  String get deleteConfirmTitle => '確認刪除';
+
+  @override
+  String get deleteConfirmContent => '此會友嘅通訊錄資料會被永久刪除(相關探訪案件不會刪除)。';
+
+  @override
+  String editPersonTitle(String label) {
+    return '編輯$label';
+  }
+
+  @override
+  String addPersonTitle(String label) {
+    return '新增$label';
+  }
+
+  @override
+  String get fieldNameLabel => '姓名 *';
+
+  @override
+  String get fieldNameRequired => '請輸入姓名';
+
+  @override
+  String get fieldPhoneLabel => '電話(可空)';
+
+  @override
+  String get fieldBirthdayLabel => '生日';
+
+  @override
+  String get sectionChurchLife => '教會生命';
+
+  @override
+  String get fieldBaptismDateLabel => '洗禮日期';
+
+  @override
+  String get fieldJoinDateLabel => '轉會 / 加入日期';
+
+  @override
+  String get fieldAttendanceLabel => '出席崇拜';
+
+  @override
+  String get sectionParticipation => '參與';
+
+  @override
+  String get fieldSmallGroupLabel => '所屬小組 / 團契';
+
+  @override
+  String get fieldSmallGroupHint => '例:週三長者團、夫婦團契 B 組';
+
+  @override
+  String get fieldSundaySchoolLabel => '主日學參與';
+
+  @override
+  String get fieldSundaySchoolHint => '例:成人 B 班 - 學生、兒童老師';
+
+  @override
+  String get sectionOthers => '其他';
+
+  @override
+  String get fieldCreatedByLabel => '建立者(傳道人姓名)';
+
+  @override
+  String get fieldNotesLabel => '備註(可空)';
+
+  @override
+  String get commonSaving => '儲存中...';
+
+  @override
+  String get defaultNewcomerReason => '新朋友';
+
+  @override
+  String get deleteCaseConfirmContent => '此案件和所有相關探訪記錄都會被永久刪除。';
+
+  @override
+  String get editCaseTitle => '編輯案件';
+
+  @override
+  String get addNewCaseTitle => '新增關懷案件';
+
+  @override
+  String get fieldNewcomerNameLabel => '新朋友姓名 *';
+
+  @override
+  String get fieldMemberNameLabel => '會友姓名 *';
+
+  @override
+  String get fieldReasonLabel => '緣由 *(例:住院、喪父、新朋友追蹤)';
+
+  @override
+  String get fieldReasonRequired => '請輸入緣由';
+
+  @override
+  String get fieldIdentityLabel => '身分';
+
+  @override
+  String get fieldUrgencyLabel => '優先程度';
+
+  @override
+  String get urgencyLegend => '高 = 3 天紅燈 / 中 = 7 天紅燈 / 低 = 14 天紅燈';
+
+  @override
+  String get notSet => '未設定';
+
+  @override
+  String get clear => '清除';
+
+  @override
+  String get aiHighlight => 'AI 高亮';
+
+  @override
+  String get aiNotes => 'AI 注记';
+
+  @override
+  String get aiGuidedReading => 'AI 导读';
+
+  @override
+  String get aiMindMap => 'AI 思维导图';
+
+  @override
+  String get aiWordCard => 'AI 单词';
+
+  @override
+  String get close => '关闭';
+
+  @override
+  String get generateFailed => '生成失败，请稍后再试。';
+
+  @override
+  String get learningHub => '学习天地';
+
+  @override
+  String get learningHubSubtitle => '日文与英文学习工具';
+
+  @override
+  String get grammarAnalysis => '语法解析';
+
+  @override
+  String get inputSentenceHint => '请输入日文句子进行解析...';
+
+  @override
+  String get vocabAnalysis => '单词解析';
+
+  @override
+  String get inputWordHint => '请输入日文单词进行解析...';
+
+  @override
+  String get vocabAnalysisFailed => '单词解析失败，请稍后再试。';
+
+  @override
+  String get sentenceGeneration => '例句生成';
+
+  @override
+  String get aiSentence => 'AI 例句';
+
+  @override
+  String get inputSentenceWordHint => '请输入日文单词以生成例句...';
+
+  @override
+  String get sentenceGenerationFailed => '例句生成失败，请稍后再试。';
+
+  @override
+  String get stopSpeaking => '停止朗读';
+
+  @override
+  String get speakPronunciation => '语音朗读';
+
+  @override
+  String get japaneseLab => '日文学习';
+
+  @override
+  String get englishLab => '英文学习';
+
+  @override
+  String get enGrammarAnalysis => '英文语法解析';
+
+  @override
+  String get enInputSentenceHint => '请输入英文句子进行解析...';
+
+  @override
+  String get enVocabAnalysis => '英文单词解析';
+
+  @override
+  String get enInputWordHint => '请输入英文单词...';
+
+  @override
+  String get enVocabAnalysisFailed => '英文单词解析失败，请稍后再试。';
+
+  @override
+  String get enSentenceGeneration => '英文例句与测验';
+
+  @override
+  String get enAiSentence => 'AI 英文例句与测验';
+
+  @override
+  String get enInputSentenceWordHint => '请输入英文单词以生成例句与测验...';
+
+  @override
+  String get enSentenceGenerationFailed => '生成例句与测验失败，请稍后再试。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -1658,4 +2510,430 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get readingModeTitle => '閱讀模式';
+
+  @override
+  String get churchHubTitle => '會友管理';
+
+  @override
+  String get churchNoMembers => '目前尚無會友資料';
+
+  @override
+  String get churchAddMember => '新增會友';
+
+  @override
+  String get churchSearchHint => '搜尋姓名 / 電話';
+
+  @override
+  String get churchDirectoryTitle => '會友通訊錄';
+
+  @override
+  String get searchHint => '搜尋姓名 / 電話 / 小組 / 主日學 / 備註';
+
+  @override
+  String filterMemberCount(int count) {
+    return '會友 ($count)';
+  }
+
+  @override
+  String filterSeekerCount(int count) {
+    return '非會友 ($count)';
+  }
+
+  @override
+  String filterAllCount(int count) {
+    return '全部 ($count)';
+  }
+
+  @override
+  String filterMemberRegularCount(int count) {
+    return '經常參加崇拜的會友 ($count)';
+  }
+
+  @override
+  String filterSeekerRegularCount(int count) {
+    return '經常參加崇拜的非會友 ($count)';
+  }
+
+  @override
+  String filterMemberOccasionalCount(int count) {
+    return '偶爾參加崇拜的會友 ($count)';
+  }
+
+  @override
+  String filterSeekerOccasionalCount(int count) {
+    return '偶爾參加崇拜的非會友 ($count)';
+  }
+
+  @override
+  String filterMemberInactiveCount(int count) {
+    return '久未參加崇拜的會友 ($count)';
+  }
+
+  @override
+  String filterSeekerInactiveCount(int count) {
+    return '久未參加崇拜的非會友 ($count)';
+  }
+
+  @override
+  String get noSearchResults => '無符合搜尋條件嘅會友';
+
+  @override
+  String get emptyDirectory => '通訊錄空白';
+
+  @override
+  String get emptyDirectoryHint => '撳右下角加第一個會友';
+
+  @override
+  String personRowSmallGroup(String group) {
+    return '小組:$group';
+  }
+
+  @override
+  String personRowSundaySchool(String school) {
+    return '主日學:$school';
+  }
+
+  @override
+  String get historyTooltip => '歷史紀錄';
+
+  @override
+  String get closeCaseConfirmTitle => '結案';
+
+  @override
+  String closeCaseConfirmContent(String name) {
+    return '將「$name」這個案件標記為已結案?';
+  }
+
+  @override
+  String get closeCase => '結案';
+
+  @override
+  String get careDashboardTitle => '教會關懷中央看版';
+
+  @override
+  String tabMemberActive(int count) {
+    return '會友 ($count)';
+  }
+
+  @override
+  String tabNewcomerActive(int count) {
+    return '新朋友 ($count)';
+  }
+
+  @override
+  String tabVisitedHistory(int count) {
+    return '已探訪者 ($count)';
+  }
+
+  @override
+  String get careSearchHint => '搜尋會友姓名 / 緣由 / 備註';
+
+  @override
+  String addNewCaseLabel(String label) {
+    return '新增$label案件';
+  }
+
+  @override
+  String get alertRedTitle => '需要立刻處理';
+
+  @override
+  String get alertYellowTitle => '即將需要安排';
+
+  @override
+  String get alertGreenTitle => '在追蹤中';
+
+  @override
+  String get historyNoResults => '沒有符合的人';
+
+  @override
+  String get historyEmpty => '暫無探訪歷史';
+
+  @override
+  String get historyEmptyHint => '在會友 / 新朋友 tab 開新案件並記錄探訪後,會出現喺度';
+
+  @override
+  String get searchNoCaseResults => '沒有符合的案件';
+
+  @override
+  String tabEmptyCaseState(String label) {
+    return '目前沒有$label案件';
+  }
+
+  @override
+  String addNewCaseButton(String label) {
+    return '新增$label案件';
+  }
+
+  @override
+  String get today => '今天';
+
+  @override
+  String daysNoVisit(int days) {
+    return '🕐 $days 天沒探訪';
+  }
+
+  @override
+  String caseRowSummary(String reason, String urgency) {
+    return '$reason  ·  $urgency優先';
+  }
+
+  @override
+  String caseRowLastVisitPrefix(String visitedBy, String date) {
+    return '上次:$visitedBy $date ';
+  }
+
+  @override
+  String get noVisitRecorded => '尚未探訪過';
+
+  @override
+  String get detailsButton => '詳情';
+
+  @override
+  String get logVisitButton => '記探訪';
+
+  @override
+  String get editCaseTooltip => '編輯案件';
+
+  @override
+  String get closeCaseTooltip => '結案';
+
+  @override
+  String get statusActiveBadge => '進行中';
+
+  @override
+  String historyRowLastVisit(String visitedBy, String method, String date) {
+    return '上次:$visitedBy · $method · $date';
+  }
+
+  @override
+  String get historyNoVisitRecorded => '尚未探訪過';
+
+  @override
+  String historyRowStats(int totalVisits, int caseCount) {
+    return '共 $totalVisits 次探訪 · $caseCount 個案件';
+  }
+
+  @override
+  String daysAgo(int days) {
+    return '$days 天前';
+  }
+
+  @override
+  String weeksAgo(int weeks) {
+    return '$weeks 週前';
+  }
+
+  @override
+  String monthsAgo(int months) {
+    return '$months 個月前';
+  }
+
+  @override
+  String yearsAgo(int years) {
+    return '$years 年前';
+  }
+
+  @override
+  String saveFailed(String error) {
+    return '儲存失敗:$error';
+  }
+
+  @override
+  String get deleteConfirmTitle => '確認刪除';
+
+  @override
+  String get deleteConfirmContent => '此會友嘅通訊錄資料會被永久刪除(相關探訪案件不會刪除)。';
+
+  @override
+  String editPersonTitle(String label) {
+    return '編輯$label';
+  }
+
+  @override
+  String addPersonTitle(String label) {
+    return '新增$label';
+  }
+
+  @override
+  String get fieldNameLabel => '姓名 *';
+
+  @override
+  String get fieldNameRequired => '請輸入姓名';
+
+  @override
+  String get fieldPhoneLabel => '電話(可空)';
+
+  @override
+  String get fieldBirthdayLabel => '生日';
+
+  @override
+  String get sectionChurchLife => '教會生命';
+
+  @override
+  String get fieldBaptismDateLabel => '洗禮日期';
+
+  @override
+  String get fieldJoinDateLabel => '轉會 / 加入日期';
+
+  @override
+  String get fieldAttendanceLabel => '出席崇拜';
+
+  @override
+  String get sectionParticipation => '參與';
+
+  @override
+  String get fieldSmallGroupLabel => '所屬小組 / 團契';
+
+  @override
+  String get fieldSmallGroupHint => '例:週三長者團、夫婦團契 B 組';
+
+  @override
+  String get fieldSundaySchoolLabel => '主日學參與';
+
+  @override
+  String get fieldSundaySchoolHint => '例:成人 B 班 - 學生、兒童老師';
+
+  @override
+  String get sectionOthers => '其他';
+
+  @override
+  String get fieldCreatedByLabel => '建立者(傳道人姓名)';
+
+  @override
+  String get fieldNotesLabel => '備註(可空)';
+
+  @override
+  String get commonSaving => '儲存中...';
+
+  @override
+  String get defaultNewcomerReason => '新朋友';
+
+  @override
+  String get deleteCaseConfirmContent => '此案件和所有相關探訪記錄都會被永久刪除。';
+
+  @override
+  String get editCaseTitle => '編輯案件';
+
+  @override
+  String get addNewCaseTitle => '新增關懷案件';
+
+  @override
+  String get fieldNewcomerNameLabel => '新朋友姓名 *';
+
+  @override
+  String get fieldMemberNameLabel => '會友姓名 *';
+
+  @override
+  String get fieldReasonLabel => '緣由 *(例:住院、喪父、新朋友追蹤)';
+
+  @override
+  String get fieldReasonRequired => '請輸入緣由';
+
+  @override
+  String get fieldIdentityLabel => '身分';
+
+  @override
+  String get fieldUrgencyLabel => '優先程度';
+
+  @override
+  String get urgencyLegend => '高 = 3 天紅燈 / 中 = 7 天紅燈 / 低 = 14 天紅燈';
+
+  @override
+  String get notSet => '未設定';
+
+  @override
+  String get clear => '清除';
+
+  @override
+  String get aiHighlight => 'AI 高亮';
+
+  @override
+  String get aiNotes => 'AI 註記';
+
+  @override
+  String get aiGuidedReading => 'AI 導讀';
+
+  @override
+  String get aiMindMap => 'AI 思維導圖';
+
+  @override
+  String get aiWordCard => 'AI 單字';
+
+  @override
+  String get close => '關閉';
+
+  @override
+  String get generateFailed => '生成失敗，請稍後再試。';
+
+  @override
+  String get learningHub => '學習天地';
+
+  @override
+  String get learningHubSubtitle => '日文與英文學習工具';
+
+  @override
+  String get grammarAnalysis => '文法解析';
+
+  @override
+  String get inputSentenceHint => '請輸入日文句子進行解析...';
+
+  @override
+  String get vocabAnalysis => '單字解析';
+
+  @override
+  String get inputWordHint => '請輸入日文單字進行解析...';
+
+  @override
+  String get vocabAnalysisFailed => '單字解析失敗，請稍後再試。';
+
+  @override
+  String get sentenceGeneration => '例句生成';
+
+  @override
+  String get aiSentence => 'AI 例句';
+
+  @override
+  String get inputSentenceWordHint => '請輸入日文單字以生成例句...';
+
+  @override
+  String get sentenceGenerationFailed => '例句生成失敗，請稍後再試。';
+
+  @override
+  String get stopSpeaking => '停止朗讀';
+
+  @override
+  String get speakPronunciation => '語音朗讀';
+
+  @override
+  String get japaneseLab => '日文學習';
+
+  @override
+  String get englishLab => '英文學習';
+
+  @override
+  String get enGrammarAnalysis => '英文文法解析';
+
+  @override
+  String get enInputSentenceHint => '請輸入英文句子進行解析...';
+
+  @override
+  String get enVocabAnalysis => '英文單字解析';
+
+  @override
+  String get enInputWordHint => '請輸入英文單字...';
+
+  @override
+  String get enVocabAnalysisFailed => '英文單字解析失敗，請稍後再試。';
+
+  @override
+  String get enSentenceGeneration => '英文例句與測驗';
+
+  @override
+  String get enAiSentence => 'AI 英文例句與測驗';
+
+  @override
+  String get enInputSentenceWordHint => '請輸入英文單字以生成例句與測驗...';
+
+  @override
+  String get enSentenceGenerationFailed => '生成例句與測驗失敗，請稍後再試。';
 }

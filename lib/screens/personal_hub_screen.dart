@@ -1,4 +1,4 @@
-// lib/screens/personal_hub_screen.dart
+﻿// lib/screens/personal_hub_screen.dart
 //
 // Phase 6.3'a + 6.4'b + 6.5 — Personal Hub entry + Dashboard UI.
 //
@@ -55,8 +55,11 @@ import 'book_screen.dart';
 import 'church/church_hub_screen.dart';
 import 'expense_screen.dart';
 import 'health_screen.dart';
+import 'learning_screen.dart';
 import 'library_screen.dart';
+import 'life_documents_screen.dart';
 import 'my_skills_screen.dart';
+import 'office_toolbox_screen.dart';
 import 'personal_query_screen.dart';
 import 'settings_screen.dart';
 import 'wealth_screen.dart';
@@ -218,7 +221,8 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
               );
               if (updated != null) {
                 await AppSettingsService().save(updated);
-                restartTelegramBot(updated.telegramBotToken);
+                await startOrRestartServer(updated);
+                await restartTelegramBot(updated.telegramBotToken);
               }
             },
           ),
@@ -296,6 +300,7 @@ class _PersonalHubScreenState extends State<PersonalHubScreen> {
               wealthCount: wealthCount,
               onExpenseTap: _openExpense,
               onContactsTap: _openContacts,
+              expenseController: widget.expenseController,
               healthController: widget.healthController,
               wealthController: widget.wealthController,
               bookController: widget.bookController,
@@ -560,6 +565,7 @@ class _ModulesGrid extends StatelessWidget {
     required this.wealthCount,
     required this.onExpenseTap,
     required this.onContactsTap,
+    required this.expenseController,
     required this.healthController,
     required this.wealthController,
     required this.bookController,
@@ -571,6 +577,7 @@ class _ModulesGrid extends StatelessWidget {
   final int wealthCount;
   final VoidCallback onExpenseTap;
   final VoidCallback onContactsTap;
+  final ExpenseController expenseController;
   final HealthController healthController;
   final WealthController wealthController;
   final BookController bookController;
@@ -629,11 +636,22 @@ class _ModulesGrid extends StatelessWidget {
         ),
       ),
       _ModuleData(
-        icon: Icons.dashboard_customize_outlined,
-        label: loc.moduleDashboardSoon,
-        subtitle: loc.comingSoon,
+        icon: Icons.article_outlined,
+        label: '生活文件應用' /* l10n: lifeDocuments */,
+        subtitle: '財務月報 · 健康摘要 · 讀書筆記' /* l10n: lifeDocumentsSubtitle */,
         color: Colors.orange,
-        enabled: false,
+        enabled: true,
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => LifeDocumentsScreen(
+              expenseController: expenseController,
+              wealthController: wealthController,
+              healthController: healthController,
+              bookController: bookController,
+              ragService: ragService,
+            ),
+          ),
+        ),
       ),
       _ModuleData(
         icon: Icons.psychology_outlined,
@@ -686,6 +704,30 @@ class _ModulesGrid extends StatelessWidget {
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => const ChurchHubScreen(),
+          ),
+        ),
+      ),
+      _ModuleData(
+        icon: Icons.school_outlined,
+        label: loc.learningHub,
+        subtitle: loc.learningHubSubtitle,
+        color: Colors.green,
+        enabled: true,
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const LearningScreen(),
+          ),
+        ),
+      ),
+      _ModuleData(
+        icon: Icons.integration_instructions_outlined,
+        label: 'Office 助理' /* l10n: officeAssistant */,
+        subtitle: 'Word · Excel · PPT' /* l10n: officeAssistantSubtitle */,
+        color: Colors.blueAccent,
+        enabled: true,
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const OfficeToolboxScreen(),
           ),
         ),
       ),
@@ -844,5 +886,7 @@ class _ContactListScreenState extends State<_ContactListScreen> {
     );
   }
 }
+
+
 
 

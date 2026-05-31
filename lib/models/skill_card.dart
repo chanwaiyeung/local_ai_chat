@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 
 class SkillCard {
   final String id;
@@ -70,3 +70,5 @@ class SkillCard {
     );
   }
 }
+
+

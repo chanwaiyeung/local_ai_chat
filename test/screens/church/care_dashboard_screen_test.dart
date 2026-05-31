@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:local_ai_chat/controllers/church/care_controller.dart';
@@ -84,3 +84,5 @@ void main() {
     expect(find.text('Log Visit - 李四'), findsOneWidget);
   });
 }
+
+

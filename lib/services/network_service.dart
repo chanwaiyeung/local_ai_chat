@@ -1,4 +1,4 @@
-// lib/services/network_service.dart
+﻿// lib/services/network_service.dart
 //
 // Best-effort detection of a usable LAN IP for the Local AI Server.
 //
@@ -97,3 +97,5 @@ class NetworkService {
         n.contains('tap');
   }
 }
+
+

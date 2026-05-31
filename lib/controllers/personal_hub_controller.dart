@@ -1,4 +1,4 @@
-// lib/controllers/personal_hub_controller.dart
+﻿// lib/controllers/personal_hub_controller.dart
 import 'package:flutter/foundation.dart';
 
 import '../models/contact.dart';
@@ -263,3 +263,5 @@ class PersonalHubController extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+

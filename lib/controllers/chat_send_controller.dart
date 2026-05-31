@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
@@ -162,3 +162,5 @@ class ChatSendController {
     return hits;
   }
 }
+
+

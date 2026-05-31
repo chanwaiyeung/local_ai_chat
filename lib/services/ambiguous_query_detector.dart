@@ -1,4 +1,4 @@
-class AmbiguousQueryDetector {
+﻿class AmbiguousQueryDetector {
   const AmbiguousQueryDetector();
 
   static const _vaguePhrases = [
@@ -68,3 +68,5 @@ class AmbiguousQueryDetector {
     return false;
   }
 }
+
+

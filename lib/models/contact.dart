@@ -1,4 +1,4 @@
-// lib/models/contact.dart
+﻿// lib/models/contact.dart
 
 class InvalidContactException implements Exception {
   const InvalidContactException(this.message);
@@ -257,3 +257,5 @@ class Contact {
     return true;
   }
 }
+
+

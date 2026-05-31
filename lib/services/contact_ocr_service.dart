@@ -1,4 +1,4 @@
-// lib/services/contact_ocr_service.dart
+﻿// lib/services/contact_ocr_service.dart
 
 import 'ocr_service.dart';
 
@@ -36,3 +36,5 @@ www.globaltech.xyz
     return (_mockBusinessCardText, true);
   }
 }
+
+

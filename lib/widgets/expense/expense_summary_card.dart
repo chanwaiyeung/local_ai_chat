@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../controllers/expense_controller.dart';
 import '../../l10n/app_localizations.dart';
@@ -39,3 +39,5 @@ class ExpenseSummaryCard extends StatelessWidget {
     );
   }
 }
+
+

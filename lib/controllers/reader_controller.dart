@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../services/api_client.dart';
 import '../services/language_learning_service.dart';
 import '../services/ocr_service.dart';
+import '../services/ollama_service.dart';
 import '../services/tts_service.dart';
 import 'reader_reading_controller.dart';
 
@@ -216,11 +217,17 @@ class ReaderController extends ValueNotifier<ReaderState> {
     ReaderApi? api,
     OcrService? ocr,
     TTSService? tts,
+    OllamaService? ollama,
   })  : _api = api ?? ApiClient(),
         _ocr = ocr ?? OcrService(),
         _tts = tts ?? TTSService(),
         super(ReaderState.initial) {
-    readingController = ReaderReadingController(api: _api, state: this);
+    readingController = ReaderReadingController(
+      api: _api,
+      state: this,
+      tts: _tts,
+      ollama: ollama,
+    );
     _languageService = LanguageLearningService(api: _api);
   }
 
@@ -234,7 +241,10 @@ class ReaderController extends ValueNotifier<ReaderState> {
   final TextEditingController questionController = TextEditingController();
   StreamSubscription<QueryEvent>? _querySub;
 
+  TTSService get tts => _tts;
+
   Future<void> init() => _tts.init();
+
 
   Future<void> askQuestion() async {
     final question = questionController.text.trim();
@@ -380,6 +390,7 @@ class ReaderController extends ValueNotifier<ReaderState> {
 
   @override
   void dispose() {
+    readingController.dispose();
     unawaited(_querySub?.cancel());
     questionController.dispose();
     _ocr.dispose();
@@ -387,3 +398,5 @@ class ReaderController extends ValueNotifier<ReaderState> {
     super.dispose();
   }
 }
+
+

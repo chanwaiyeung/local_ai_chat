@@ -46,16 +46,40 @@ function Test-Health {
 function Wait-Health {
   param([int] $Seconds = 45)
 
-  $deadline = (Get-Date).AddSeconds($Seconds)
-  while ((Get-Date) -lt $deadline) {
-    $health = Test-Health
-    if ($health) {
-      return $health
-    }
-    Start-Sleep -Seconds 1
-  }
+  Write-Host 'Waiting 5 seconds for server to initialize...' -ForegroundColor Yellow
+  Start-Sleep -Seconds 5
 
-  throw 'Local AI Server did not become healthy on http://127.0.0.1:8080/health'
+  $attempts = 0
+  $maxAttempts = 3
+  $health = $null
+
+  do {
+    $attempts++
+    if ($attempts -gt 1) {
+      Write-Host "Retry attempt $attempts of $maxAttempts to connect to /health..." -ForegroundColor Yellow
+    }
+    
+    $deadline = (Get-Date).AddSeconds($Seconds)
+    while ((Get-Date) -lt $deadline) {
+      $health = Test-Health
+      if ($health) {
+        return $health
+      }
+      Start-Sleep -Seconds 1
+    }
+  } until ($health -or ($attempts -ge $maxAttempts))
+
+  if (-not $health) {
+    throw "Local AI Server did not become healthy on http://127.0.0.1:8080/health after $maxAttempts attempts."
+  }
+  return $health
+}
+
+if (-not $env:OLLAMA_MODEL) {
+  $env:OLLAMA_MODEL = 'qwen2.5:7b'
+}
+if (-not $env:EMBED_MODEL) {
+  $env:EMBED_MODEL = 'bge-m3:latest'
 }
 
 Write-Host 'Starting Local AI Server E2E smoke test...' -ForegroundColor Cyan

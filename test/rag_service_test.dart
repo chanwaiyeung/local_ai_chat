@@ -1,4 +1,4 @@
-import 'package:flutter_test/flutter_test.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
 import 'package:local_ai_chat/models/app_settings.dart';
 import 'package:local_ai_chat/services/embedding_service.dart';
 import 'package:local_ai_chat/services/rag_service.dart';
@@ -477,3 +477,5 @@ class _FailingSaveVectorStore extends VectorStore {
     throw StateError('disk full');
   }
 }
+
+

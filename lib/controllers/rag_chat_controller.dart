@@ -1,4 +1,4 @@
-import '../services/embedding_service.dart';
+﻿import '../services/embedding_service.dart';
 import '../services/rag_service.dart';
 import '../services/vector_store.dart';
 
@@ -39,3 +39,5 @@ class RagChatController {
     return activeDoc == null || store.docNames.contains(activeDoc);
   }
 }
+
+

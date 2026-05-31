@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:local_ai_chat/models/book.dart';
 import 'package:local_ai_chat/widgets/book/book_cover_section.dart';
@@ -111,3 +111,5 @@ void main() {
     cover.dispose();
   });
 }
+
+

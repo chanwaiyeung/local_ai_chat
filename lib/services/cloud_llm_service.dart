@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class CloudLLMService {
@@ -77,4 +77,28 @@ class CloudLLMService {
 
     return '';
   }
+
+  /// 透過雲端精煉分類標籤，並強制格式化輸出為與本地相同的 JSON 結構
+  Future<String> refineClassification(String localSummary) async {
+    final systemPrompt = 'You are a book classification assistant. Refine the classification for the given book summary. '
+        'You must determine a single category (string) and 3 to 5 tags (list of strings). '
+        'Your response must be a JSON object with keys "category" and "tags". '
+        'Do not write any explanation, intro, or markdown code blocks. Just return the raw JSON object. '
+        'Example: {"category": "technical", "tags": ["flutter", "dart", "mobile-dev"]}';
+
+    return generateContent(
+      systemPrompt: systemPrompt,
+      userPrompt: localSummary,
+    );
+  }
+
+  /// 深度解說（Cloud AI RAG）
+  Future<String> queryCloudRAG(String prompt, List<String> context) async {
+    return generateContent(
+      systemPrompt: '你現在是一個圖書深度解說助理，請根據提供的書籍內容片段進行教學式的深入解說。若片段內無資訊，請明確告知。',
+      userPrompt: prompt,
+    );
+  }
 }
+
+

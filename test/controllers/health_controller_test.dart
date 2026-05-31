@@ -1,4 +1,4 @@
-// test/controllers/health_controller_test.dart
+﻿// test/controllers/health_controller_test.dart
 //
 // Phase 6.7 (v2.3) — Tests for HealthRecord model + HealthController.
 // Mirrors expense_controller_test.dart / contact_controller_test.dart structure.
@@ -474,3 +474,5 @@ void main() {
     });
   });
 }
+
+

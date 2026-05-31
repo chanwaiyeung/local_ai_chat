@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../models/rag_evaluation_record.dart';
 
@@ -76,3 +76,5 @@ class RagEvalRecordCard extends StatelessWidget {
     );
   }
 }
+
+

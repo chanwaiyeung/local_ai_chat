@@ -1,10 +1,11 @@
-// lib/services/vector_store.dart
+﻿// lib/services/vector_store.dart
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
-import 'package:path_provider/path_provider.dart';
 
 import 'debug_log_service.dart';
+import 'path_resolver_stub.dart'
+    if (dart.library.ui) 'path_resolver_flutter.dart';
 
 /// 一段被切碎並向量化嘅文字片段
 class DocChunk {
@@ -385,7 +386,7 @@ class VectorStore {
       if (!await parent.exists()) await parent.create(recursive: true);
       return file;
     }
-    final dir = await getApplicationSupportDirectory();
+    final dir = await getAppSupportDirectory();
     final out = Directory('${dir.path}${Platform.pathSeparator}local_ai_chat');
     if (!await out.exists()) await out.create(recursive: true);
     return File('${out.path}${Platform.pathSeparator}vector_store.json');
@@ -507,3 +508,5 @@ class VectorStore {
     return chunks;
   }
 }
+
+

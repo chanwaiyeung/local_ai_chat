@@ -19,6 +19,8 @@ import '../../controllers/church/care_controller.dart';
 import '../../main.dart';
 import 'care_dashboard_screen.dart';
 import 'church_ai_assistant.dart';
+import 'church_documents_screen.dart';
+import 'church_workflow_screen.dart';
 import 'person_directory_screen.dart';
 import 'person_history_screen.dart';
 
@@ -121,6 +123,31 @@ class _ChurchHubScreenState extends State<ChurchHubScreen> {
                   subtitle: '${care.personHistoryCount} 位有記錄',
                   color: Colors.teal,
                   onTap: _openHistory,
+                ),
+                _ChurchEntryCard(
+                  icon: Icons.article_outlined,
+                  label: '教會文書助理',
+                  subtitle: '講道 · 查經 · 關懷紀錄',
+                  color: Colors.teal,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ChurchDocumentsScreen(
+                        careController: care,
+                        personController: people,
+                      ),
+                    ),
+                  ),
+                ),
+                _ChurchEntryCard(
+                  icon: Icons.integration_instructions_outlined,
+                  label: '教會 Office 工作流',
+                  subtitle: 'Word · Excel · PPT 巨集',
+                  color: Colors.indigo,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ChurchWorkflowScreen(),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -228,8 +255,7 @@ class _PersonHistoryListScreenState extends State<_PersonHistoryListScreen> {
                         subtitle: Text(
                           '${p.totalVisits} 次探訪 · $lastVisitText',
                           style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context).hintColor),
+                              fontSize: 12, color: Theme.of(context).hintColor),
                         ),
                         trailing: p.activeCaseCount > 0
                             ? Badge(

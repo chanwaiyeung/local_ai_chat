@@ -1,4 +1,4 @@
-// lib/screens/church/person_directory_screen.dart
+﻿// lib/screens/church/person_directory_screen.dart
 import 'package:flutter/material.dart';
 import '../../controllers/church/person_controller.dart';
 import '../../main.dart';
@@ -361,3 +361,4 @@ class _AttendanceBadge extends StatelessWidget {
     );
   }
 }
+

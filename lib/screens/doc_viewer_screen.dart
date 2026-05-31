@@ -1,4 +1,4 @@
-// lib/screens/doc_viewer_screen.dart
+﻿// lib/screens/doc_viewer_screen.dart
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
@@ -275,3 +275,5 @@ class _Highlight extends StatelessWidget {
     );
   }
 }
+
+

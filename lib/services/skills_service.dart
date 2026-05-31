@@ -1,4 +1,4 @@
-
+﻿
 
 import 'dart:math';
 
@@ -126,3 +126,5 @@ class SkillsService {
     await _store.deleteById(id);
   }
 }
+
+

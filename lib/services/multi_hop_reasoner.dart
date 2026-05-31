@@ -1,4 +1,4 @@
-import 'vector_store.dart';
+﻿import 'vector_store.dart';
 
 typedef MultiHopRetriever = Future<List<ScoredChunk>> Function(
   String query, {
@@ -157,3 +157,5 @@ class MultiHopReasoner {
     return focused;
   }
 }
+
+

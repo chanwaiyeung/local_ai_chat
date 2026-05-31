@@ -1,4 +1,4 @@
-// lib/screens/personal_query_screen.dart
+﻿// lib/screens/personal_query_screen.dart
 //
 // Phase 6.5 — Personal Hub AI query screen.
 // Single-turn streaming Q&A over Personal Hub data (Expenses + Contacts).
@@ -532,3 +532,5 @@ class _Composer extends StatelessWidget {
     );
   }
 }
+
+

@@ -1,4 +1,4 @@
-// lib/server/api_server.dart
+﻿// lib/server/api_server.dart
 //
 // Local AI Server — Phase 1 of 智讀館 (AI Library).
 //
@@ -30,8 +30,10 @@ import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_cors_headers/shelf_cors_headers.dart';
 import 'package:shelf_router/shelf_router.dart';
 
+import '../services/office_ai_service.dart';
 import '../services/rag_service.dart';
 import '../services/vector_store.dart';
+import 'office_ai_router.dart';
 
 /// Streaming LLM generator. Yields text deltas from a prompt. Throws on error.
 typedef LlmStreamGenerator = Stream<String> Function(String prompt);
@@ -167,6 +169,11 @@ class ApiServer {
         'hits': _citations(hits),
       });
     }));
+
+    // Office client AI bridge sub-router mount.
+    final officeService = OfficeAiService(generate: generate);
+    final officeRouter = OfficeAiRouter(officeService: officeService);
+    router.mount('/office/', _withAuth(officeRouter.router.call));
 
     return router;
   }
@@ -311,6 +318,8 @@ $query
 ''';
   }
 
+
+
   List<Map<String, dynamic>> _citations(List<ScoredChunk> hits) {
     return hits
         .map<Map<String, dynamic>>((h) => {
@@ -441,3 +450,5 @@ $query
     }
   }
 }
+
+

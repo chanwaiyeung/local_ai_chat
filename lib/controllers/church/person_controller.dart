@@ -124,3 +124,4 @@ class PersonController extends ChangeNotifier {
   String _generatePersonId() =>
       'person_${DateTime.now().microsecondsSinceEpoch}';
 }
+

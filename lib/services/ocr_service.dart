@@ -1,4 +1,4 @@
-// lib/services/ocr_service.dart
+﻿// lib/services/ocr_service.dart
 //
 // Mobile / desktop image OCR. On native platforms (Windows / macOS / Linux /
 // Android / iOS) this shells out to `tesseract`, the same engine used by
@@ -161,3 +161,5 @@ class OcrService {
     return ar.length.compareTo(br.length);
   }
 }
+
+

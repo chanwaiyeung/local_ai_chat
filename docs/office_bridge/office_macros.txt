@@ -1,0 +1,394 @@
+' ==============================================================================
+' LOCAL AI OFFICE BRIDGE - VBA MACRO SCRIPTS (REVISED)
+' ==============================================================================
+'
+' These macros allow Microsoft Office (Word, Excel, PowerPoint, Outlook)
+' and WPS Office applications to connect to your local AI engine.
+' Make sure the Flutter application is running on port 61670.
+'
+' How to install:
+' 1. Open your Office application (e.g. Word, Excel).
+' 2. Press Alt + F11 to open the VBA Editor.
+' 3. Click Insert -> Module.
+' 4. Paste the appropriate code below into the module window.
+' 5. Close the editor. Run the macro using Alt + F8 or assign it to a ribbon button.
+'
+' ==============================================================================
+
+' ==============================================================================
+' SECTION 1: MICROSOFT WORD & WPS WRITER (Selected Text Polish)
+' ==============================================================================
+Sub PolishSelectedText()
+    Dim selectedText As String
+    Dim responseText As String
+    Dim url As String
+    Dim jsonPayload As String
+    Dim http As Object
+    
+    ' Get selected text
+    selectedText = Selection.Text
+    If Len(Trim(selectedText)) = 0 Then
+        MsgBox "Please select some text first!", vbExclamation, "Local AI Bridge"
+        Exit Sub
+    End If
+    
+    ' Escape selectedText for JSON
+    selectedText = Replace(selectedText, "\", "\\")
+    selectedText = Replace(selectedText, """", "\""")
+    selectedText = Replace(selectedText, vbCrLf, "\n")
+    selectedText = Replace(selectedText, vbCr, "\n")
+    selectedText = Replace(selectedText, vbLf, "\n")
+    
+    url = "http://127.0.0.1:61670/office/ask"
+    jsonPayload = "{""app"":""word"",""task"":""polish"",""text"":""" & selectedText & """,""tone"":""formal"",""target"":""zh-TW""}"
+    
+    On Error GoTo ErrorHandler
+    Set http = CreateObject("MSXML2.ServerXMLHTTP.6.0")
+    http.Open "POST", url, False
+    http.setRequestHeader "Content-Type", "application/json; charset=utf-8"
+    http.send jsonPayload
+    
+    If http.Status = 200 Then
+        responseText = ParseJsonResponse(http.responseText)
+        If Len(responseText) > 0 Then
+            Selection.Text = responseText
+        Else
+            MsgBox "Received empty response or request failed.", vbExclamation
+        End If
+    Else
+        MsgBox "HTTP Error " & http.Status & ": " & http.responseText, vbCritical
+    End If
+    Exit Sub
+ 
+ErrorHandler:
+    MsgBox "Failed to connect to Local AI Server. Ensure the Flutter App is running.", vbCritical
+End Sub
+
+
+' ==============================================================================
+' SECTION 1B: MICROSOFT WORD & WPS WRITER (Selected Text Summary)
+' ==============================================================================
+Sub LocalAI_SummarizeSelection()
+    Dim selectedText As String
+    Dim result As String
+    Dim responseText As String
+
+    selectedText = Selection.Text
+    If Len(Trim(selectedText)) = 0 Then
+        MsgBox "請先選取要摘要的文字。", vbExclamation, "Local AI Bridge"
+        Exit Sub
+    End If
+
+    result = CallLocalAI("word", "summarize", selectedText)
+    
+    ' Parse result from JSON
+    responseText = ParseJsonResponse(result)
+    If Len(responseText) = 0 Then
+        responseText = result ' Fallback to raw response if parsing fails
+    End If
+
+    Selection.Collapse Direction:=wdCollapseEnd
+    Selection.TypeParagraph
+    Selection.TypeText "【AI 摘要】" & vbCrLf & responseText
+End Sub
+
+Function CallLocalAI(appName As String, taskName As String, inputText As String) As String
+    Dim http As Object
+    Set http = CreateObject("WinHttp.WinHttpRequest.5.1")
+    Dim url As String
+    Dim body As String
+
+    url = "http://127.0.0.1:61670/office/ask"
+    body = "{""app"":""" & appName & """,""task"":""" & taskName & """,""text"":""" & JsonEscape(inputText) & """,""target"":""zh-TW""}"
+
+    On Error GoTo ErrorHandler
+    http.Open "POST", url, False
+    http.setRequestHeader "Content-Type", "application/json"
+    http.send body
+    CallLocalAI = http.ResponseText
+    Exit Function
+
+ErrorHandler:
+    CallLocalAI = "{""ok"":false,""result"":""連線錯誤：請確認 Flutter 應用程式已開啟。""}"
+End Function
+
+Function JsonEscape(text As String) As String
+    text = Replace(text, "\", "\\")
+    text = Replace(text, """", "\""")
+    text = Replace(text, vbCrLf, "\n")
+    text = Replace(text, vbCr, "\n")
+    text = Replace(text, vbLf, "\n")
+    JsonEscape = text
+End Function
+
+
+' ==============================================================================
+' SECTION 2: MICROSOFT EXCEL & WPS SPREADSHEETS (Formula Generator)
+' ==============================================================================
+Sub GenerateExcelFormula()
+    Dim promptText As String
+    Dim responseText As String
+    Dim url As String
+    Dim jsonPayload As String
+    Dim http As Object
+    
+    promptText = ActiveCell.Value
+    If Len(Trim(promptText)) = 0 Then
+        MsgBox "Please type a natural language formula description in the active cell first!", vbExclamation
+        Exit Sub
+    End If
+    
+    promptText = Replace(promptText, "\", "\\")
+    promptText = Replace(promptText, """", "\""")
+    
+    url = "http://127.0.0.1:61670/office/ask"
+    jsonPayload = "{""app"":""excel"",""task"":""formula"",""text"":""" & promptText & """,""tone"":""formula"",""target"":""zh-TW""}"
+    
+    On Error GoTo ErrorHandler
+    Set http = CreateObject("MSXML2.ServerXMLHTTP.6.0")
+    http.Open "POST", url, False
+    http.setRequestHeader "Content-Type", "application/json; charset=utf-8"
+    http.send jsonPayload
+    
+    If http.Status = 200 Then
+        responseText = ParseJsonResponse(http.responseText)
+        If Len(responseText) > 0 Then
+            ActiveCell.Offset(0, 1).Value = responseText
+        Else
+            MsgBox "Failed to parse AI response.", vbExclamation
+        End If
+    Else
+        MsgBox "Error " & http.Status & ": " & http.responseText, vbCritical
+    End If
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "Connection error.", vbCritical
+End Sub
+
+
+' ==============================================================================
+' SECTION 2B: MICROSOFT EXCEL & WPS SPREADSHEETS (Analyze Selected Table)
+' ==============================================================================
+Sub LocalAI_AnalyzeSelectedTable()
+    Dim rng As Range
+    Set rng = Selection
+
+    If rng Is Nothing Then
+        MsgBox "請先選取要分析的表格範圍。"
+        Exit Sub
+    End If
+
+    Dim csv As String
+    csv = RangeToCsv(rng)
+
+    Dim result As String
+    result = CallLocalAI("excel", "analyze_table", csv)
+
+    Dim responseText As String
+    responseText = ParseJsonResponse(result)
+    If Len(responseText) = 0 Then
+        responseText = result ' Fallback to raw response if parsing fails
+    End If
+
+    Dim ws As Worksheet
+    Set ws = ActiveWorkbook.Worksheets.Add
+    ws.Name = "AI分析"
+
+    ws.Range("A1").Value = "AI 分析結果"
+    ws.Range("A2").Value = responseText
+End Sub
+
+Function RangeToCsv(rng As Range) As String
+    Dim r As Long, c As Long
+    Dim line As String
+    Dim output As String
+
+    For r = 1 To rng.Rows.Count
+        line = ""
+        For c = 1 To rng.Columns.Count
+            line = line & """" & Replace(CStr(rng.Cells(r, c).Value), """", """""") & """"
+            If c < rng.Columns.Count Then line = line & ","
+        Next c
+        output = output & line & vbCrLf
+    Next r
+
+    RangeToCsv = output
+End Function
+
+
+' ==============================================================================
+' SECTION 3: MICROSOFT POWERPOINT & WPS PRESENTATION (Slide Outliner)
+' ==============================================================================
+Sub GenerateSlideOutline()
+    Dim topicText As String
+    Dim responseText As String
+    Dim url As String
+    Dim jsonPayload As String
+    Dim http As Object
+    
+    topicText = InputBox("Enter slide deck topic:", "PowerPoint AI Outliner")
+    If Len(Trim(topicText)) = 0 Then Exit Sub
+    
+    topicText = Replace(topicText, "\", "\\")
+    topicText = Replace(topicText, """", "\""")
+    
+    url = "http://127.0.0.1:61670/office/ask"
+    jsonPayload = "{""app"":""ppt"",""task"":""outline"",""text"":""" & topicText & """,""tone"":""bulletPoints"",""target"":""zh-TW""}"
+    
+    On Error GoTo ErrorHandler
+    Set http = CreateObject("MSXML2.ServerXMLHTTP.6.0")
+    http.Open "POST", url, False
+    http.setRequestHeader "Content-Type", "application/json; charset=utf-8"
+    http.send jsonPayload
+    
+    If http.Status = 200 Then
+        responseText = ParseJsonResponse(http.responseText)
+        MsgBox responseText, vbInformation, "AI Outliner Result"
+    Else
+        MsgBox "Error: " & http.Status, vbCritical
+    End If
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "Connection error.", vbCritical
+End Sub
+
+
+' ==============================================================================
+' SECTION 4: MICROSOFT OUTLOOK (Smart Email Summarizer)
+' ==============================================================================
+Sub SummarizeSelectedEmail()
+    Dim objMail As Object
+    Dim responseText As String
+    Dim url As String
+    Dim jsonPayload As String
+    Dim http As Object
+    Dim mailBody As String
+    
+    On Error Resume Next
+    Set objMail = Application.ActiveExplorer.Selection.Item(1)
+    On Error GoTo 0
+    
+    If objMail Is Nothing Then
+        MsgBox "Please select an email first!", vbExclamation
+        Exit Sub
+    End If
+    
+    mailBody = objMail.Body
+    If Len(mailBody) > 1000 Then mailBody = Left(mailBody, 1000)
+    
+    mailBody = Replace(mailBody, "\", "\\")
+    mailBody = Replace(mailBody, """", "\""")
+    mailBody = Replace(mailBody, vbCrLf, "\n")
+    mailBody = Replace(mailBody, vbLf, "\n")
+    
+    url = "http://127.0.0.1:61670/office/ask"
+    jsonPayload = "{""app"":""outlook"",""task"":""summarize"",""text"":""" & mailBody & """,""tone"":""bulletPoints"",""target"":""zh-TW""}"
+    
+    On Error GoTo ErrorHandler
+    Set http = CreateObject("MSXML2.ServerXMLHTTP.6.0")
+    http.Open "POST", url, False
+    http.setRequestHeader "Content-Type", "application/json; charset=utf-8"
+    http.send jsonPayload
+    
+    If http.Status = 200 Then
+        responseText = ParseJsonResponse(http.responseText)
+        MsgBox responseText, vbInformation, "AI Email Summary"
+    Else
+        MsgBox "Error " & http.Status, vbCritical
+    End If
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "Connection error.", vbCritical
+End Sub
+
+
+' ==============================================================================
+' SECTION 4B: MICROSOFT OUTLOOK (Smart Email Reply Drafter)
+' ==============================================================================
+Sub LocalAI_DraftReply()
+    Dim mail As Outlook.MailItem
+
+    If Application.ActiveExplorer.Selection.Count = 0 Then
+        MsgBox "請先選取一封郵件。", vbExclamation, "Local AI Bridge"
+        Exit Sub
+    End If
+
+    Set mail = Application.ActiveExplorer.Selection.Item(1)
+
+    Dim result As String
+    result = CallLocalAI("outlook", "draft_reply", mail.Body)
+
+    Dim responseText As String
+    responseText = ParseJsonResponse(result)
+    If Len(responseText) = 0 Then
+        responseText = result
+    End If
+
+    Dim reply As Outlook.MailItem
+    Set reply = mail.Reply
+    reply.Body = responseText & vbCrLf & vbCrLf & "----- 原始郵件 -----" & vbCrLf & mail.Body
+    reply.Display
+End Sub
+
+Function CallLocalAI(appName As String, taskName As String, inputText As String) As String
+    Dim http As Object
+    Set http = CreateObject("WinHttp.WinHttpRequest.5.1")
+    Dim url As String
+    Dim body As String
+
+    url = "http://127.0.0.1:61670/office/ask"
+    body = "{""app"":""" & appName & """,""task"":""" & taskName & """,""text"":""" & JsonEscape(inputText) & """,""target"":""zh-TW""}"
+
+    On Error GoTo ErrorHandler
+    http.Open "POST", url, False
+    http.setRequestHeader "Content-Type", "application/json"
+    http.send body
+    CallLocalAI = http.ResponseText
+    Exit Function
+
+ErrorHandler:
+    CallLocalAI = "{""ok"":false,""result"":""連線錯誤：請確認 Flutter 應用程式已開啟。""}"
+End Function
+
+Function JsonEscape(text As String) As String
+    text = Replace(text, "\", "\\")
+    text = Replace(text, """", "\""")
+    text = Replace(text, vbCrLf, "\n")
+    text = Replace(text, vbCr, "\n")
+    text = Replace(text, vbLf, "\n")
+    JsonEscape = text
+End Function
+
+
+' ==============================================================================
+' SECTION 5: COMMON UTILITY FUNCTION (JSON Parser Helper)
+' ==============================================================================
+Function ParseJsonResponse(jsonStr As String) As String
+    Dim resultKey As String
+    Dim startIdx As Long
+    Dim endIdx As Long
+    
+    ' First verify if "ok":true is present
+    If InStr(jsonStr, """ok"":true") = 0 And InStr(jsonStr, """ok"": true") = 0 Then
+        ParseJsonResponse = ""
+        Exit Function
+    End If
+
+    resultKey = """result"":"""
+    startIdx = InStr(jsonStr, resultKey)
+    If startIdx > 0 Then
+        startIdx = startIdx + Len(resultKey)
+        endIdx = InStr(startIdx, jsonStr, """")
+        ParseJsonResponse = Mid(jsonStr, startIdx, endIdx - startIdx)
+        
+        ' Unescape JSON entities
+        ParseJsonResponse = Replace(ParseJsonResponse, "\n", vbCrLf)
+        ParseJsonResponse = Replace(ParseJsonResponse, "\""", """")
+        ParseJsonResponse = Replace(ParseJsonResponse, "\\", "\")
+    Else
+        ParseJsonResponse = ""
+    End If
+End Function

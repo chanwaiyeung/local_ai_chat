@@ -1,4 +1,4 @@
-// lib/models/message.dart
+﻿// lib/models/message.dart
 
 enum Role { user, assistant, system }
 
@@ -41,3 +41,5 @@ class ChatMessage {
     );
   }
 }
+
+

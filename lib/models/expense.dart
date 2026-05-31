@@ -1,4 +1,4 @@
-// lib/models/expense.dart
+﻿// lib/models/expense.dart
 
 class Expense {
   final String id;
@@ -120,3 +120,5 @@ class Expense {
         Object.hashAll(tags),
       );
 }
+
+

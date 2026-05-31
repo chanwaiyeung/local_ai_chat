@@ -367,3 +367,5 @@ class _VisitCard extends StatelessWidget {
   static String _fmtDate(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 }
+
+

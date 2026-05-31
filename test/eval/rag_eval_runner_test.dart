@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -125,3 +125,5 @@ class _FakeRagService extends RagService {
 class _NoopEmbeddingService extends EmbeddingService {
   _NoopEmbeddingService() : super(baseUrl: 'http://unused.invalid');
 }
+
+

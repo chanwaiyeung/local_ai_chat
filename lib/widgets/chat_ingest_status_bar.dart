@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 class ChatIngestStatusBar extends StatelessWidget {
   const ChatIngestStatusBar({
@@ -56,3 +56,5 @@ class ChatIngestStatusBar extends StatelessWidget {
     return const SizedBox.shrink();
   }
 }
+
+

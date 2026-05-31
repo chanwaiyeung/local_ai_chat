@@ -1,4 +1,4 @@
-// test/api_server_test.dart
+﻿// test/api_server_test.dart
 //
 // Server-side integration test. Boots a real ApiServer on an ephemeral port
 // with an in-memory VectorStore (pre-populated with two fixture chunks),
@@ -479,3 +479,5 @@ Future<Map<String, dynamic>> _httpPostJson(
     c.close(force: true);
   }
 }
+
+

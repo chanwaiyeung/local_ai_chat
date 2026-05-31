@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:io';
 
 import 'package:local_ai_chat/models/app_settings.dart';
@@ -364,3 +364,5 @@ class RagEvalRunner {
     };
   }
 }
+
+

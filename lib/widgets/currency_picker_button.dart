@@ -1,4 +1,4 @@
-// lib/widgets/currency_picker_button.dart
+﻿// lib/widgets/currency_picker_button.dart
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
@@ -55,5 +55,7 @@ class CurrencyPickerButton extends StatelessWidget {
     );
   }
 }
+
+
 
 

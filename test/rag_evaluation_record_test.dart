@@ -1,4 +1,4 @@
-import 'package:flutter_test/flutter_test.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
 import 'package:local_ai_chat/models/rag_evaluation_record.dart';
 
 void main() {
@@ -218,3 +218,5 @@ RagEvaluationRecord _makeRecord({required RagVerdict verdict}) {
     createdAt: DateTime.parse('2026-04-26T14:30:00.000'),
   );
 }
+
+

@@ -1,4 +1,4 @@
-// test/controllers/expense_controller_test.dart
+﻿// test/controllers/expense_controller_test.dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:local_ai_chat/controllers/expense_controller.dart';
 import 'package:local_ai_chat/models/expense.dart';
@@ -104,3 +104,5 @@ void main() {
     });
   });
 }
+
+

@@ -1,4 +1,4 @@
-// lib/controllers/expense_controller.dart
+﻿// lib/controllers/expense_controller.dart
 import 'package:flutter/foundation.dart';
 
 import '../models/expense.dart';
@@ -165,3 +165,5 @@ class ExpenseController extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+

@@ -24,7 +24,10 @@ class Book {
     this.startedReadingAt,
     DateTime? addedAt,
     this.source = 'manual',
-  }) : addedAt = addedAt ?? DateTime.now();
+    this.metadata = const {},
+    BookInteractionMetadata? interactionMetadata,
+  }) : addedAt = addedAt ?? DateTime.now(),
+       interactionMetadata = interactionMetadata ?? BookInteractionMetadata();
 
   final String id;
   final String title;
@@ -44,6 +47,8 @@ class Book {
   final DateTime? startedReadingAt;
   final DateTime addedAt;
   final String source;       // 'manual' | 'isbn_lookup' | 'vision_extracted'
+  final Map<String, dynamic> metadata;
+  final BookInteractionMetadata interactionMetadata;
 
   bool get isRead => readAt != null; // 讀完了
   bool get isReading =>
@@ -69,6 +74,8 @@ class Book {
     DateTime? startedReadingAt,
     DateTime? addedAt,
     String? source,
+    Map<String, dynamic>? metadata,
+    BookInteractionMetadata? interactionMetadata,
   }) {
     return Book(
       id: id ?? this.id,
@@ -88,6 +95,8 @@ class Book {
       startedReadingAt: startedReadingAt ?? this.startedReadingAt,
       addedAt: addedAt ?? this.addedAt,
       source: source ?? this.source,
+      metadata: metadata ?? this.metadata,
+      interactionMetadata: interactionMetadata ?? this.interactionMetadata,
     );
   }
 
@@ -109,6 +118,8 @@ class Book {
         'startedReadingAt': startedReadingAt?.toIso8601String(),
         'addedAt': addedAt.toIso8601String(),
         'source': source,
+        'metadata': metadata,
+        'interactionMetadata': interactionMetadata.toJson(),
       };
 
   factory Book.fromJson(Map<String, dynamic> json) {
@@ -137,6 +148,11 @@ class Book {
           ? (DateTime.tryParse(json['addedAt'] as String) ?? DateTime.now())
           : DateTime.now(),
       source: json['source'] as String? ?? 'manual',
+      metadata: Map<String, dynamic>.from(json['metadata'] as Map? ?? const {}),
+      interactionMetadata: json['interactionMetadata'] != null
+          ? BookInteractionMetadata.fromJson(
+              Map<String, dynamic>.from(json['interactionMetadata'] as Map))
+          : null,
     );
   }
 
@@ -178,7 +194,9 @@ class Book {
         other.readAt == readAt &&
         other.startedReadingAt == startedReadingAt &&
         other.addedAt == addedAt &&
-        other.source == source;
+        other.source == source &&
+        _mapEquals(other.metadata, metadata) &&
+        other.interactionMetadata == interactionMetadata;
   }
 
   @override
@@ -200,6 +218,8 @@ class Book {
         startedReadingAt,
         addedAt,
         source,
+        Object.hashAll(metadata.keys),
+        interactionMetadata,
       );
 
   static bool _listEquals<T>(List<T> a, List<T> b) {
@@ -210,8 +230,116 @@ class Book {
     return true;
   }
 
+  static bool _mapEquals<K, V>(Map<K, V>? a, Map<K, V>? b) {
+    if (a == null && b == null) return true;
+    if (a == null || b == null) return false;
+    if (a.length != b.length) return false;
+    for (final key in a.keys) {
+      if (a[key] != b[key]) return false;
+    }
+    return true;
+  }
+
   @override
   String toString() => 'Book($title by $author, isbn: $isbn)';
+}
+
+class BookInteractionMetadata {
+  final String category;             // 分類模組寫入
+  final List<String> tags;           // 分類模組寫入
+  final String? audioSummaryPath;    // 語音模組寫入
+  final DateTime? lastRead;          // 閱讀模組寫入
+  final Map<String, dynamic> ragContext; // 閱讀+問答模組寫入
+  final String? classificationSource; // 分類來源 (local 或 cloud)
+
+  BookInteractionMetadata({
+    this.category = '',
+    this.tags = const [],
+    this.audioSummaryPath,
+    this.lastRead,
+    this.ragContext = const {},
+    this.classificationSource,
+  });
+
+  BookInteractionMetadata copyWith({
+    String? category,
+    List<String>? tags,
+    String? audioSummaryPath,
+    DateTime? lastRead,
+    Map<String, dynamic>? ragContext,
+    String? classificationSource,
+  }) {
+    return BookInteractionMetadata(
+      category: category ?? this.category,
+      tags: tags ?? this.tags,
+      audioSummaryPath: audioSummaryPath ?? this.audioSummaryPath,
+      lastRead: lastRead ?? this.lastRead,
+      ragContext: ragContext ?? this.ragContext,
+      classificationSource: classificationSource ?? this.classificationSource,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'category': category,
+        'tags': tags,
+        'audioSummaryPath': audioSummaryPath,
+        'lastRead': lastRead?.toIso8601String(),
+        'ragContext': ragContext,
+        'classificationSource': classificationSource,
+      };
+
+  factory BookInteractionMetadata.fromJson(Map<String, dynamic> json) {
+    return BookInteractionMetadata(
+      category: json['category'] as String? ?? '',
+      tags: (json['tags'] as List?)?.map((e) => e.toString()).toList() ?? const [],
+      audioSummaryPath: json['audioSummaryPath'] as String?,
+      lastRead: json['lastRead'] != null
+          ? DateTime.tryParse(json['lastRead'] as String)
+          : null,
+      ragContext: Map<String, dynamic>.from(json['ragContext'] as Map? ?? const {}),
+      classificationSource: json['classificationSource'] as String?,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is BookInteractionMetadata &&
+        other.category == category &&
+        _listEquals(other.tags, tags) &&
+        other.audioSummaryPath == audioSummaryPath &&
+        other.lastRead == lastRead &&
+        _mapEquals(other.ragContext, ragContext) &&
+        other.classificationSource == classificationSource;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        category,
+        Object.hashAll(tags),
+        audioSummaryPath,
+        lastRead,
+        Object.hashAll(ragContext.keys),
+        classificationSource,
+      );
+
+  static bool _listEquals<T>(List<T> a, List<T> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
+  static bool _mapEquals<K, V>(Map<K, V>? a, Map<K, V>? b) {
+    if (a == null && b == null) return true;
+    if (a == null || b == null) return false;
+    if (a.length != b.length) return false;
+    for (final key in a.keys) {
+      if (a[key] != b[key]) return false;
+    }
+    return true;
+  }
 }
 
 /// Common book categories. Use as a hint; users may store any string.
@@ -240,3 +368,5 @@ class BookCategory {
     other,
   ];
 }
+
+

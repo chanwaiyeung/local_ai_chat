@@ -16,6 +16,7 @@ import 'package:local_ai_chat/l10n/app_localizations.dart';
 import 'package:local_ai_chat/models/contact.dart';
 import 'package:local_ai_chat/models/expense.dart';
 import 'package:local_ai_chat/models/health_record.dart';
+import 'package:local_ai_chat/screens/learning_screen.dart';
 import 'package:local_ai_chat/screens/personal_hub_screen.dart';
 import 'package:local_ai_chat/services/vector_store.dart';
 
@@ -116,7 +117,7 @@ void main() {
     expect(find.text('2 張名片'), findsNWidgets(2));
   });
 
-  testWidgets('renders all 5 module cards in a GridView', (tester) async {
+  testWidgets('renders module cards in a GridView including 學習天地', (tester) async {
     await tester.pumpWidget(hostFor());
 
     expect(find.byType(GridView), findsOneWidget);
@@ -124,7 +125,8 @@ void main() {
     expect(find.text('名片管理'), findsOneWidget);
     expect(find.text('健康紀錄'), findsAtLeastNWidgets(1));
     expect(find.text('投資理財'), findsOneWidget);
-    expect(find.text('完整儀表板'), findsOneWidget);
+    expect(find.text('生活文件應用'), findsOneWidget);
+    expect(find.text('學習天地'), findsOneWidget);
   });
 
   testWidgets('Expense module card shows record count from controller',
@@ -334,4 +336,20 @@ void main() {
     // LibraryScreen AppBar uses l10n.libraryTitle = '圖書館' in zh-TW locale.
     expect(find.text('圖書館'), findsOneWidget);
   });
+
+  testWidgets('tapping 學習天地 navigates to LearningScreen', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(hostFor());
+    final tile = find.text('學習天地');
+    await tester.ensureVisible(tile);
+    await tester.pumpAndSettle();
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LearningScreen), findsOneWidget);
+  });
 }
+
+

@@ -1,4 +1,4 @@
-// test/controllers/personal_hub_controller_test.dart
+﻿// test/controllers/personal_hub_controller_test.dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:local_ai_chat/controllers/expense_controller.dart';
 import 'package:local_ai_chat/controllers/personal_hub_controller.dart';
@@ -367,3 +367,5 @@ void main() {
     });
   });
 }
+
+

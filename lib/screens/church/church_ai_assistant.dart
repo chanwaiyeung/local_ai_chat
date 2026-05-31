@@ -83,7 +83,8 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
             '｜狀態：$level｜$daysStr');
         final last = care.lastVisitFor(c.id);
         if (last != null) {
-          buf.writeln('  最近探訪：${last.visitDate.year}/${last.visitDate.month}/${last.visitDate.day}'
+          buf.writeln(
+              '  最近探訪：${last.visitDate.year}/${last.visitDate.month}/${last.visitDate.day}'
               ' 由 ${last.visitedBy}，${last.summary}');
         }
       }
@@ -140,7 +141,8 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
     }
 
     final related = care.activeCases
-        .where((c) => c.memberName.contains(name) || name.contains(c.memberName))
+        .where(
+            (c) => c.memberName.contains(name) || name.contains(c.memberName))
         .toList();
     if (related.isNotEmpty) {
       buf.writeln('\n【相關關懷案件】');
@@ -148,7 +150,8 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         buf.writeln('- 緣由：${c.reason}｜緊急度：${c.urgency}');
         final last = care.lastVisitFor(c.id);
         if (last != null) {
-          buf.writeln('  最近探訪：${last.visitDate.year}/${last.visitDate.month}/${last.visitDate.day}，${last.summary}');
+          buf.writeln(
+              '  最近探訪：${last.visitDate.year}/${last.visitDate.month}/${last.visitDate.day}，${last.summary}');
         }
       }
     }
@@ -214,7 +217,8 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
     }
 
     final related = care.allCases
-        .where((c) => c.memberName.contains(name) || name.contains(c.memberName))
+        .where(
+            (c) => c.memberName.contains(name) || name.contains(c.memberName))
         .toList();
     if (related.isNotEmpty) {
       buf.writeln('\n【關懷案件歷史（${related.length} 件）】');
@@ -222,7 +226,8 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         buf.writeln('- [${c.status}] ${c.reason}（緊急度：${c.urgency}）');
         final visits = care.visitsForCase(c.id);
         for (final v in visits.take(3)) {
-          buf.writeln('  探訪 ${v.visitDate.year}/${v.visitDate.month}/${v.visitDate.day}'
+          buf.writeln(
+              '  探訪 ${v.visitDate.year}/${v.visitDate.month}/${v.visitDate.day}'
               '：${v.summary}（狀況：${v.condition}）');
         }
       }
@@ -260,7 +265,8 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         buf.writeln('- ${c.memberName}：${c.reason}$extra');
       }
     }
-    buf.writeln('\n教會概況：${people.totalCount} 位會友，定期出席 ${people.regularCount} 人。');
+    buf.writeln(
+        '\n教會概況：${people.totalCount} 位會友，定期出席 ${people.regularCount} 人。');
     buf.writeln('請用繁體中文，語氣溫暖友善，適合印刷或電子週報。');
     return buf.toString();
   }
@@ -309,7 +315,8 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
     buf.writeln('- 定期出席：$regular 人 / 偶爾出席：$occasional 人 / 久未出席：$inactive 人');
 
     final relatedCases = care.activeCases
-        .where((c) => c.notes.contains(groupName) ||
+        .where((c) =>
+            c.notes.contains(groupName) ||
             c.memberName.contains(groupName) ||
             groupName.length <= 2)
         .take(5)
@@ -363,8 +370,8 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
     }
 
     final related = care.allCases
-        .where((c) =>
-            c.memberName.contains(name) || name.contains(c.memberName))
+        .where(
+            (c) => c.memberName.contains(name) || name.contains(c.memberName))
         .take(3)
         .toList();
     if (related.isNotEmpty) {
@@ -533,8 +540,8 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
     }
 
     final related = care.allCases
-        .where((c) =>
-            c.memberName.contains(name) || name.contains(c.memberName))
+        .where(
+            (c) => c.memberName.contains(name) || name.contains(c.memberName))
         .take(3)
         .toList();
     if (related.isNotEmpty) {
@@ -634,8 +641,8 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
   String _buildFuneralComfortPrompt(String name) {
     final care = globalCareController;
     final related = care.allCases
-        .where((c) =>
-            c.memberName.contains(name) || name.contains(c.memberName))
+        .where(
+            (c) => c.memberName.contains(name) || name.contains(c.memberName))
         .take(2)
         .toList();
 
@@ -702,8 +709,7 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
         '格式正式，適合印刷成冊或 PDF 對外發布。\n');
     buf.writeln('【年度數據（自動帶入）】');
     buf.writeln('- 總會友人數：${people.totalCount} 人');
-    buf.writeln(
-        '  （正式會員 ${people.memberCount} / 慕道友 ${people.seekerCount}）');
+    buf.writeln('  （正式會員 ${people.memberCount} / 慕道友 ${people.seekerCount}）');
     buf.writeln('  （定期出席 ${people.regularCount} / 偶爾 ${people.occasionalCount}'
         ' / 久缺 ${people.inactiveCount}）');
     buf.writeln('- 全年關懷案件：${care.allCases.length} 件'
@@ -1196,8 +1202,8 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
     }
 
     final related = care.allCases
-        .where((c) =>
-            c.memberName.contains(name) || name.contains(c.memberName))
+        .where(
+            (c) => c.memberName.contains(name) || name.contains(c.memberName))
         .take(3)
         .toList();
     if (related.isNotEmpty) {
@@ -1579,8 +1585,8 @@ class _ChurchAiAssistantState extends State<ChurchAiAssistant> {
     }
 
     final related = care.allCases
-        .where((c) =>
-            c.memberName.contains(name) || name.contains(c.memberName))
+        .where(
+            (c) => c.memberName.contains(name) || name.contains(c.memberName))
         .take(2)
         .toList();
     if (related.isNotEmpty) {
@@ -3763,7 +3769,7 @@ class _AiCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
+                  color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: color, size: 24),

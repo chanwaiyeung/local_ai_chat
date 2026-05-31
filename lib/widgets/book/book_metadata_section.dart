@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../models/book.dart';
 import '../../services/book_isbn_service.dart';
@@ -205,3 +205,5 @@ class BookMetadataSection extends StatelessWidget {
     );
   }
 }
+
+

@@ -1,4 +1,4 @@
-// lib/controllers/wealth_controller.dart
+﻿// lib/controllers/wealth_controller.dart
 import 'package:flutter/foundation.dart';
 
 import '../models/wealth_record.dart';
@@ -248,3 +248,4 @@ class WealthController extends ChangeNotifier {
 
   List<double> _emptyEmbedding(String _) => List.filled(384, 0.0);
 }
+

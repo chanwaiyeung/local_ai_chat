@@ -1,4 +1,4 @@
-// lib/services/pdf_service.dart
+﻿// lib/services/pdf_service.dart
 import 'dart:io';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
@@ -54,3 +54,5 @@ class PdfService {
     return chunks;
   }
 }
+
+

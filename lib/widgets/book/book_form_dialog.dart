@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../models/book.dart';
 import 'book_cover_section.dart';
@@ -222,6 +222,7 @@ class _BookFormDialogState extends State<BookFormDialog> {
                   onClearReadDate: () => setState(() => _readAt = null),
                 ),
                 BookTagsSection(
+                  book: widget.existing,
                   tags: _tags,
                   tagInputCtrl: _tagInputCtrl,
                   onAddTag: _addTag,
@@ -248,3 +249,5 @@ class _BookFormDialogState extends State<BookFormDialog> {
     );
   }
 }
+
+

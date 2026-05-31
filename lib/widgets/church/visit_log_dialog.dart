@@ -1,4 +1,4 @@
-// lib/widgets/church/visit_log_dialog.dart
+﻿// lib/widgets/church/visit_log_dialog.dart
 import 'package:flutter/material.dart';
 import '../../models/church/care_case.dart';
 import '../../models/church/visit_log.dart';
@@ -323,3 +323,5 @@ class _VisitLogDialogState extends State<VisitLogDialog> {
   static String _fmtDate(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 }
+
+

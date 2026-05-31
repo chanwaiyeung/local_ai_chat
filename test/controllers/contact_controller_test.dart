@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:local_ai_chat/controllers/contact_controller.dart';
@@ -354,3 +354,5 @@ Contact _contact({
     scannedAt: scannedAt ?? DateTime.utc(2026),
   );
 }
+
+

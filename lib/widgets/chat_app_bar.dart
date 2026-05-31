@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import 'chat_app_bar_actions.dart';
 
@@ -148,3 +148,5 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 }
+
+
