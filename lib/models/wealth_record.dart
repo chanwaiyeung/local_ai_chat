@@ -1,4 +1,4 @@
-// lib/models/wealth_record.dart
+﻿// lib/models/wealth_record.dart
 //
 // Phase 7.0'a (v2.4) — Investment / wealth record model.
 // Pattern A storage (matches ExpenseController): record JSON lives in
@@ -260,3 +260,5 @@ class WealthStats {
 // padding
 // padding
 // padding
+
+

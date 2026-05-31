@@ -1,4 +1,4 @@
-import 'package:flutter_test/flutter_test.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
 import 'package:local_ai_chat/utils/citation_parser.dart';
 
 void main() {
@@ -51,3 +51,5 @@ void main() {
     expect(parseCitationLinkTarget('chunk://doc?chunk=3'), isNull);
   });
 }
+
+

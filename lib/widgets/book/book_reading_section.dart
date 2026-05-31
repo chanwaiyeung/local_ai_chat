@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 /// Rating, reading dates, and notes.
 class BookReadingSection extends StatelessWidget {
@@ -94,3 +94,5 @@ class BookReadingSection extends StatelessWidget {
     );
   }
 }
+
+

@@ -1,4 +1,4 @@
-class RagEvalCase {
+﻿class RagEvalCase {
   const RagEvalCase({
     required this.id,
     required this.question,
@@ -114,3 +114,5 @@ const ragEvalCases = [
     followUpQuestion: 'Can you give an example?',
   ),
 ];
+
+

@@ -1,4 +1,4 @@
-import 'package:flutter_test/flutter_test.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
 import 'package:local_ai_chat/services/rrf_tuner.dart';
 
 void main() {
@@ -47,3 +47,5 @@ void main() {
     expect(best.config, configs[1]);
   });
 }
+
+

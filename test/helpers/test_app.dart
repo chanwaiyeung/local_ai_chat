@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:local_ai_chat/l10n/app_localizations.dart';
 
@@ -32,3 +32,5 @@ class TestApp extends StatelessWidget {
     );
   }
 }
+
+

@@ -1,4 +1,4 @@
-// lib/screens/chat_screen.dart
+﻿// lib/screens/chat_screen.dart
 import 'dart:async';
 import 'dart:io' show File;
 
@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import '../controllers/chat_send_controller.dart';
 import '../controllers/rag_chat_controller.dart';
 import '../l10n/app_localizations.dart';
+import '../main.dart';
 import '../models/app_settings.dart';
 import '../models/message.dart';
 import '../services/app_settings_service.dart';
@@ -677,6 +678,7 @@ class _ChatScreenState extends State<ChatScreen> {
         _applyEmbeddingModel(newModel);
       });
       await _settingsService.save(proposed);
+      await startOrRestartServer(proposed);
       await DebugLogService.append(
         'Settings changed: embeddingModel=$newModel '
         'retrievalMode=${proposed.retrievalMode.name}',
@@ -729,6 +731,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _store.clear();
       await _store.save();
       await _settingsService.save(proposed);
+      await startOrRestartServer(proposed);
       await DebugLogService.append(
         'Embedding changed: old=$oldModel new=$newModel '
         'storeCleared=true storeChunks=${_store.length} '
@@ -1041,4 +1044,6 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 }
+
+
 

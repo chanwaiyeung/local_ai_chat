@@ -1,4 +1,4 @@
-import 'package:flutter_test/flutter_test.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
 import 'package:local_ai_chat/models/app_settings.dart';
 import 'package:local_ai_chat/services/embedding_service.dart';
 import 'package:local_ai_chat/services/rag_service.dart';
@@ -101,3 +101,5 @@ class _CountingEmbeddingService extends EmbeddingService {
     return const [1, 0, 0];
   }
 }
+
+

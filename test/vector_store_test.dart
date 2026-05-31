@@ -1,4 +1,4 @@
-// test/vector_store_test.dart
+﻿// test/vector_store_test.dart
 //
 // In-memory and on-disk tests for VectorStore. Exercises:
 //   - cosine similarity ranking (most similar comes first)
@@ -235,3 +235,5 @@ void main() {
     });
   });
 }
+
+

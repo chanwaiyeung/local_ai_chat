@@ -1,4 +1,4 @@
-// lib/server/ollama_client.dart
+﻿// lib/server/ollama_client.dart
 //
 // Minimal Ollama streaming client for the Local AI Server.
 //
@@ -62,3 +62,5 @@ class OllamaClient {
     }
   }
 }
+
+

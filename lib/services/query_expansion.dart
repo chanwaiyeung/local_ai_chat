@@ -1,4 +1,4 @@
-class QueryExpansion {
+﻿class QueryExpansion {
   const QueryExpansion();
 
   static const Map<String, List<String>> _synonyms = {
@@ -55,3 +55,5 @@ class QueryExpansion {
     if (!values.contains(value)) values.add(value);
   }
 }
+
+

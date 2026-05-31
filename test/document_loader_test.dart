@@ -1,4 +1,4 @@
-// test/document_loader_test.dart
+﻿// test/document_loader_test.dart
 //
 // Tests for document_loader.dart. Covers .txt / .md text passthrough,
 // HTML → text conversion (the part EPUB depends on), and the negative
@@ -119,3 +119,5 @@ void main() {
     });
   });
 }
+
+

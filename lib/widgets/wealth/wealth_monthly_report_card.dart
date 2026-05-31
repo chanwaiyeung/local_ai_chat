@@ -1,4 +1,4 @@
-// lib/widgets/wealth/wealth_monthly_report_card.dart
+﻿// lib/widgets/wealth/wealth_monthly_report_card.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../controllers/wealth_controller.dart';
@@ -96,5 +96,7 @@ class WealthMonthlyReportCard extends StatelessWidget {
     );
   }
 }
+
+
 
 

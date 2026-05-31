@@ -1,4 +1,4 @@
-// lib/services/ollama_service.dart
+﻿// lib/services/ollama_service.dart
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -125,6 +125,38 @@ class OllamaService {
     }
   }
 
+  Future<String> generate(String prompt, {String? systemPrompt, String? format = 'json', Map<String, dynamic>? options}) async {
+    final uri = Uri.parse('$baseUrl/api/generate');
+    final body = jsonEncode({
+      'model': model,
+      'prompt': prompt,
+      if (systemPrompt != null) 'system': systemPrompt,
+      'stream': false,
+      if (format != null) 'format': format,
+      if (options != null) 'options': options,
+    });
+
+    late http.Response res;
+    try {
+      res = await http
+          .post(
+            uri,
+            headers: {'Content-Type': 'application/json'},
+            body: body,
+          )
+          .timeout(timeout);
+    } catch (e) {
+      throw Exception(_friendlyConnectionError(e));
+    }
+
+    if (res.statusCode != 200) {
+      throw Exception('Ollama 錯誤 ${res.statusCode}: ${res.body}');
+    }
+
+    final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    return (data['response'] as String?)?.trim() ?? '';
+  }
+
   String _friendlyConnectionError(Object error) {
     if (error is TimeoutException ||
         error is SocketException ||
@@ -139,3 +171,5 @@ class OllamaService {
     return error.toString();
   }
 }
+
+

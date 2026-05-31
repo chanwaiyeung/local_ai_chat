@@ -1,4 +1,4 @@
-// lib/services/personal_rag_service.dart
+﻿// lib/services/personal_rag_service.dart
 //
 // Phase 6.3'b — Cross-collection RAG for Personal Hub data.
 //
@@ -477,3 +477,5 @@ class PersonalRagService {
 4. 涉及金額時保留原始幣別，不自動換算。
 ''';
 }
+
+

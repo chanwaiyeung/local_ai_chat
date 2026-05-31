@@ -1,4 +1,4 @@
-// lib/models/health_record.dart
+﻿// lib/models/health_record.dart
 //
 // Phase 6.7 (v2.3) — Health record model.
 // Stored inside VectorStore under the 'Health' collection. Each record is
@@ -242,3 +242,5 @@ class HealthStats {
 
   bool get isEmpty => recordCount == 0;
 }
+
+

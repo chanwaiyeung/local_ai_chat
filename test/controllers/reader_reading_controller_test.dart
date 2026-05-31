@@ -1,4 +1,4 @@
-// test/controllers/reader_reading_controller_test.dart
+﻿// test/controllers/reader_reading_controller_test.dart
 //
 // Phase 1: unit tests for ReaderReadingController (retrieve-first read mode).
 
@@ -6,7 +6,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:local_ai_chat/controllers/reader_controller.dart';
 import 'package:local_ai_chat/controllers/reader_reading_controller.dart';
+import 'package:local_ai_chat/models/book.dart';
+import 'package:local_ai_chat/models/message.dart';
 import 'package:local_ai_chat/services/api_client.dart';
+import 'package:local_ai_chat/services/ollama_service.dart';
+import 'package:local_ai_chat/services/tts_service.dart';
 
 class _FakeReaderApi extends Fake implements ReaderApi {
   _FakeReaderApi({
@@ -54,6 +58,61 @@ class _FakeReaderApi extends Fake implements ReaderApi {
     reading: ReaderReadingController(api: api, state: state),
     state: state,
   );
+}
+
+({ReaderReadingController reading, ValueNotifier<ReaderState> state})
+    _fixtureWithTtsAndOllama(ReaderApi api, TTSService tts, OllamaService ollama) {
+  final state = ValueNotifier(ReaderState.initial);
+  return (
+    reading: ReaderReadingController(api: api, state: state, tts: tts, ollama: ollama),
+    state: state,
+  );
+}
+
+class _FakeTTSService extends Fake implements TTSService {
+  String? lastSpokenText;
+  TtsQuality? lastSpokenQuality;
+  bool isStopped = false;
+  bool _isSpeaking = false;
+  @override
+  VoidCallback? onCompletion;
+
+  @override
+  Future<void> speak(String text, {TtsQuality quality = TtsQuality.fast, String? lang}) async {
+    lastSpokenText = text;
+    lastSpokenQuality = quality;
+    _isSpeaking = true;
+  }
+
+  @override
+  Future<void> stop() async {
+    isStopped = true;
+    _isSpeaking = false;
+  }
+
+  @override
+  bool get isSpeaking => _isSpeaking;
+
+  @override
+  TtsQuality get activeQuality => lastSpokenQuality ?? TtsQuality.fast;
+
+  void complete() {
+    _isSpeaking = false;
+    if (onCompletion != null) onCompletion!();
+  }
+
+}
+
+class _FakeOllamaService extends Fake implements OllamaService {
+  _FakeOllamaService({this.reply = 'Summary reply'});
+  final String reply;
+  List<ChatMessage>? lastChatMessages;
+
+  @override
+  Future<String> chat(List<ChatMessage> messages) async {
+    lastChatMessages = messages;
+    return reply;
+  }
 }
 
 void main() {
@@ -343,4 +402,93 @@ void main() {
       expect(states.first.isSearching, isTrue);
     });
   });
+
+  group('ReaderReadingController.generateAndSpeakSummary', () {
+    test('loads document chunks if empty, generates summary and speaks it', () async {
+      final api = _FakeReaderApi(chunks: const [
+        {'text': 'first line'},
+        {'text': 'second line'},
+      ]);
+      final tts = _FakeTTSService();
+      final ollama = _FakeOllamaService(reply: 'Custom summary');
+      final f = _fixtureWithTtsAndOllama(api, tts, ollama);
+
+      await f.reading.generateAndSpeakSummary('doc.txt');
+
+      expect(f.state.value.currentDocName, 'doc.txt');
+      expect(f.state.value.documentChunks, ['first line', 'second line']);
+      expect(ollama.lastChatMessages, isNotNull);
+      expect(ollama.lastChatMessages!.first.content, contains('first line\nsecond line'));
+      expect(tts.lastSpokenText, 'Custom summary');
+      expect(f.state.value.isSpeaking, isTrue);
+      expect(f.state.value.statusBanner, '語音播放中：Custom summary');
+
+      // Simulate completion
+      tts.complete();
+      expect(f.state.value.isSpeaking, isFalse);
+      expect(f.state.value.statusBanner, '語音播放結束。');
+    });
+
+    test('stops speech if already speaking', () async {
+      final api = _FakeReaderApi(chunks: const [{'text': 'content'}]);
+      final tts = _FakeTTSService();
+      final ollama = _FakeOllamaService();
+      final f = _fixtureWithTtsAndOllama(api, tts, ollama);
+
+      // Set speaking to true initially
+      f.state.value = f.state.value.copyWith(isSpeaking: true);
+      await tts.speak('existing');
+
+      await f.reading.generateAndSpeakSummary('doc.txt');
+
+      expect(tts.isStopped, isTrue);
+      expect(f.state.value.isSpeaking, isFalse);
+    });
+
+    test('does not update state after dispose', () async {
+      final api = _FakeReaderApi(chunks: const [{'text': 'content'}]);
+      final tts = _FakeTTSService();
+      final ollama = _FakeOllamaService(reply: 'Summary');
+      final f = _fixtureWithTtsAndOllama(api, tts, ollama);
+
+      final future = f.reading.generateAndSpeakSummary('doc.txt');
+      f.reading.dispose();
+
+      await future;
+
+      // Verify that the state didn't proceed to "語音播放中"
+      expect(f.state.value.isSpeaking, isFalse);
+      expect(f.state.value.statusBanner, isNot(contains('語音播放中')));
+    });
+
+    test('determineQuality returns learning for language learning and Japanese tags', () {
+      final api = _FakeReaderApi();
+      final f = _fixture(api);
+
+      final bookLang = Book(title: 'Book 1', tags: const ['語言學習']);
+      final bookJp = Book(title: 'Book 2', tags: const ['日語']);
+      final bookNormal = Book(title: 'Book 3', tags: const ['歷史', '教會歷史']);
+
+      expect(f.reading.determineQuality(bookLang), TtsQuality.learning);
+      expect(f.reading.determineQuality(bookJp), TtsQuality.learning);
+      expect(f.reading.determineQuality(bookNormal), TtsQuality.fast);
+      expect(f.reading.determineQuality(null), TtsQuality.fast);
+    });
+
+    test('generateAndSpeakSummary propagates custom quality setting', () async {
+      final api = _FakeReaderApi(chunks: const [
+        {'text': 'learning content'},
+      ]);
+      final tts = _FakeTTSService();
+      final ollama = _FakeOllamaService(reply: 'Learning summary');
+      final f = _fixtureWithTtsAndOllama(api, tts, ollama);
+
+      await f.reading.generateAndSpeakSummary('doc.txt', quality: TtsQuality.learning);
+
+      expect(tts.lastSpokenText, 'Learning summary');
+      expect(tts.lastSpokenQuality, TtsQuality.learning);
+    });
+  });
 }
+
+

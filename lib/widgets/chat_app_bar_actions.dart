@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 class ChatAppBarActions {
   const ChatAppBarActions({
@@ -25,3 +25,5 @@ class ChatAppBarActions {
   final VoidCallback onShowSessionsPath;
   final VoidCallback onShowDebugLogPath;
 }
+
+

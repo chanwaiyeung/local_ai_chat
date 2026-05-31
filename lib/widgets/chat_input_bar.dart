@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 class ChatInputBar extends StatelessWidget {
   const ChatInputBar({
@@ -62,3 +62,5 @@ class ChatInputBar extends StatelessWidget {
     );
   }
 }
+
+

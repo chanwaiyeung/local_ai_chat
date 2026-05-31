@@ -1,4 +1,4 @@
-enum RagExpectedStatus {
+﻿enum RagExpectedStatus {
   exists,
   missing,
   followUp,
@@ -240,3 +240,5 @@ RagEvaluationSummary summarizeRagEvaluationRecords(
     passRate: records.isEmpty ? 0.0 : pass / records.length,
   );
 }
+
+

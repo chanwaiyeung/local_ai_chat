@@ -1,4 +1,4 @@
-// lib/screens/health_screen.dart
+﻿// lib/screens/health_screen.dart
 //
 // Phase 6.7 (v2.3) — Health module UI.
 // Layout:
@@ -900,4 +900,6 @@ class _HealthTrendsCard extends StatelessWidget {
     );
   }
 }
+
+
 

@@ -1,4 +1,4 @@
-// lib/services/api_client.dart
+﻿// lib/services/api_client.dart
 //
 // Mobile-side client for the Local AI Server.
 //
@@ -306,3 +306,5 @@ class ApiException implements Exception {
   @override
   String toString() => 'ApiException($op, $statusCode): $message';
 }
+
+

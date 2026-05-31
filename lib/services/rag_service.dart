@@ -1,4 +1,4 @@
-// lib/services/rag_service.dart
+﻿// lib/services/rag_service.dart
 import 'dart:math' as math;
 
 import '../models/app_settings.dart';
@@ -747,3 +747,5 @@ class RagService {
     return sb.toString();
   }
 }
+
+

@@ -1,5 +1,5 @@
 // lib/main.dart
-import 'dart:io' show Platform;
+import 'dart:io' show Platform, HttpServer;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -12,16 +12,37 @@ import 'controllers/expense_controller.dart';
 import 'controllers/health_controller.dart';
 import 'controllers/wealth_controller.dart';
 import 'l10n/app_localizations.dart';
+import 'models/app_settings.dart';
 import 'screens/personal_hub_screen.dart';
 import 'server/api_server.dart';
 import 'server/ollama_client.dart';
+import 'services/ai_highlight_service.dart';
+import 'services/ai_mindmap_service.dart';
+import 'services/ai_notes_service.dart';
+import 'services/ai_router_service.dart';
 import 'services/app_settings_service.dart';
+import 'services/book_ai_service.dart';
+import 'services/cloud_llm_service.dart';
 import 'services/currency_service.dart';
 import 'services/embedding_service.dart';
+import 'services/en_grammar_lesson_service.dart';
+import 'services/en_grammar_service.dart';
+import 'services/en_quiz_service.dart';
+import 'services/en_sentence_service.dart';
+import 'services/en_tts_service.dart';
+import 'services/en_vocab_lesson_service.dart';
+import 'services/en_vocab_service.dart';
+import 'services/jp_grammar_service.dart';
+import 'services/jp_sentence_service.dart';
+import 'services/jp_tts_service.dart';
+import 'services/jp_vocab_service.dart';
+import 'services/office_prompt_template_service.dart';
+import 'services/ollama_service.dart';
 import 'services/personal_rag_service.dart';
 import 'services/rag_service.dart';
 import 'services/skills_service.dart';
 import 'services/telegram_bot_service.dart';
+import 'services/tts_service.dart';
 import 'services/vector_store.dart';
 
 // ----------------------------- dart-define config -----------------------------
@@ -42,7 +63,7 @@ import 'services/vector_store.dart';
 //       (LAN-exposed, phone can connect; auth required)
 //
 const _aiLibLan = bool.fromEnvironment('AI_LIB_LAN', defaultValue: false);
-const _aiLibToken = String.fromEnvironment('AI_LIB_TOKEN', defaultValue: '');
+// _aiLibToken 已移除，避免 unused_element 警告。
 
 VectorStore? _globalStore;
 VectorStore get globalStore => _globalStore ??= VectorStore();
@@ -73,7 +94,151 @@ set globalPersonController(PersonController controller) =>
 
 late final PersonalRagService globalPersonalRagService;
 late final SkillsService globalSkillsService;
-late final OllamaClient globalOllama;
+late OllamaClient globalOllama;
+
+BookAiService? _globalBookAiService;
+BookAiService get globalBookAiService =>
+    _globalBookAiService ??= BookAiService(globalAiRouterService);
+
+@visibleForTesting
+set globalBookAiService(BookAiService service) =>
+    _globalBookAiService = service;
+
+AiRouterService? _globalAiRouterService;
+AiRouterService get globalAiRouterService =>
+    _globalAiRouterService ??= AiRouterService(
+      local: OllamaService(),
+      cloud: CloudLLMService(apiKey: ''),
+      rag: RagService(
+        embedder: EmbeddingService(),
+        store: globalStore,
+      ),
+    );
+
+@visibleForTesting
+set globalAiRouterService(AiRouterService service) =>
+    _globalAiRouterService = service;
+
+AiHighlightService? _globalAiHighlightService;
+AiHighlightService get globalAiHighlightService =>
+    _globalAiHighlightService ??= AiHighlightService(globalAiRouterService);
+
+@visibleForTesting
+set globalAiHighlightService(AiHighlightService service) =>
+    _globalAiHighlightService = service;
+
+AiNotesService? _globalAiNotesService;
+AiNotesService get globalAiNotesService =>
+    _globalAiNotesService ??= AiNotesService(globalAiRouterService);
+
+@visibleForTesting
+set globalAiNotesService(AiNotesService service) =>
+    _globalAiNotesService = service;
+
+AiMindMapService? _globalAiMindMapService;
+AiMindMapService get globalAiMindMapService =>
+    _globalAiMindMapService ??= AiMindMapService(globalAiRouterService);
+
+@visibleForTesting
+set globalAiMindMapService(AiMindMapService service) =>
+    _globalAiMindMapService = service;
+
+JpGrammarService? _globalJpGrammarService;
+JpGrammarService get globalJpGrammarService =>
+    _globalJpGrammarService ??= JpGrammarService(globalAiRouterService);
+
+@visibleForTesting
+set globalJpGrammarService(JpGrammarService service) =>
+    _globalJpGrammarService = service;
+
+JpVocabService? _globalJpVocabService;
+JpVocabService get globalJpVocabService =>
+    _globalJpVocabService ??= JpVocabService(globalAiRouterService);
+
+@visibleForTesting
+set globalJpVocabService(JpVocabService service) =>
+    _globalJpVocabService = service;
+
+JpSentenceService? _globalJpSentenceService;
+JpSentenceService get globalJpSentenceService =>
+    _globalJpSentenceService ??= JpSentenceService(globalAiRouterService);
+
+@visibleForTesting
+set globalJpSentenceService(JpSentenceService service) =>
+    _globalJpSentenceService = service;
+
+TTSService? _globalTtsService;
+TTSService get globalTtsService =>
+    _globalTtsService ??= TTSService();
+
+@visibleForTesting
+set globalTtsService(TTSService service) =>
+    _globalTtsService = service;
+
+JpTtsService? _globalJpTtsService;
+JpTtsService get globalJpTtsService =>
+    _globalJpTtsService ??= JpTtsService(globalTtsService);
+
+@visibleForTesting
+set globalJpTtsService(JpTtsService service) =>
+    _globalJpTtsService = service;
+
+EnGrammarService? _globalEnGrammarService;
+EnGrammarService get globalEnGrammarService =>
+    _globalEnGrammarService ??= EnGrammarService(globalAiRouterService);
+
+@visibleForTesting
+set globalEnGrammarService(EnGrammarService service) =>
+    _globalEnGrammarService = service;
+
+EnVocabService? _globalEnVocabService;
+EnVocabService get globalEnVocabService =>
+    _globalEnVocabService ??= EnVocabService(globalAiRouterService);
+
+@visibleForTesting
+set globalEnVocabService(EnVocabService service) =>
+    _globalEnVocabService = service;
+
+EnSentenceService? _globalEnSentenceService;
+EnSentenceService get globalEnSentenceService =>
+    _globalEnSentenceService ??= EnSentenceService(globalAiRouterService);
+
+@visibleForTesting
+set globalEnSentenceService(EnSentenceService service) =>
+    _globalEnSentenceService = service;
+
+EnTtsService? _globalEnTtsService;
+EnTtsService get globalEnTtsService =>
+    _globalEnTtsService ??= EnTtsService(globalTtsService);
+
+@visibleForTesting
+set globalEnTtsService(EnTtsService service) =>
+    _globalEnTtsService = service;
+
+EnGrammarLessonService? _globalEnGrammarLessonService;
+EnGrammarLessonService get globalEnGrammarLessonService =>
+    _globalEnGrammarLessonService ??= EnGrammarLessonService(globalAiRouterService);
+
+@visibleForTesting
+set globalEnGrammarLessonService(EnGrammarLessonService service) =>
+    _globalEnGrammarLessonService = service;
+
+EnVocabLessonService? _globalEnVocabLessonService;
+EnVocabLessonService get globalEnVocabLessonService =>
+    _globalEnVocabLessonService ??= EnVocabLessonService(globalAiRouterService);
+
+@visibleForTesting
+set globalEnVocabLessonService(EnVocabLessonService service) =>
+    _globalEnVocabLessonService = service;
+
+EnQuizService? _globalEnQuizService;
+EnQuizService get globalEnQuizService =>
+    _globalEnQuizService ??= EnQuizService(globalAiRouterService);
+
+@visibleForTesting
+set globalEnQuizService(EnQuizService service) =>
+    _globalEnQuizService = service;
+
 TelegramBotService? globalTelegramBotService;
 
 Future<void> restartTelegramBot(String? token) async {
@@ -89,6 +254,7 @@ Future<void> restartTelegramBot(String? token) async {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await OfficePromptTemplateService().init();
 
   final embedModel = Platform.environment['EMBED_MODEL'] ?? 'bge-m3';
   final ollamaModel = Platform.environment['OLLAMA_MODEL'] ?? 'llama3.1:8b';
@@ -135,12 +301,46 @@ Future<void> main() async {
   final settings = await AppSettingsService().load();
   await restartTelegramBot(settings.telegramBotToken);
 
+  globalAiRouterService = AiRouterService(
+    local: OllamaService(
+      baseUrl: ollamaUrl,
+      model: ollamaModel,
+    ),
+    cloud: CloudLLMService(
+      apiKey: settings.geminiApiKey ?? '',
+    ),
+    rag: RagService(
+      embedder: embedder,
+      store: globalStore,
+    ),
+  );
+
+  globalBookAiService = BookAiService(globalAiRouterService);
+  globalAiHighlightService = AiHighlightService(globalAiRouterService);
+  globalAiNotesService = AiNotesService(globalAiRouterService);
+  globalAiMindMapService = AiMindMapService(globalAiRouterService);
+  globalJpGrammarService = JpGrammarService(globalAiRouterService);
+  globalJpVocabService = JpVocabService(globalAiRouterService);
+  globalJpSentenceService = JpSentenceService(globalAiRouterService);
+  globalTtsService = TTSService();
+  await globalTtsService.init();
+  globalJpTtsService = JpTtsService(globalTtsService);
+  globalEnGrammarService = EnGrammarService(globalAiRouterService);
+  globalEnVocabService = EnVocabService(globalAiRouterService);
+  globalEnSentenceService = EnSentenceService(globalAiRouterService);
+  globalEnTtsService = EnTtsService(globalTtsService);
+  globalEnGrammarLessonService = EnGrammarLessonService(globalAiRouterService);
+  globalEnVocabLessonService = EnVocabLessonService(globalAiRouterService);
+  globalEnQuizService = EnQuizService(globalAiRouterService);
+
   await _startServerForDesktop();
   await CurrencyService.instance.load();
   runApp(const MyApp());
 }
 
-Future<void> _startServerForDesktop() async {
+HttpServer? activeHttpServer;
+
+Future<void> startOrRestartServer(AppSettings settings) async {
   if (kIsWeb) return;
   if (defaultTargetPlatform != TargetPlatform.windows &&
       defaultTargetPlatform != TargetPlatform.macOS &&
@@ -148,44 +348,56 @@ Future<void> _startServerForDesktop() async {
     return;
   }
 
-  // These remain Platform.environment (runtime override, no rebuild needed):
-  // they are operational tunables, not security-critical settings.
-  final port = int.tryParse(Platform.environment['PORT'] ?? '') ?? 8080;
+  // 1. Stop existing server if running
+  if (activeHttpServer != null) {
+    debugPrint('[ai_library_server] Stopping existing server...');
+    await activeHttpServer!.close(force: true);
+    activeHttpServer = null;
+  }
 
+  // 2. If Office Bridge is disabled, do not start
+  if (!settings.enableOfficeBridge) {
+    debugPrint('[ai_library_server] Office Bridge is disabled in settings.');
+    return;
+  }
+
+  // 3. Prepare RagService and ApiServer
   final embedModel = Platform.environment['EMBED_MODEL'] ?? 'bge-m3';
-  final ollamaUrl =
-      Platform.environment['OLLAMA_URL'] ?? 'http://localhost:11434';
-
+  final ollamaUrl = Platform.environment['OLLAMA_URL'] ?? 'http://localhost:11434';
+  
   final rag = RagService(
     embedder: EmbeddingService(baseUrl: ollamaUrl, model: embedModel),
     store: globalStore,
   );
 
-  // Trim the token before passing on. Inside ApiServer this is what's
-  // compared byte-for-byte against the `Authorization: Bearer …` header,
-  // so a leading/trailing space sneaking through dart-define would make
-  // every request fail with 401 and look like a server bug.
-  final trimmedToken = _aiLibToken.trim();
+  final token = settings.officeBridgeToken.trim();
   final server = ApiServer(
     rag: rag,
     store: globalStore,
     generate: globalOllama.generate,
-    authToken: trimmedToken.isEmpty ? null : trimmedToken,
+    authToken: token.isEmpty ? null : token,
   );
 
   // ApiServer.start() throws StateError if lanMode is true without a
   // non-blank token. Catch it explicitly so a misconfigured release
   // build prints a clear diagnostic instead of a bare uncaught error.
   try {
-    await server.start(port: port, lanMode: _aiLibLan);
+    activeHttpServer = await server.start(port: settings.officeBridgePort, lanMode: _aiLibLan);
+    debugPrint('[ai_library_server] Server started successfully on port ${settings.officeBridgePort}');
   } on StateError catch (e) {
     debugPrint('[ai_library_server] startup refused: ${e.message}');
     debugPrint(
       '[ai_library_server] hint: pass --dart-define=AI_LIB_TOKEN=<secret> '
       'or omit AI_LIB_LAN to keep the server loopback-only.',
     );
-    rethrow;
+  } catch (e) {
+    debugPrint('[ai_library_server] startup error: $e');
   }
+}
+
+Future<void> _startServerForDesktop() async {
+  final settings = await AppSettingsService().load();
+  await startOrRestartServer(settings);
 }
 
 class MyApp extends StatefulWidget {
@@ -253,3 +465,6 @@ class MyAppState extends State<MyApp> {
     );
   }
 }
+
+
+

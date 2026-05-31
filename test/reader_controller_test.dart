@@ -1,4 +1,4 @@
-// test/reader_controller_test.dart
+﻿// test/reader_controller_test.dart
 //
 // Unit tests for ReaderController Q&A, OCR, and reading-mode delegation.
 // Retrieve-first read-mode behavior lives in reader_reading_controller_test.dart.
@@ -426,3 +426,5 @@ void main() {
     });
   });
 }
+
+

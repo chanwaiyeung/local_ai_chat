@@ -1,4 +1,4 @@
-import 'package:flutter_test/flutter_test.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
 import 'package:local_ai_chat/services/query_expansion.dart';
 
 void main() {
@@ -22,3 +22,5 @@ void main() {
     expect(expanded.split(RegExp(r'\s+')), hasLength(lessThanOrEqualTo(12)));
   });
 }
+
+

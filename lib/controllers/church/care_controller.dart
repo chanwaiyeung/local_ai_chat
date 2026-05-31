@@ -389,3 +389,5 @@ class PersonSummary {
     return CaseType.member;
   }
 }
+
+

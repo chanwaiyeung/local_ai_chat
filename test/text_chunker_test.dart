@@ -1,4 +1,4 @@
-// test/text_chunker_test.dart
+﻿// test/text_chunker_test.dart
 //
 // Pure-logic tests for TextChunker. No I/O, runs in milliseconds.
 
@@ -139,3 +139,5 @@ void main() {
     });
   });
 }
+
+

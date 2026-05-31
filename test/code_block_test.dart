@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -47,7 +47,7 @@ void main() {
   });
 
   testWidgets('CodeBlock copy button writes code to clipboard', (tester) async {
-    const code = 'print("hello");';
+    const code = 'debugPrint("hello");';
 
     await tester.pumpWidget(
       const MaterialApp(
@@ -162,3 +162,5 @@ bool _richTextContains(String text) {
       .whereType<RichText>()
       .any((widget) => widget.text.toPlainText().contains(text));
 }
+
+

@@ -1,4 +1,4 @@
-import 'api_client.dart';
+﻿import 'api_client.dart';
 
 class LanguageLearningService {
   LanguageLearningService({required ReaderApi api}) : _api = api;
@@ -31,3 +31,5 @@ class LanguageLearningService {
         '並提供 1 個自然例句。\n\n上下文：$context';
   }
 }
+
+

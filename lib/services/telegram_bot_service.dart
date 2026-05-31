@@ -1,4 +1,4 @@
-// lib/services/telegram_bot_service.dart
+﻿// lib/services/telegram_bot_service.dart
 //
 // HTTP long-polling Telegram bot: text / photo / document / voice.
 // Uses PersonalRagService for text & extracted document text; Gemini for
@@ -313,3 +313,5 @@ class TelegramBotService {
     }
   }
 }
+
+

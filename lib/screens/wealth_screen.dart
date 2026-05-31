@@ -1,4 +1,4 @@
-// lib/screens/wealth_screen.dart
+﻿// lib/screens/wealth_screen.dart
 
 //
 
@@ -1190,5 +1190,7 @@ class _WealthRecordFormDialogState extends State<WealthRecordFormDialog> {
     );
   }
 }
+
+
 
 

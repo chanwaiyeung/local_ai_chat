@@ -138,6 +138,7 @@ class _BookScreenState extends State<BookScreen>
                   itemBuilder: (ctx, idx) => BookCard(
                     book: books[idx],
                     onTap: () => _openForm(existing: books[idx]),
+                    bookController: widget.controller,
                   ),
                 );
               }),
@@ -152,3 +153,5 @@ class _BookScreenState extends State<BookScreen>
     );
   }
 }
+
+

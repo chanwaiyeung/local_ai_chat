@@ -1,4 +1,4 @@
-class TelegramBotConfig {
+﻿class TelegramBotConfig {
   final String token;
   final String username;
   final String ollamaUrl;
@@ -38,3 +38,5 @@ class TelegramBotConfig {
     );
   }
 }
+
+

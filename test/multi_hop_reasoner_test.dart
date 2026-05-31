@@ -1,4 +1,4 @@
-import 'package:flutter_test/flutter_test.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
 import 'package:local_ai_chat/services/multi_hop_reasoner.dart';
 import 'package:local_ai_chat/services/vector_store.dart';
 
@@ -45,3 +45,5 @@ void main() {
     expect(result.trace.subQueries.length, greaterThanOrEqualTo(2));
   });
 }
+
+

@@ -18,6 +18,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:local_ai_chat/models/app_settings.dart';
 import 'package:local_ai_chat/services/embedding_service.dart';
@@ -121,7 +122,7 @@ void main() {
       // Informational only — gates correctness, not perf.
       // 在小 seed 上 (~12 chunks) IO 主導，差異不大；放大 seed 才能看出 v3 的實際效益。
       // ignore: avoid_print
-      print(
+      debugPrint(
           'A2-timing: cold load() with persisted sparseIndex took $loadElapsedMicrosµs');
     });
   });
@@ -225,7 +226,7 @@ void main() {
           reason: 'sparseIndex should be persisted after migration');
 
       // ignore: avoid_print
-      print(
+      debugPrint(
           'A2-timing: cold load() with rebuild from v2 took ${stopwatch.elapsedMicroseconds}µs');
     });
 
@@ -356,3 +357,5 @@ class _FakePathProviderPlatform extends PathProviderPlatform
   @override
   Future<String?> getApplicationSupportPath() async => appSupportPath;
 }
+
+

@@ -1,6 +1,8 @@
-import 'dart:io';
+﻿import 'dart:io';
 
-import 'package:path_provider/path_provider.dart';
+import 'path_resolver_stub.dart'
+    if (dart.library.ui) 'path_resolver_flutter.dart';
+
 
 class DebugLogService {
   static const _fileName = 'rag_debug.log';
@@ -8,7 +10,7 @@ class DebugLogService {
   static Future<void> _writeQueue = Future.value();
 
   static Future<File> logFile() async {
-    final dir = await getApplicationSupportDirectory();
+    final dir = await getAppSupportDirectory();
     final appDir = Directory(
       '${dir.path}${Platform.pathSeparator}local_ai_chat',
     );
@@ -101,3 +103,5 @@ class DebugLogService {
     }
   }
 }
+
+

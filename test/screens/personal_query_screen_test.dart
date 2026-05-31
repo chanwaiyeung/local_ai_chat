@@ -1,4 +1,4 @@
-// test/screens/personal_query_screen_test.dart
+﻿// test/screens/personal_query_screen_test.dart
 //
 // Phase 6.5 — Widget tests for PersonalQueryScreen.
 // Embedding is faked via EmbeddingService(embedFn: ...). LLM is faked via
@@ -317,3 +317,5 @@ void main() {
     expect(find.text('已手動儲存為技能！'), findsOneWidget);
   });
 }
+
+

@@ -1,4 +1,4 @@
-// lib/screens/church/church_hub_screen.dart
+﻿// lib/screens/church/church_hub_screen.dart
 //
 // Unified entry point for the Church module.
 // Displays a stats overview card and a 2-entry grid leading to:
@@ -12,6 +12,8 @@ import 'package:flutter/material.dart';
 
 import '../../main.dart';
 import 'care_dashboard_screen.dart';
+import 'church_documents_screen.dart';
+import 'church_workflow_screen.dart';
 import 'person_directory_screen.dart';
 
 class ChurchHubScreen extends StatefulWidget {
@@ -88,6 +90,31 @@ class _ChurchHubScreenState extends State<ChurchHubScreen> {
                     MaterialPageRoute(
                       builder: (_) =>
                           PersonDirectoryScreen(controller: people),
+                    ),
+                  ),
+                ),
+                _ChurchEntryCard(
+                  icon: Icons.article_outlined,
+                  label: '教會文書助理',
+                  subtitle: '講道 · 查經 · 關懷紀錄',
+                  color: Colors.teal,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ChurchDocumentsScreen(
+                        careController: care,
+                        personController: people,
+                      ),
+                    ),
+                  ),
+                ),
+                _ChurchEntryCard(
+                  icon: Icons.integration_instructions_outlined,
+                  label: '教會 Office 工作流',
+                  subtitle: 'Word · Excel · PPT 巨集',
+                  color: Colors.indigo,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ChurchWorkflowScreen(),
                     ),
                   ),
                 ),
@@ -276,3 +303,6 @@ class _ChurchEntryCard extends StatelessWidget {
     );
   }
 }
+
+
+

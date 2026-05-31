@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:io';
 
 import 'package:local_ai_chat/models/app_settings.dart';
@@ -92,3 +92,5 @@ class RrfTuningRunner {
         'k${config.rankConstant}_d${config.semanticWeight}_s${config.keywordWeight}.json';
   }
 }
+
+

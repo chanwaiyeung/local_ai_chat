@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -31,10 +31,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _geminiApiKeyController = TextEditingController();
   final _telegramBotTokenController = TextEditingController();
   final _googleTtsApiKeyController = TextEditingController();
+  final _officeBridgePortController = TextEditingController();
+  final _officeBridgeTokenController = TextEditingController();
+  final _officeBridgeModelController = TextEditingController();
 
   late bool _useCustom;
   late String _selectedPreset;
   late RetrievalMode _retrievalMode;
+  late TtsMode _ttsMode;
+
+  late bool _enableOfficeBridge;
+  late String _officeBridgeLanguage;
+  late List<String> _officeBridgeAllowedApps;
 
   bool _loadingModels = true;
   Set<String> _installedModels = const {};
@@ -54,9 +62,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _customController.text = current;
     }
     _retrievalMode = widget.currentSettings.retrievalMode;
+    _ttsMode = widget.currentSettings.ttsMode;
     _geminiApiKeyController.text = widget.currentSettings.geminiApiKey ?? '';
     _telegramBotTokenController.text = widget.currentSettings.telegramBotToken ?? '';
     _googleTtsApiKeyController.text = widget.currentSettings.googleTtsApiKey ?? '';
+
+    _enableOfficeBridge = widget.currentSettings.enableOfficeBridge;
+    _officeBridgePortController.text = widget.currentSettings.officeBridgePort.toString();
+    _officeBridgeTokenController.text = widget.currentSettings.officeBridgeToken;
+    _officeBridgeLanguage = widget.currentSettings.officeBridgeLanguage;
+    _officeBridgeModelController.text = widget.currentSettings.officeBridgeModel;
+    _officeBridgeAllowedApps = List<String>.from(widget.currentSettings.officeBridgeAllowedApps);
 
     _loadInstalledModels();
   }
@@ -67,6 +83,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _geminiApiKeyController.dispose();
     _telegramBotTokenController.dispose();
     _googleTtsApiKeyController.dispose();
+    _officeBridgePortController.dispose();
+    _officeBridgeTokenController.dispose();
+    _officeBridgeModelController.dispose();
     super.dispose();
   }
 
@@ -134,6 +153,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return;
     }
 
+    final portVal = int.tryParse(_officeBridgePortController.text.trim()) ?? 61670;
+
     Navigator.of(context).pop(
       AppSettings(
         embeddingModel: model,
@@ -141,6 +162,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         geminiApiKey: _geminiApiKeyController.text.trim().isEmpty ? null : _geminiApiKeyController.text.trim(),
         telegramBotToken: _telegramBotTokenController.text.trim().isEmpty ? null : _telegramBotTokenController.text.trim(),
         googleTtsApiKey: _googleTtsApiKeyController.text.trim().isEmpty ? null : _googleTtsApiKeyController.text.trim(),
+        ttsMode: _ttsMode,
+        enableOfficeBridge: _enableOfficeBridge,
+        officeBridgePort: portVal,
+        officeBridgeToken: _officeBridgeTokenController.text.trim(),
+        officeBridgeLanguage: _officeBridgeLanguage,
+        officeBridgeModel: _officeBridgeModelController.text.trim(),
+        officeBridgeAllowedApps: _officeBridgeAllowedApps,
       ),
     );
   }
@@ -383,6 +411,147 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         prefixIcon: Icon(Icons.record_voice_over),
                       ),
                     ),
+                    const SizedBox(height: 24),
+                    Text(
+                      '語音合成模式',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<TtsMode>(
+                      initialValue: _ttsMode,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: '語音合成模式',
+                        prefixIcon: Icon(Icons.settings_voice),
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: TtsMode.auto,
+                          child: Text('自動決策（推薦）'),
+                        ),
+                        DropdownMenuItem(
+                          value: TtsMode.localOnly,
+                          child: Text('僅本地（節省流量）'),
+                        ),
+                        DropdownMenuItem(
+                          value: TtsMode.cloudOnly,
+                          child: Text('高品質雲端（學習模式）'),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() => _ttsMode = value);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 8),
+            Text(
+              'Office Bridge 設定',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '整合 Microsoft Office (Word, Excel, PPT, Outlook) 與 WPS Office 本機伺服端設定',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 12),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SwitchListTile(
+                      title: const Text('啟用 Office Bridge'),
+                      subtitle: const Text('開啟或關閉本機 Office AI 整合伺服器'),
+                      value: _enableOfficeBridge,
+                      onChanged: (value) {
+                        setState(() => _enableOfficeBridge = value);
+                      },
+                    ),
+                    if (_enableOfficeBridge) ...[
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _officeBridgePortController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: '本機 API 連接埠 (Port)',
+                          hintText: '61670',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.lan_outlined),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _officeBridgeTokenController,
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          labelText: 'API 安全認證 Token',
+                          hintText: 'YOUR_LOCAL_TOKEN',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.security_outlined),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        initialValue: _officeBridgeLanguage,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: '預設輸出語言',
+                          prefixIcon: Icon(Icons.translate),
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: 'zh-TW', child: Text('繁體中文 (zh-TW)')),
+                          DropdownMenuItem(value: 'zh-CN', child: Text('簡體中文 (zh-CN)')),
+                          DropdownMenuItem(value: 'en-US', child: Text('英文 (en-US)')),
+                        ],
+                        onChanged: (val) {
+                          if (val != null) {
+                            setState(() => _officeBridgeLanguage = val);
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _officeBridgeModelController,
+                        decoration: const InputDecoration(
+                          labelText: '預設本機模型 (Ollama)',
+                          hintText: 'local',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.smart_toy_outlined),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        '允許連線的應用程式 (Allowed Apps)',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        children: ['word', 'excel', 'ppt', 'outlook', 'wps'].map((app) {
+                          final isSelected = _officeBridgeAllowedApps.contains(app);
+                          return FilterChip(
+                            label: Text(app.toUpperCase()),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              setState(() {
+                                if (selected) {
+                                  _officeBridgeAllowedApps.add(app);
+                                } else {
+                                  _officeBridgeAllowedApps.remove(app);
+                                }
+                              });
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -510,5 +679,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 }
+
+
 
 

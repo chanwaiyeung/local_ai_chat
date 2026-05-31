@@ -1,4 +1,4 @@
-// lib/services/speech_service.dart
+﻿// lib/services/speech_service.dart
 import 'dart:io';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
@@ -62,3 +62,5 @@ class SpeechService {
     return _stt.locales();
   }
 }
+
+

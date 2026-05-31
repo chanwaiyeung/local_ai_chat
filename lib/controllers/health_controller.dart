@@ -1,4 +1,4 @@
-// lib/controllers/health_controller.dart
+﻿// lib/controllers/health_controller.dart
 //
 // Phase 6.7 (v2.3) — Health module controller.
 // Storage: VectorStore Collection 'Health', empty embeddings (Strategy C).
@@ -179,3 +179,5 @@ class HealthController extends ChangeNotifier {
     return '$_idPrefix${ts}_$rand';
   }
 }
+
+

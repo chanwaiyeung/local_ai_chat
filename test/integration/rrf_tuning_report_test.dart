@@ -1,4 +1,4 @@
-@Tags(['integration'])
+﻿@Tags(['integration'])
 library;
 
 import 'dart:convert';
@@ -118,3 +118,5 @@ class _FakePathProviderPlatform extends PathProviderPlatform
   @override
   Future<String?> getApplicationSupportPath() async => path;
 }
+
+

@@ -1,4 +1,4 @@
-// lib/screens/expense_screen.dart
+﻿// lib/screens/expense_screen.dart
 //
 // Phase 6.2' (base) + Phase 6.6 enhancements.
 //
@@ -731,6 +731,8 @@ class _ExpenseFormState extends State<_ExpenseForm> {
     );
   }
 }
+
+
 
 
 

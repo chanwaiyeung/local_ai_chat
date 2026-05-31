@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../controllers/health_controller.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -35,3 +35,5 @@ class HealthSummaryCard extends StatelessWidget {
     );
   }
 }
+
+

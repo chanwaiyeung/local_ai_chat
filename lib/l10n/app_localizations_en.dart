@@ -566,4 +566,444 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get readingModeTitle => 'Reading Mode';
+
+  @override
+  String get churchHubTitle => 'Church Members';
+
+  @override
+  String get churchNoMembers => 'No members yet';
+
+  @override
+  String get churchAddMember => 'Add Member';
+
+  @override
+  String get churchSearchHint => 'Search name/phone';
+
+  @override
+  String get churchDirectoryTitle => 'Church Directory';
+
+  @override
+  String get searchHint =>
+      'Search name / phone / small group / Sunday school / notes';
+
+  @override
+  String filterMemberCount(int count) {
+    return 'Members ($count)';
+  }
+
+  @override
+  String filterSeekerCount(int count) {
+    return 'Seekers ($count)';
+  }
+
+  @override
+  String filterAllCount(int count) {
+    return 'All ($count)';
+  }
+
+  @override
+  String filterMemberRegularCount(int count) {
+    return 'Regular Members ($count)';
+  }
+
+  @override
+  String filterSeekerRegularCount(int count) {
+    return 'Regular Seekers ($count)';
+  }
+
+  @override
+  String filterMemberOccasionalCount(int count) {
+    return 'Occasional Members ($count)';
+  }
+
+  @override
+  String filterSeekerOccasionalCount(int count) {
+    return 'Occasional Seekers ($count)';
+  }
+
+  @override
+  String filterMemberInactiveCount(int count) {
+    return 'Inactive Members ($count)';
+  }
+
+  @override
+  String filterSeekerInactiveCount(int count) {
+    return 'Inactive Seekers ($count)';
+  }
+
+  @override
+  String get noSearchResults => 'No members match search criteria';
+
+  @override
+  String get emptyDirectory => 'Directory is empty';
+
+  @override
+  String get emptyDirectoryHint => 'Tap FAB to add the first member';
+
+  @override
+  String personRowSmallGroup(String group) {
+    return 'Group: $group';
+  }
+
+  @override
+  String personRowSundaySchool(String school) {
+    return 'Sunday School: $school';
+  }
+
+  @override
+  String get historyTooltip => 'History Records';
+
+  @override
+  String get closeCaseConfirmTitle => 'Close Case';
+
+  @override
+  String closeCaseConfirmContent(String name) {
+    return 'Mark case for \"$name\" as closed?';
+  }
+
+  @override
+  String get closeCase => 'Close Case';
+
+  @override
+  String get careDashboardTitle => 'Care Dashboard';
+
+  @override
+  String tabMemberActive(int count) {
+    return 'Members ($count)';
+  }
+
+  @override
+  String tabNewcomerActive(int count) {
+    return 'Newcomers ($count)';
+  }
+
+  @override
+  String tabVisitedHistory(int count) {
+    return 'Visited ($count)';
+  }
+
+  @override
+  String get careSearchHint => 'Search member name / reason / notes';
+
+  @override
+  String addNewCaseLabel(String label) {
+    return 'Add $label Case';
+  }
+
+  @override
+  String get alertRedTitle => 'Requires immediate attention';
+
+  @override
+  String get alertYellowTitle => 'Should schedule soon';
+
+  @override
+  String get alertGreenTitle => 'Under follow-up';
+
+  @override
+  String get historyNoResults => 'No matching persons';
+
+  @override
+  String get historyEmpty => 'No visit history yet';
+
+  @override
+  String get historyEmptyHint =>
+      'Open a new case and log a visit under Members/Newcomers to see it here';
+
+  @override
+  String get searchNoCaseResults => 'No matching cases';
+
+  @override
+  String tabEmptyCaseState(String label) {
+    return 'No $label cases at present';
+  }
+
+  @override
+  String addNewCaseButton(String label) {
+    return 'Add $label Case';
+  }
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String daysNoVisit(int days) {
+    return '🕐 $days days since last touch';
+  }
+
+  @override
+  String caseRowSummary(String reason, String urgency) {
+    return '$reason  ·  $urgency Priority';
+  }
+
+  @override
+  String caseRowLastVisitPrefix(String visitedBy, String date) {
+    return 'Last: $visitedBy $date ';
+  }
+
+  @override
+  String get noVisitRecorded => 'No visits logged yet';
+
+  @override
+  String get detailsButton => 'Details';
+
+  @override
+  String get logVisitButton => 'Log Visit';
+
+  @override
+  String get editCaseTooltip => 'Edit Case';
+
+  @override
+  String get closeCaseTooltip => 'Close Case';
+
+  @override
+  String get statusActiveBadge => 'Active';
+
+  @override
+  String historyRowLastVisit(String visitedBy, String method, String date) {
+    return 'Last: $visitedBy · $method · $date';
+  }
+
+  @override
+  String get historyNoVisitRecorded => 'No visits logged yet';
+
+  @override
+  String historyRowStats(int totalVisits, int caseCount) {
+    return 'Total $totalVisits visits · $caseCount cases';
+  }
+
+  @override
+  String daysAgo(int days) {
+    return '$days days ago';
+  }
+
+  @override
+  String weeksAgo(int weeks) {
+    return '$weeks weeks ago';
+  }
+
+  @override
+  String monthsAgo(int months) {
+    return '$months months ago';
+  }
+
+  @override
+  String yearsAgo(int years) {
+    return '$years years ago';
+  }
+
+  @override
+  String saveFailed(String error) {
+    return 'Save failed: $error';
+  }
+
+  @override
+  String get deleteConfirmTitle => 'Confirm Delete';
+
+  @override
+  String get deleteConfirmContent =>
+      'This member\'s directory info will be permanently deleted (associated care cases will not be deleted).';
+
+  @override
+  String editPersonTitle(String label) {
+    return 'Edit $label';
+  }
+
+  @override
+  String addPersonTitle(String label) {
+    return 'Add $label';
+  }
+
+  @override
+  String get fieldNameLabel => 'Name *';
+
+  @override
+  String get fieldNameRequired => 'Please enter name';
+
+  @override
+  String get fieldPhoneLabel => 'Phone (optional)';
+
+  @override
+  String get fieldBirthdayLabel => 'Birthday';
+
+  @override
+  String get sectionChurchLife => 'Church Life';
+
+  @override
+  String get fieldBaptismDateLabel => 'Baptism Date';
+
+  @override
+  String get fieldJoinDateLabel => 'Transfer / Join Date';
+
+  @override
+  String get fieldAttendanceLabel => 'Worship Attendance';
+
+  @override
+  String get sectionParticipation => 'Participation';
+
+  @override
+  String get fieldSmallGroupLabel => 'Small Group / Fellowship';
+
+  @override
+  String get fieldSmallGroupHint =>
+      'e.g., Wed Elderly Group, Couple Fellowship Group B';
+
+  @override
+  String get fieldSundaySchoolLabel => 'Sunday School';
+
+  @override
+  String get fieldSundaySchoolHint =>
+      'e.g., Adult Class B - student, Children\'s teacher';
+
+  @override
+  String get sectionOthers => 'Others';
+
+  @override
+  String get fieldCreatedByLabel => 'Created By (Pastor Name)';
+
+  @override
+  String get fieldNotesLabel => 'Notes (optional)';
+
+  @override
+  String get commonSaving => 'Saving...';
+
+  @override
+  String get defaultNewcomerReason => 'Newcomer';
+
+  @override
+  String get deleteCaseConfirmContent =>
+      'This case and all associated visit logs will be permanently deleted.';
+
+  @override
+  String get editCaseTitle => 'Edit Case';
+
+  @override
+  String get addNewCaseTitle => 'Add Care Case';
+
+  @override
+  String get fieldNewcomerNameLabel => 'Newcomer Name *';
+
+  @override
+  String get fieldMemberNameLabel => 'Member Name *';
+
+  @override
+  String get fieldReasonLabel =>
+      'Reason * (e.g., hospitalized, father passed away, newcomer follow-up)';
+
+  @override
+  String get fieldReasonRequired => 'Please enter reason';
+
+  @override
+  String get fieldIdentityLabel => 'Identity';
+
+  @override
+  String get fieldUrgencyLabel => 'Urgency';
+
+  @override
+  String get urgencyLegend =>
+      'High = 3 days red / Med = 7 days red / Low = 14 days red';
+
+  @override
+  String get notSet => 'Not set';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get aiHighlight => 'AI Highlight';
+
+  @override
+  String get aiNotes => 'AI Notes';
+
+  @override
+  String get aiGuidedReading => 'AI Guide';
+
+  @override
+  String get aiMindMap => 'AI Mind Map';
+
+  @override
+  String get aiWordCard => 'AI Vocab';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get generateFailed => 'Generation failed. Please try again later.';
+
+  @override
+  String get learningHub => 'Learning Space';
+
+  @override
+  String get learningHubSubtitle => 'Japanese & English Learning Tools';
+
+  @override
+  String get grammarAnalysis => 'Grammar Analysis';
+
+  @override
+  String get inputSentenceHint => 'Enter a Japanese sentence to analyze...';
+
+  @override
+  String get vocabAnalysis => 'Vocabulary Analysis';
+
+  @override
+  String get inputWordHint => 'Enter a Japanese word to analyze...';
+
+  @override
+  String get vocabAnalysisFailed =>
+      'Vocabulary analysis failed. Please try again later.';
+
+  @override
+  String get sentenceGeneration => 'Sentence Generation';
+
+  @override
+  String get aiSentence => 'AI Sentence';
+
+  @override
+  String get inputSentenceWordHint =>
+      'Enter a Japanese word to generate sentences...';
+
+  @override
+  String get sentenceGenerationFailed =>
+      'Sentence generation failed. Please try again later.';
+
+  @override
+  String get stopSpeaking => 'Stop';
+
+  @override
+  String get speakPronunciation => 'Read Aloud';
+
+  @override
+  String get japaneseLab => 'Japanese Lab';
+
+  @override
+  String get englishLab => 'English Lab';
+
+  @override
+  String get enGrammarAnalysis => 'English Grammar Analysis';
+
+  @override
+  String get enInputSentenceHint => 'Enter an English sentence to analyze...';
+
+  @override
+  String get enVocabAnalysis => 'English Vocabulary Analysis';
+
+  @override
+  String get enInputWordHint => 'Enter an English word...';
+
+  @override
+  String get enVocabAnalysisFailed =>
+      'English vocabulary analysis failed. Please try again later.';
+
+  @override
+  String get enSentenceGeneration => 'English Sentence & Quiz';
+
+  @override
+  String get enAiSentence => 'AI English Sentence & Quiz';
+
+  @override
+  String get enInputSentenceWordHint =>
+      'Enter an English word to generate sentences and quiz...';
+
+  @override
+  String get enSentenceGenerationFailed =>
+      'Failed to generate English sentences and quiz. Please try again later.';
 }

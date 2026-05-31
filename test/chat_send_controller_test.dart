@@ -1,4 +1,4 @@
-import 'package:flutter_test/flutter_test.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
 import 'package:local_ai_chat/controllers/chat_send_controller.dart';
 import 'package:local_ai_chat/models/app_settings.dart';
 import 'package:local_ai_chat/models/message.dart';
@@ -94,3 +94,5 @@ class _FakeRagService extends RagService {
 class _NoopEmbeddingService extends EmbeddingService {
   _NoopEmbeddingService() : super(baseUrl: 'http://unused.invalid');
 }
+
+
